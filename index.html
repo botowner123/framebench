@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#08090b">
-<meta name="app-version" content="1.0.1">
+<meta name="app-version" content="1.0.2">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame — Web Preview</title>
 <style>
@@ -611,10 +611,9 @@
               <div class="settings-card"><div class="settings-row"><div><strong>Recently visited pages</strong><small>Only available during this session</small></div><button class="clear-recents" id="clearRecents" type="button">Clear recent pages</button></div></div>
             </section>
             <section class="settings-category" id="settingsPaneUpdates" role="tabpanel" aria-labelledby="settingsTabUpdates" data-settings-pane="updates" hidden>
-              <div class="settings-category-heading"><span class="settings-eyebrow">FRAME VERSION 1.0.0</span><h3>Software update</h3><p>Check whether a newer version is available.</p></div>
+              <div class="settings-category-heading"><span class="settings-eyebrow" id="updateAppVersion">FRAME VERSION</span><h3>Software update</h3><p>Check whether a newer version is available.</p></div>
               <div class="settings-card"><div class="update-settings-head"><div><strong>Update status</strong><small id="updateSettingsStatus">Checking for updates…</small></div><span class="test-mode-badge">GITHUB</span></div>
                 <button class="check-updates-button" id="checkUpdates" type="button">Check for updates</button>
-                <div class="update-test-controls"><label class="test-scenario-label" for="updateScenario">Check source</label><select id="updateScenario" class="test-scenario"><option value="github" selected>GitHub release</option><option value="available">Test · update available</option><option value="current">Test · up to date</option><option value="offline">Test · offline</option><option value="invalid">Test · invalid package</option><option value="write-failed">Test · install permission failed</option></select><p class="test-mode-note">Test scenarios are simulated. No files are modified.</p></div>
               </div>
             </section>
             <section class="settings-category" id="settingsPaneShortcuts" role="tabpanel" aria-labelledby="settingsTabShortcuts" data-settings-pane="shortcuts" hidden>
@@ -647,8 +646,9 @@
 <div class="context-menu" id="contextMenu" role="menu" aria-label="Browser actions"></div>
 <script>
 (() => {
-  // Public release source. The release asset must be named index.html and contain the matching app-version meta tag.
-  const UPDATE_CONFIG = Object.freeze({ mode:'github', owner:'botowner123', repo:'framebench', currentVersion:document.querySelector('meta[name="app-version"]').content });
+  // Trusted GitHub repository/tag source. The tagged root index.html version must match its release tag.
+  const UPDATE_CONFIG = Object.freeze({ owner:'botowner123', repo:'framebench', currentVersion:document.querySelector('meta[name="app-version"]').content });
+  document.querySelector('#updateAppVersion').textContent = 'FRAME VERSION ' + UPDATE_CONFIG.currentVersion;
   const form = document.querySelector('#loadForm');
   const input = document.querySelector('#url');
   const strip = document.querySelector('#tabstrip');
@@ -688,7 +688,6 @@
   const bookmarkBarToggle = document.querySelector('#bookmarkBarToggle');
   const bookmarksBar = document.querySelector('.bookmarks-bar');
   const clearRecentsButton = document.querySelector('#clearRecents');
-  const updateScenario = document.querySelector('#updateScenario');
   const checkUpdatesButton = document.querySelector('#checkUpdates');
   const updateSettingsStatus = document.querySelector('#updateSettingsStatus');
   const updateOverlay = document.querySelector('#updateOverlay');
@@ -825,24 +824,17 @@
     }
     return 0;
   }
-  function mockReleaseForScenario(scenario) {
-    if (scenario === 'current') return { tag_name:'v' + UPDATE_CONFIG.currentVersion, body:'You are already running the newest test release.', published_at:'2026-11-03T12:00:00Z', html:'<!doctype html><html><head><meta name="app-version" content="' + UPDATE_CONFIG.currentVersion + '"><title>Frame</title></head><body>Current test release</body></html>' };
-    if (scenario === 'invalid') return { tag_name:'v1.2.0', body:'This package has a mismatched version and must be rejected.', published_at:'2026-11-03T12:00:00Z', html:'<!doctype html><html><head><meta name="app-version" content="0.0.1"></head><body>Invalid package</body></html>' };
-    return { tag_name:'v1.1.0', body:'A calmer browser frame, clearer privacy details, and smoother tab navigation.', published_at:'2026-11-03T12:00:00Z', html:'<!doctype html><html><head><meta name="app-version" content="1.1.0"><title>Frame</title></head><body>Mock update package</body></html>' };
-  }
   async function fetchLatestGitHubRelease() {
     const endpoint = `https://api.github.com/repos/${encodeURIComponent(UPDATE_CONFIG.owner)}/${encodeURIComponent(UPDATE_CONFIG.repo)}/releases/latest`;
     const response = await fetch(endpoint, { headers:{ Accept:'application/vnd.github+json' }, cache:'no-store' });
     if (!response.ok) throw new Error(response.status === 404 ? 'No published release was found in the configured repository.' : `GitHub returned status ${response.status}.`);
     const release = await response.json();
     if (!release || typeof release.tag_name !== 'string' || !Array.isArray(release.assets)) throw new Error('GitHub returned an unexpected release response.');
-    const asset = release.assets.find(item => item.name === 'index.html' && typeof item.browser_download_url === 'string');
-    if (!asset) throw new Error('The latest release does not include an index.html asset.');
-    const assetUrl = new URL(asset.browser_download_url);
-    if (assetUrl.protocol !== 'https:' || !['github.com','release-assets.githubusercontent.com'].includes(assetUrl.hostname)) throw new Error('The release asset is hosted outside the trusted GitHub download domains.');
-    const htmlResponse = await fetch(assetUrl.href, { cache:'no-store' });
+    const tag = encodeURIComponent(release.tag_name);
+    const sourceUrl = `https://raw.githubusercontent.com/${encodeURIComponent(UPDATE_CONFIG.owner)}/${encodeURIComponent(UPDATE_CONFIG.repo)}/${tag}/index.html`;
+    const htmlResponse = await fetch(sourceUrl, { cache:'no-store' });
     if (!htmlResponse.ok) throw new Error(`Could not download the release HTML (status ${htmlResponse.status}).`);
-    if (!['github.com','release-assets.githubusercontent.com'].includes(new URL(htmlResponse.url).hostname)) throw new Error('The release download redirected outside the trusted GitHub domains.');
+    if (new URL(htmlResponse.url).hostname !== 'raw.githubusercontent.com') throw new Error('The release source redirected outside trusted GitHub raw content.');
     const html = await htmlResponse.text();
     if (html.length > 5_000_000) throw new Error('The release HTML is larger than the allowed 5 MB limit.');
     return { tag_name:release.tag_name, body:release.body || 'No release notes were provided.', published_at:release.published_at, html };
@@ -904,15 +896,9 @@
       updateTitle.textContent = 'Checking for updates';
       updateSummary.textContent = 'Checking the latest published Frame release…';
     }
-    const scenario = updateScenario.value;
     let release;
     try {
-      if (scenario === 'github') release = await fetchLatestGitHubRelease();
-      else {
-        await new Promise(resolve => setTimeout(resolve, 450));
-        if (scenario === 'offline') throw new Error('The simulated test connection is offline.');
-        release = mockReleaseForScenario(scenario);
-      }
+      release = await fetchLatestGitHubRelease();
     } catch (error) {
       updateSettingsStatus.textContent = 'Could not check for updates';
       if (showDialog) setUpdateError('Can’t check right now', error.message || 'Check your connection and try again.');
@@ -948,10 +934,10 @@
     if (showDialog) {
       updateState = 'available';
       updateTitle.textContent = 'Update available';
-      updateSummary.textContent = scenario === 'github' ? 'Review the release notes, then choose Update now to select this app file.' : 'A newer version of Frame is ready to review.';
+      updateSummary.textContent = 'Review the release notes, then choose Update now to select this app file.';
       updateVersionDetails(release);
       updateNow.hidden = false;
-      updateNow.textContent = scenario === 'github' ? 'Update now' : 'Run test install';
+      updateNow.textContent = 'Update now';
     }
   }
   function readAppVersion(source) {
@@ -971,23 +957,10 @@
     updateProgressPercent.textContent = percent + '%';
     updateProgressLabel.textContent = label;
   }
-  function downloadUpdateFile(html, version) {
-    const blob = new Blob([html], { type:'text/html;charset=utf-8' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `Frame-v${version}-update.html`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-  }
   async function installGitHubUpdate() {
     if (updateState !== 'available' || !checkedRelease) return;
-    if (typeof window.showOpenFilePicker !== 'function') {
-      const version = validateRelease(checkedRelease);
-      downloadUpdateFile(checkedRelease.html, version);
-      updateState = 'manual-download';
-      updateTitle.textContent = 'Update downloaded';
-      updateSummary.textContent = 'Replace your current Frame HTML file with the downloaded update to install it.';
-      updateNow.hidden = true;
+    if (typeof window.showOpenFilePicker !== 'function' && typeof window.showSaveFilePicker !== 'function') {
+      setUpdateError('Direct file updates are unavailable','This browser does not provide local file access. Open this same HTML app directly in Google Chrome and try again. No replacement file was downloaded.','unsupported');
       updateLater.textContent = 'Done';
       return;
     }
@@ -1000,10 +973,9 @@
     updateLater.disabled = true;
     let writable;
     try {
-      const [handle] = await window.showOpenFilePicker({
-        multiple:false,
-        types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }]
-      });
+      const handle = typeof window.showOpenFilePicker === 'function'
+        ? (await window.showOpenFilePicker({ multiple:false, types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }] }))[0]
+        : await window.showSaveFilePicker({ suggestedName:'index.html', types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }], excludeAcceptAllOption:true });
       setInstallProgress(20, 'Confirming selected app file…');
       const selectedFile = await handle.getFile();
       const selectedSource = await selectedFile.text();
@@ -1021,7 +993,7 @@
       await writable.close();
       writable = null;
       updateState = 'installed';
-      setUpdateProgress(100, 'Installed successfully');
+      setInstallProgress(100, 'Installed successfully');
       updateTitle.textContent = 'Update installed';
       updateSummary.textContent = `Frame v${version} is ready. Reload to open the updated app.`;
       updateNow.hidden = true;
@@ -1044,47 +1016,8 @@
       }
     }
   }
-  function runMockInstall() {
-    if (updateState === 'test-complete') { closeUpdateDialog(); return; }
-    if (updateState !== 'available' || !checkedRelease) return;
-    if (updateScenario.value === 'write-failed') {
-      setUpdateError('Install permission failed','Simulated write permission was denied. Your original HTML file was left untouched.','install-failed');
-      return;
-    }
-    updateState = 'installing';
-    updateTitle.textContent = 'Preparing your update';
-    updateSummary.textContent = 'Downloading and validating the test package. No files will be written.';
-    updateProgressWrap.hidden = false;
-    updateError.hidden = true;
-    updateNow.hidden = true;
-    updateLater.disabled = true;
-    updateProgressLabel.textContent = 'Downloading update…';
-    let progress=0;
-    updateTimer=setInterval(() => {
-      progress=Math.min(100,progress+10);
-      updateProgressBar.style.width=progress+'%';
-      updateProgressPercent.textContent=progress+'%';
-      if (progress >= 70) updateProgressLabel.textContent='Validating HTML package…';
-      if (progress >= 100) {
-        clearInterval(updateTimer);
-        updateTimer=null;
-        updateState='test-complete';
-        updateTitle.textContent='Update test complete';
-        updateSummary.textContent='The package passed validation. Test mode skipped writing to disk.';
-        updateProgressLabel.textContent='Validated · original file unchanged';
-        updateLater.disabled=false;
-        updateLater.textContent='Done';
-        updateNow.hidden=false;
-        updateNow.textContent='Close';
-      }
-    },90);
-  }
   checkUpdatesButton.addEventListener('click', () => checkForUpdates(true));
-  updateScenario.addEventListener('change', () => {
-    setUpdateBadge(false);
-    updateSettingsStatus.textContent='Ready to check · ' + updateScenario.options[updateScenario.selectedIndex].text;
-  });
-  updateNow.addEventListener('click', () => updateScenario.value === 'github' ? installGitHubUpdate() : runMockInstall());
+  updateNow.addEventListener('click', installGitHubUpdate);
   updateLater.addEventListener('click', () => updateState === 'installed' ? location.reload() : closeUpdateDialog());
   updateClose.addEventListener('click', closeUpdateDialog);
   updateOverlay.addEventListener('click', event => { if (event.target === updateOverlay && updateState !== 'installing') closeUpdateDialog(); });
