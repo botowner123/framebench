@@ -1,0 +1,1412 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#08090b">
+<meta name="app-version" content="1.0.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>Frame — Web Preview</title>
+<style>
+  :root { color-scheme:dark; --ink:#f0efee; --muted:#a09b98; --line:#222327; --paper:#121316; --canvas:#090a0c; --red:#ef3f61; --red-dark:#c72d4d; }
+  * { box-sizing:border-box }
+  ::selection { color:#fff4f5; background:#884253 }
+  input::selection { color:#fff4f5; background:#884253 }
+  body { margin:0; min-height:100vh; background:var(--canvas); color:var(--ink); font:14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing:-.01em }
+  button,input { font:inherit }
+  .shell { height:100vh; min-height:0; display:flex; flex-direction:column }
+  header { height:70px; display:flex; align-items:center; justify-content:space-between; padding:0 34px; border-bottom:1px solid var(--line); background:rgba(255,255,255,.8) }
+  .brand { display:flex; align-items:center; gap:11px; font-size:16px; font-weight:700; letter-spacing:-.04em }
+  .mark { width:29px; height:29px; display:grid; place-items:center; border-radius:9px; background:#ef3f61; color:white; box-shadow:0 3px 10px #ef3f6148 }
+  .mark svg { width:16px; height:16px }
+  .brand small { margin-left:1px; color:#8f8c8a; font-size:12px; font-weight:500; letter-spacing:0 }
+  .top-right { display:flex; align-items:center; gap:9px; color:var(--muted); font-size:12px }
+  .live-dot { width:7px; height:7px; border-radius:50%; background:#43a77a; box-shadow:0 0 0 3px #43a77a1c }
+  main { width:100%; min-height:0; margin:0; padding:0; flex:1; display:flex }
+  .intro { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:27px }
+  .eyebrow { display:flex; align-items:center; gap:8px; color:var(--red); text-transform:uppercase; font-size:10px; font-weight:750; letter-spacing:.14em; margin-bottom:10px }
+  .eyebrow:before { content:""; width:17px; height:1px; background:currentColor }
+  h1 { margin:0; font-size:clamp(26px, 4vw, 36px); line-height:1.08; letter-spacing:-.055em; font-weight:650 }
+  .subtitle { margin:9px 0 0; color:var(--muted); font-size:14px }
+  .shortcut { color:#a49f9a; font-size:11px }
+  .shortcut kbd { font:inherit; padding:3px 6px; border:1px solid #454347; border-radius:5px; color:#e97786; background:#27272a; margin-left:4px }
+  .browser { width:100%; min-height:0; display:flex; flex-direction:column; overflow:hidden; border:0; border-radius:0; background:var(--paper); box-shadow:none }
+  .chrome { min-height:54px; display:flex; align-items:center; gap:16px; padding:0 16px; border-bottom:1px solid #382326; background:#131416 }
+  .traffic { display:flex; gap:6px; flex:none }
+  .traffic i { display:block; width:9px; height:9px; border-radius:50%; background:#505054 }
+  .traffic i:first-child { background:#f0786f }
+  .traffic i:nth-child(2) { background:#efc363 }
+  .traffic i:nth-child(3) { background:#70c393 }
+  .nav { display:flex; align-items:center; gap:14px; color:#969397; flex:none }
+  .nav svg { width:15px; height:15px; transition:color .18s, transform .18s }
+  .nav svg:hover { color:var(--red); transform:scale(1.08) }
+  .nav button { width:27px; height:27px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; color:inherit; background:transparent; cursor:pointer; transition:color .18s ease,background .18s ease,transform .18s ease }
+  .nav button:hover { color:#ece9e8; background:#2a2b2f; transform:scale(1.06) }
+  .nav button:active { color:#ef3f61 }
+  .nav button:active { transform:scale(.92) }
+  .theme-toggle { width:32px; height:32px; display:grid; place-items:center; flex:none; padding:0; border:1px solid #493034; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:color .18s ease,background .18s ease,border-color .18s ease,transform .18s ease }
+  .theme-toggle:hover { color:#fff; background:#292a2e; border-color:#494a4f; transform:scale(1.05) }
+  .theme-toggle:active { color:#ef3f61; border-color:#77383c }
+  .theme-toggle svg { width:15px; height:15px }
+  .fullscreen-toggle { width:32px; height:32px; display:grid; place-items:center; flex:none; padding:0; border:0; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:color .18s ease,background .18s ease,transform .18s ease }
+  .fullscreen-toggle:hover { color:#fff; background:#292a2e; transform:scale(1.05) }
+  .fullscreen-toggle:active { color:#ef3f61; transform:scale(.95) }
+  .fullscreen-toggle svg { width:15px; height:15px }
+  .fullscreen-toggle .exit-icon { display:none }
+  .fullscreen-toggle.is-fullscreen .enter-icon { display:none }
+  .fullscreen-toggle.is-fullscreen .exit-icon { display:block }
+  .theme-toggle .moon { display:none }
+  :root[data-theme="light"] .theme-toggle { color:#625e64; border-color:#d8d6dc }
+  :root[data-theme="light"] .theme-toggle:hover { color:#302e33; background:#e9e7eb; border-color:#c9c6cd }
+  :root[data-theme="light"] .fullscreen-toggle { color:#77757b }
+  :root[data-theme="light"] .fullscreen-toggle:hover { color:#302e33; background:#e9e7eb }
+  :root[data-theme="light"] .theme-toggle .sun { display:none }
+  :root[data-theme="light"] .theme-toggle .moon { display:block }
+  .nav button svg { width:15px; height:15px }
+  .address-wrap { position:relative; flex:1; display:flex; min-width:0; align-items:center; gap:10px; height:36px; padding:0 12px; border:1px solid #35272a; border-radius:999px; background:#0d0e10; transition:border-color .25s ease, box-shadow .3s cubic-bezier(.2,.8,.2,1), background .25s ease, transform .25s cubic-bezier(.2,.8,.2,1) }
+  .address-wrap:focus-within { border-color:#ef3f61; box-shadow:0 0 0 3px #ef3f6125, 0 4px 16px #ef3f6115; transform:translateY(-1px) }
+  .lock { display:flex; color:#ef3f61; flex:none }
+  .lock svg { width:13px; height:13px }
+  #url { width:100%; min-width:0; padding:0; border:0; outline:0; color:#e7e5e3; background:transparent; font-size:12px }
+  .address-wrap.replaying #url,.address-wrap.replay-finished #url { caret-color:transparent }
+  .replay-cursor { position:absolute; z-index:2; top:50%; width:6px; height:14px; border-radius:1px; background:#ef3f61; box-shadow:0 0 8px #ef3f6170; opacity:0; pointer-events:none; transform:translateY(-50%); transition:opacity .22s ease }
+  .address-wrap.replaying .replay-cursor { opacity:1 }
+  .address-wrap.replay-finished .replay-cursor { opacity:0 }
+  #url::placeholder { color:#88878b }
+  .bookmark-toggle { width:25px; height:25px; display:grid; place-items:center; flex:none; padding:0; border:0; border-radius:50%; color:#89888d; background:transparent; cursor:pointer; transition:color .18s ease,background .18s ease,transform .18s ease }
+  .bookmark-toggle svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; transition:fill .18s ease,transform .18s ease }
+  .bookmark-toggle:hover:not(:disabled) { color:#e9687e; background:#ef3f6118; transform:scale(1.08) }
+  .bookmark-toggle.saved { color:#e95270 }
+  .bookmark-toggle.saved svg { fill:#ef3f6140 }
+  .bookmark-toggle:disabled { opacity:.38; cursor:default }
+  .bookmarks-bar { min-height:36px; display:flex; align-items:center; gap:7px; padding:0 15px; border-bottom:1px solid #1c1d20; background:#0d0e10; overflow:hidden }
+  .bookmark-items { min-width:0; flex:1; display:flex; align-items:center; gap:4px; overflow-x:auto; scrollbar-width:none }
+  .bookmark-items::-webkit-scrollbar { display:none }
+  .bookmark-empty { color:#737278; font-size:10px; padding:0 4px }
+  .bookmark-link { max-width:170px; height:26px; display:flex; align-items:center; gap:7px; padding:0 9px; overflow:hidden; border:1px solid transparent; border-radius:6px; color:#b5b1b1; background:transparent; cursor:pointer; font-size:10px; white-space:nowrap; transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease }
+  .bookmark-link:hover { color:#fff0ee; background:#302022; border-color:#6b3436; transform:translateY(-1px) }
+  .bookmark-link:active { background:#3a2023 }
+  .bookmark-glyph { width:13px; height:13px; display:grid; place-items:center; flex:none; color:#e95270; font-size:11px }
+  .bookmark-label { overflow:hidden; text-overflow:ellipsis }
+  .tabstrip { min-height:46px; display:flex; align-items:center; gap:4px; padding:5px 12px; background:#0a0b0d; border-bottom:1px solid #202125; overflow-x:auto; scrollbar-width:none }
+  .tabstrip::-webkit-scrollbar { display:none }
+  .tab { min-width:136px; max-width:220px; height:35px; display:flex; align-items:center; gap:9px; padding:0 8px 0 11px; border:1px solid transparent; border-radius:13px; color:#969398; background:transparent; cursor:pointer; font-size:11px; text-align:left; flex:none; transition:background .16s ease,color .16s ease,border-color .16s ease; overflow:hidden }
+  .tab:not(.active):hover { color:#e4e1e0; background:#141518 }
+  .tab:not(.active):hover .favicon { color:#df6479 }
+  .tab:not(.active):active { background:#18191c }
+  .tab.active { position:relative; z-index:1; color:#f0eeed; border-color:#3a292c; background:#111215; animation:tab-select .18s ease both }
+  .tab.active:before { content:""; position:absolute; bottom:0; left:50%; width:28px; height:2px; border-radius:2px; background:#ef3f61; box-shadow:0 0 8px #ef3f6170; transform:translateX(-50%); animation:accent-in .18s ease both }
+
+  .favicon { position:relative; width:16px; height:16px; display:grid; place-items:center; flex:none; color:#77777d; transition:color .16s ease }
+  .favicon svg { width:11px; height:11px; stroke:currentColor; stroke-width:1.7; fill:none }
+  .favicon img { display:none; width:13px; height:13px; border-radius:3px; object-fit:contain }
+  .favicon.has-image img { display:block }
+  .favicon.has-image svg { display:none }
+  .tab.active .favicon { color:#e95270 }
+  .tab:not(.active):hover .favicon { color:#b9b5b4 }
+  .tab-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
+  .tab-close { width:19px; height:19px; display:grid; place-items:center; flex:none; border:0; border-radius:5px; color:#a3a0a3; background:transparent; cursor:pointer; font-size:14px; line-height:1; opacity:0; transform:scale(.8); transition:opacity .16s ease,color .16s ease,background .16s ease,transform .16s ease }
+  .tab.active .tab-close,.tab:hover .tab-close,.tab:focus-visible .tab-close { opacity:1; transform:scale(1) }
+    .tab-close:hover { color:#ef3f61; background:#3a2023 }
+  .tab.closing { pointer-events:none; animation:tab-close .1s cubic-bezier(.4,0,1,1) both }
+  .new-tab { width:29px; height:29px; display:grid; place-items:center; flex:none; align-self:center; border:0; border-radius:6px; color:#e95270; background:transparent; cursor:pointer; font-size:19px }
+  .new-tab { transition:color .18s ease,background .18s ease,transform .2s cubic-bezier(.2,.8,.2,1) }
+  .new-tab:hover { color:#ef3f61; background:#321b1e; transform:scale(1.06); box-shadow:0 3px 12px #ef3f612c }
+  .new-tab:active { transform:scale(.92) }
+  .traffic { height:100%; align-items:center; margin-right:8px }
+  .traffic i { width:12px; height:12px; }
+  .stage { flex:1; min-height:0; position:relative; background:#08090b; isolation:isolate }
+  .stage.loading:before { content:""; position:absolute; z-index:5; top:0; left:0; width:100%; height:2px; pointer-events:none; background:linear-gradient(90deg, transparent, #ef3f61 18%, #ff8296 52%, #ef3f61 82%, transparent); transform:scaleX(0); transform-origin:left center; animation:load-sweep 1.35s cubic-bezier(.16,.72,.28,1) infinite; filter:drop-shadow(0 0 5px #ef3f6180) }
+  .stage.loaded:before { animation:load-finish .42s ease forwards }
+  .tab-pane { position:absolute; inset:0; display:none }
+  .tab-pane.active { display:block; animation:pane-in .24s ease both }
+  .tab-pane iframe { display:none; width:100%; height:100%; border:0; background:#fff }
+  .tab-pane.loaded iframe { display:block; animation:frame-in .35s ease both }
+  .tab-pane.failed iframe,.tab-pane.failed .empty,.tab-pane.failed .frame-status { display:none !important }
+  .tab-pane .embed-error { display:none }
+  .tab-pane.failed .embed-error { display:flex; animation:error-enter .3s cubic-bezier(.16,1,.3,1) both }
+  .tab-pane .empty { display:flex }
+  .tab-pane.loaded .empty { display:none }
+  .tab-pane .frame-status { display:none }
+  .empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:auto; padding:28px 24px; text-align:center; background:radial-gradient(ellipse at 50% 48%, #111214 0, #0a0b0d 54%, #08090b 100%) }
+  .home-content { width:min(560px,100%); margin:auto }
+  .home-intro { margin-bottom:23px; text-align:center }
+  .empty-icon { width:55px; height:55px; display:grid; place-items:center; margin:0 auto 19px; border:1px solid #6a3438; border-radius:17px; color:#ef3f61; background:#211719; box-shadow:0 7px 22px #ef3f6118; animation:icon-float 5s ease-in-out infinite }
+  .empty-icon svg { width:24px; height:24px }
+  .empty h2 { margin:0; text-align:center; font-size:16px; letter-spacing:-.03em; font-weight:650 }
+  .empty p { max-width:320px; margin:7px auto 0; color:#aaa6a4; font-size:12px; text-align:center }
+  .home-sections { display:grid; grid-template-columns:1fr; justify-items:center; gap:18px; text-align:center }
+  .home-section { width:min(360px,100%); text-align:center }
+  .home-section[hidden] { display:none }
+  .home-section { min-width:0 }
+  .home-section-head { display:flex; justify-content:center; align-items:center; gap:8px; color:#e4dfdf; font-size:11px; font-weight:650 }
+  .home-section-head small { color:#8f898c; font-size:9px; font-weight:500 }
+  .home-grid { display:grid; gap:7px; margin-top:9px }
+  .home-card { width:100%; min-width:0; display:flex; align-items:center; justify-content:center; gap:9px; padding:9px 10px; border:1px solid #30272a; border-radius:9px; color:#e8e3e2; background:#151416a8; text-align:center; cursor:pointer; transition:border-color .16s ease,background .16s ease,transform .16s ease }
+  .home-card:hover { border-color:#704044; background:#21191b; transform:translateY(-1px) }
+  .home-card-mark { width:27px; height:27px; display:grid; place-items:center; flex:none; border:1px solid #633338; border-radius:8px; color:#ef3f61; background:#27191c; font-size:11px; font-weight:700; text-transform:uppercase }
+  .home-card-copy { min-width:0; display:grid; gap:2px; text-align:center }
+  .home-card-title,.home-card-url { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .home-card-title { font-size:10px; font-weight:600 }
+  .home-card-url { color:#8f898c; font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:9px }
+  .home-empty-note { margin-top:9px; padding:10px; border:1px dashed #373034; border-radius:9px; color:#898387; font-size:10px; line-height:1.5 }
+  @media(max-width:620px) { .home-sections { grid-template-columns:1fr; gap:14px } }
+  .frame-status { position:absolute; left:16px; bottom:14px; display:none; align-items:center; gap:7px; padding:6px 9px; border:1px solid #493034; border-radius:6px; color:#b2aeac; background:#141518eb; font-size:10px; box-shadow:0 2px 6px #00000045; transition:opacity .3s ease, transform .3s ease }
+  .frame-status b { width:6px; height:6px; border-radius:50%; background:#48a777 }
+  .embed-error { position:absolute; inset:0; align-items:center; justify-content:center; flex-direction:column; padding:24px; text-align:center; background:radial-gradient(ellipse at 50% 45%,#191618 0,#101113 62%,#0b0c0e 100%) }
+  .error-icon { width:56px; height:56px; display:grid; place-items:center; margin-bottom:18px; border:1px solid #5a302e; border-radius:17px; color:#e9687e; background:#382321; box-shadow:0 8px 28px #ef3f611a }
+  .error-icon svg { width:24px; height:24px }
+  .embed-error h2 { margin:0; color:#f3eeee; font-size:17px; letter-spacing:-.03em; font-weight:650 }
+  .embed-error p { max-width:350px; margin:8px 0 19px; color:#aaa4a4; font-size:12px }
+  .retry { min-height:34px; padding:0 14px; border:1px solid #ef3f61; border-radius:7px; color:#fff; background:#ef3f61; font-size:11px; font-weight:650; cursor:pointer; box-shadow:0 3px 14px #ef3f6145; transition:transform .18s ease,background .18s ease,box-shadow .18s ease }
+  .retry:hover { transform:translateY(-1px); background:#e93658; box-shadow:0 5px 18px #ef3f6160 }
+  .retry:active { transform:scale(.97) }
+  .below { display:flex; justify-content:space-between; align-items:center; padding:12px 17px; border-top:1px solid #422b2e; color:#a6a2a0; font-size:10px }
+  .below-left { display:flex; align-items:center; gap:7px }
+  .below-left svg { width:12px; height:12px; color:#d9586d }
+  .below-right { display:flex; gap:15px }
+  .below button { padding:0; border:0; color:#b0adaa; background:none; cursor:pointer; font-size:10px; transition:color .18s ease, transform .18s ease }
+  .below button:active { transform:scale(.96) }
+  #reload svg { width:15px; height:15px; transition:transform .3s ease }
+  #reload.is-loading svg { animation:spin .8s linear infinite }
+  .below button:hover { color:var(--red) }
+  .below button:hover svg { color:#ef3f61 }
+  .context-menu { position:fixed; z-index:20; width:204px; padding:5px; border:1px solid #493034; border-radius:11px; color:#e8e5e4; background:#171719f5; box-shadow:0 12px 34px #0009,0 0 0 1px #ffffff08; backdrop-filter:blur(16px); opacity:0; transform:translateY(4px) scale(.98); transform-origin:top left; pointer-events:none; transition:opacity .12s ease,transform .12s ease }
+  .context-menu.open { opacity:1; transform:translateY(0) scale(1); pointer-events:auto }
+  .context-menu button { width:100%; min-height:32px; display:flex; align-items:center; gap:10px; padding:0 9px; border:0; border-radius:6px; color:inherit; background:transparent; text-align:left; font-size:11px; cursor:pointer }
+  .context-menu button:hover:not(:disabled) { color:#fff; background:#382326 }
+  .context-menu button:disabled { color:#716d70; cursor:default }
+  .context-menu button span:first-child { width:15px; color:#df646b; text-align:center; font-size:13px }
+  .context-menu hr { height:1px; margin:4px 5px; border:0; background:#343033 }
+  :root[data-theme="light"] .context-menu { border-color:#e5cdd0; color:#302d30; background:#fffFfdf7; box-shadow:0 12px 34px #19121728,0 0 0 1px #6b343610 }
+  :root[data-theme="light"] .context-menu button:hover:not(:disabled) { color:#252225; background:#f8e9e9 }
+  :root[data-theme="light"] .context-menu button:disabled { color:#aaa5aa }
+  :root[data-theme="light"] .context-menu hr { background:#eee3e4 }
+  .hint { display:flex; align-items:center; gap:8px; margin:18px 2px 0; color:#99948f; font-size:11px }
+  .hint svg { width:14px; height:14px; color:var(--red) }
+  .hint strong { color:#6f6a66; font-weight:600 }
+  footer { display:flex; justify-content:space-between; padding:16px 34px; border-top:1px solid var(--line); color:#aaa5a0; font-size:10px }
+  footer span:last-child { display:flex; align-items:center; gap:6px }
+  footer svg { width:12px; height:12px; color:var(--red) }
+
+  :root[data-theme="light"] { color-scheme:light; --ink:#242326; --muted:#777378; --line:#dedde1; --paper:#fff; --canvas:#f3f2f4; --red:#c93652; --red-dark:#a92642; }
+  :root[data-theme="light"] ::selection { color:#4d1d2a; background:#efb7c2 }
+  :root[data-theme="light"] input::selection { color:#4d1d2a; background:#efb7c2 }
+  :root[data-theme="light"] .chrome { border-bottom-color:#eadcdd; background:#f4f3f5 }
+  :root[data-theme="light"] .nav { color:#77757b }
+  :root[data-theme="light"] .nav button:hover { color:#28272a; background:#e9e7eb }
+  :root[data-theme="light"] .address-wrap { border-color:#e7d5d7; background:#fff }
+  :root[data-theme="light"] #url { color:#343237 }
+  :root[data-theme="light"] #url::placeholder { color:#9c989e }
+  :root[data-theme="light"] .tabstrip { background:#e9e7eb; border-bottom-color:#dedde1 }
+  :root[data-theme="light"] .tab { color:#6f6c72; border-color:transparent; background:transparent }
+  :root[data-theme="light"] .tab:not(.active):hover { color:#27262a; background:#dedce1 }
+  :root[data-theme="light"] .tab:not(.active):active { background:#d4d2d8 }
+  :root[data-theme="light"] .tab.active { color:#29272b; border-color:#e5cdd0; background:#fff; animation:tab-select-light .18s ease both }
+  :root[data-theme="light"] .tab.active:before { background:var(--red); box-shadow:0 0 7px #ef3f6140 }
+  :root[data-theme="light"] .favicon { color:#918d93 }
+  :root[data-theme="light"] .tab.active .favicon { color:var(--red) }
+  :root[data-theme="light"] .tab-close { color:#77737a }
+  :root[data-theme="light"] .tab-close:hover { color:var(--red-dark); background:#f8e5e9 }
+  :root[data-theme="light"] .new-tab { color:var(--red-dark) }
+  :root[data-theme="light"] .new-tab:hover { background:#fbe9ee }
+  :root[data-theme="light"] .bookmarks-bar { border-bottom-color:#dedde1; background:#f0eff1 }
+  :root[data-theme="light"] .bookmark-empty { color:#928e94 }
+  :root[data-theme="light"] .bookmark-link { color:#57545a }
+  :root[data-theme="light"] .bookmark-link:hover { color:#3a2928; background:#f9e7eb; border-color:#ead0cd }
+  :root[data-theme="light"] .bookmark-glyph { color:var(--red-dark) }
+  :root[data-theme="light"] .bookmark-toggle { color:#78747a }
+  :root[data-theme="light"] .bookmark-toggle.saved { color:var(--red-dark) }
+  :root[data-theme="light"] .stage { background:#f7f6f8 }
+  :root[data-theme="light"] .empty { background:radial-gradient(ellipse at 50% 48%,#fff 0,#f7f6f8 58%,#f3f2f4 100%) }
+  :root[data-theme="light"] .empty-icon { border-color:#e8e4e4; color:var(--red-dark); background:#fff; box-shadow:0 7px 20px #47292310 }
+  :root[data-theme="light"] .empty p { color:#777378 }
+  :root[data-theme="light"] .home-section-head { color:#302c30 }
+  :root[data-theme="light"] .home-section-head small,:root[data-theme="light"] .home-card-url { color:#89838a }
+  :root[data-theme="light"] .home-card { border-color:#e7d5d7; color:#302c30; background:#ffffffad }
+  :root[data-theme="light"] .home-card:hover { border-color:#d99a9f; background:#fff4f3 }
+  :root[data-theme="light"] .home-card-mark { border-color:#ecc8cb; color:#c72d4d; background:#fff1f1 }
+  :root[data-theme="light"] .home-empty-note { border-color:#e6d9db; color:#89838a }
+  :root[data-theme="light"] .frame-status { border-color:#dedde1; color:#6f6b71; background:#ffffffed }
+  :root[data-theme="light"] .embed-error { background:radial-gradient(ellipse at 50% 45%,#fff7f6 0,#f7f5f6 62%,#f2f1f3 100%) }
+  :root[data-theme="light"] .error-icon { border-color:#f0d0d7; color:var(--red-dark); background:#fff }
+  :root[data-theme="light"] .embed-error h2 { color:#28262a }
+  :root[data-theme="light"] .embed-error p { color:#777278 }
+  :root[data-theme="light"] .below { border-top-color:#eadcdd; color:#777378 }
+  :root[data-theme="light"] .below-left svg { color:#c94a65 }
+  :root[data-theme="light"] .below button { color:#625f65 }
+  :root[data-theme="light"] .below button:hover { color:var(--red-dark) }
+
+  @keyframes tab-select { from { background:#1a1719 } to { background:#111215 } }
+  @keyframes tab-select-light { from { background:#f7e9e8 } to { background:#fff } }
+  @keyframes accent-in { from { width:3px; opacity:0 } to { width:24px; opacity:1 } }
+  @keyframes tab-close { to { opacity:0; max-width:0; min-width:0; width:0; margin-left:-3px; padding-left:0; padding-right:0; transform:scale(.84); border-color:transparent } }
+  @keyframes pane-in { from { opacity:.55; transform:translateY(5px) scale(.997) } to { opacity:1; transform:translateY(0) scale(1) } }
+  @keyframes frame-in { from { opacity:0; filter:blur(2px) } to { opacity:1; filter:blur(0) } }
+  @keyframes load-sweep { 0% { transform:scaleX(.04); opacity:.5 } 55% { transform:scaleX(.72); opacity:1 } 100% { transform:scaleX(.94); opacity:.9 } }
+  @keyframes load-finish { 0% { transform:scaleX(.94); opacity:1 } 75% { transform:scaleX(1); opacity:1 } 100% { transform:scaleX(1); opacity:0 } }
+  @keyframes icon-float { 0%,100% { transform:translateY(0); box-shadow:0 7px 20px #a6382910 } 50% { transform:translateY(-3px); box-shadow:0 12px 24px #a6382918 } }
+  @keyframes spin { to { transform:rotate(360deg) } }
+  @keyframes error-enter { from { opacity:0; transform:translateY(8px) scale(.99) } to { opacity:1; transform:translateY(0) scale(1) } }
+  @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:.01ms !important } }
+  @media(max-width:620px) { .chrome { gap:10px; padding:0 10px } .nav { gap:8px } .traffic { gap:4px; margin-right:5px } .traffic i { width:9px; height:9px } .tab { min-width:124px; max-width:170px; padding:0 6px 0 9px } }
+  @media(max-width:410px) { .chrome { gap:8px } .nav { gap:7px } .address-wrap { padding:0 8px; gap:6px } .below-right { gap:9px } }
+  /* Refined browser frame */
+  :root { --line:#29262b; --paper:#101012; --canvas:#08090b; --red:#ef3f61; --red-dark:#c72d4d }
+  html,body { width:100%; height:100%; overflow:hidden }
+  body { min-height:0; padding:12px; background:radial-gradient(ellipse at 50% -15%,#251319 0,transparent 45%),#08090b }
+  .shell { width:100%; max-width:1680px; height:100%; margin:auto }
+  main { min-height:0 }
+  .browser { border:1px solid #30282d; border-radius:17px; box-shadow:0 20px 64px #0009,0 0 0 1px #ef3f6108; background:#0e0e10 }
+  .tab-pane iframe:fullscreen { width:100vw; height:100vh; background:#fff }
+  .tabstrip { min-height:51px; gap:7px; padding:7px 14px 6px; background:#111113; border-bottom:1px solid #2a2529 }
+  .window-brand { display:flex; align-items:center; gap:7px; flex:none; margin:0 8px 0 1px; color:#a9a2a7; font-size:11px; font-weight:650; letter-spacing:.015em }
+  .window-brand span { width:22px; height:22px; display:grid; place-items:center; border:1px solid #663640; border-radius:7px; color:#ff7890; background:#28171c; font-size:11px; font-weight:800 }
+  .traffic { margin-right:7px }
+  .tab { height:37px; min-width:144px; max-width:230px; gap:10px; border-radius:11px; background:transparent; font-size:12px }
+  .tab:not(.active):hover { background:#1b191c }
+  .tab.active { border-color:#3c2a30; background:linear-gradient(180deg,#21191d,#171619); box-shadow:0 2px 9px #0004 }
+  .tab.active:before { width:30px; height:2px; background:#ef3f61; box-shadow:0 0 9px #ef3f6170 }
+  .new-tab { width:31px; height:31px; border-radius:9px; font-size:21px }
+  .chrome { position:relative; z-index:8; min-height:61px; gap:11px; padding:0 17px; border-bottom:1px solid #30272b; background:#151416 }
+  .settings-button,.settings-close { display:grid; place-items:center; flex:none; padding:0; border:1px solid #42343a; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease }
+  .settings-button { position:relative; width:34px; height:34px }
+  .settings-badge { position:absolute; top:-3px; right:-3px; width:10px; height:10px; border:2px solid #151416; border-radius:50%; background:#d94b67; box-shadow:0 0 0 2px #d94b671c; animation:update-badge-in .24s cubic-bezier(.16,1,.3,1) both }
+  .settings-badge[hidden] { display:none }
+  @keyframes update-badge-in { from { opacity:0; transform:scale(.5) } to { opacity:1; transform:scale(1) } }
+  .settings-button svg { width:16px; height:16px; transition:transform .25s ease }
+  .settings-button:hover,.settings-button[aria-expanded="true"] { color:#ff8296; border-color:#75404a; background:#28191e }
+  .settings-button[aria-expanded="true"] svg { transform:rotate(28deg) }
+  .settings-panel { position:absolute; z-index:12; top:calc(100% + 9px); right:14px; width:min(326px,calc(100vw - 30px)); max-height:calc(100vh - 120px); overflow:auto; padding:17px; border:1px solid #49343d; border-radius:15px; color:#eee9eb; background:#171518f7; box-shadow:0 18px 55px #000a,0 0 0 1px #ffffff07; backdrop-filter:blur(20px); animation:settings-enter .16s ease both }
+  .settings-panel[hidden] { display:none }
+  .settings-heading { display:flex; justify-content:space-between; align-items:center }
+  .settings-eyebrow { color:var(--red); font-size:8px; font-weight:750; letter-spacing:.16em }
+  .settings-heading h2 { margin:2px 0 0; font-size:17px; letter-spacing:-.035em }
+  .settings-close { width:27px; height:27px; border-color:#40353b; border-radius:8px; font-size:17px }
+  .settings-close:hover { color:#fff; background:#332329; border-color:#75404a }
+  .settings-intro { margin:7px 0 13px; color:#969096; font-size:10px }
+  .settings-row { min-height:53px; display:flex; justify-content:space-between; align-items:center; gap:14px; border-top:1px solid #302a2f }
+  .settings-row>div { display:grid; gap:3px }
+  .settings-row strong,.settings-shortcuts>strong { color:#e9e4e6; font-size:10px; font-weight:650 }
+  .settings-row small { color:#8d878d; font-size:9px }
+  .settings-panel .theme-toggle,.settings-panel .fullscreen-toggle { width:30px; height:30px; border-radius:9px; background:#201d21 }
+  .settings-panel .theme-toggle:hover,.settings-panel .fullscreen-toggle:hover { background:#332329; border-color:#75404a }
+  .setting-switch { width:34px; height:20px; display:flex; align-items:center; padding:2px; border:1px solid #51474e; border-radius:999px; background:#302c30; cursor:pointer; transition:background .18s ease,border-color .18s ease }
+  .setting-switch span { width:14px; height:14px; border-radius:50%; background:#c6c0c4; transition:transform .18s ease,background .18s ease }
+  .setting-switch[aria-checked="true"] { border-color:#a64961; background:#733346 }
+  .setting-switch[aria-checked="true"] span { background:#fff; transform:translateX(14px) }
+  .settings-divider { height:1px; margin:5px 0 12px; background:#302a2f }
+  .settings-shortcuts { display:grid; gap:8px }
+  .settings-shortcuts>strong { margin-bottom:1px }
+  .settings-shortcuts>div { display:flex; justify-content:space-between; align-items:center; color:#aaa4aa; font-size:9px }
+  .settings-shortcuts kbd { padding:3px 6px; border:1px solid #423940; border-radius:5px; color:#d5cdd2; background:#211e22; font:inherit; font-size:8px }
+  .clear-recents { width:100%; margin-top:13px; padding:8px 10px; border:1px solid #49343d; border-radius:8px; color:#e77d91; background:#251a1e; text-align:center; font-size:9px; cursor:pointer; transition:background .15s ease,border-color .15s ease }
+  .clear-recents:hover { border-color:#9a4a5d; background:#321d24 }
+  @keyframes settings-enter { from { opacity:0; transform:translateY(-4px) scale(.99) } to { opacity:1; transform:translateY(0) scale(1) } }
+  .tab-pane.settings-tab .empty { inset:0; padding:0; background:#0c0c0e; text-align:left }
+  .settings-page-wrap { position:absolute; inset:0; width:100%; height:100%; display:block; overflow:auto; padding:0; text-align:left; background:#0c0c0e }
+  .settings-panel.settings-page { position:relative; top:auto; right:auto; width:100%; min-height:100%; max-height:none; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-content:start; align-items:start; column-gap:clamp(22px,5vw,64px); row-gap:0; overflow:visible; padding:clamp(26px,5vw,56px) clamp(22px,8vw,100px); border:0; border-radius:0; background:linear-gradient(145deg,#151316,#0c0c0e 68%); box-shadow:none; animation:settings-enter .22s ease both }
+  .settings-panel.settings-page>.settings-heading,.settings-panel.settings-page>.settings-intro { grid-column:1/-1 }
+  .settings-panel.settings-page .settings-heading h2 { font-size:22px }
+  .settings-panel.settings-page .settings-intro { margin-bottom:18px; font-size:11px }
+  .settings-panel.settings-page .settings-row { min-height:60px }
+  .settings-panel.settings-page .settings-divider { margin:9px 0 15px }
+  .settings-panel.settings-page .settings-shortcuts { gap:10px }
+  .settings-panel.settings-page .settings-shortcuts>div { font-size:10px }
+  .settings-panel.settings-page .settings-group { min-width:0; max-width:none; margin-top:24px; padding-top:17px; border-top:1px solid #302a2f }
+  .settings-panel.settings-page .settings-group-title { margin-bottom:5px; color:var(--red); font-size:9px; font-weight:750; letter-spacing:.12em; text-transform:uppercase }
+  .settings-panel.settings-page .settings-row { border-top:0; border-bottom:1px solid #302a2f }
+  .settings-panel.settings-page .settings-note { max-width:500px; margin:10px 0 14px; color:#aaa4aa; font-size:10px; line-height:1.65 }
+  .settings-panel.settings-page .privacy-group .clear-recents { width:auto; margin-top:0; min-height:34px; padding:0 13px }
+  .settings-panel.settings-page .update-settings { padding:0; border:0; background:transparent }
+  .settings-panel.settings-page .update-settings-head strong { font-size:11px }
+  :root[data-theme="light"] .settings-page-wrap { background:#faf8f9 }
+  :root[data-theme="light"] .settings-panel.settings-page { background:linear-gradient(145deg,#fff,#faf8f9 68%) }
+  @media(max-width:700px) { .settings-panel.settings-page { grid-template-columns:minmax(0,1fr); } .settings-panel.settings-page>.settings-heading,.settings-panel.settings-page>.settings-intro { grid-column:1 } }
+  @media(max-width:520px) { .settings-panel.settings-page { padding:24px 18px } }
+  /* Full-page Settings workspace with Chrome-style vertical category tabs. */
+  .settings-panel.settings-page { min-height:100%; display:grid; grid-template-columns:210px minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); align-content:start; align-items:stretch; gap:0 32px; padding:28px clamp(22px,4.2vw,62px); background:linear-gradient(145deg,#151316,#0c0c0e 68%) }
+  .settings-panel.settings-page>.settings-heading { grid-column:1/-1; width:100%; height:auto; min-height:0; display:flex; align-items:center; justify-content:space-between; padding:0 0 20px; border:0; border-bottom:1px solid #302a2f; background:transparent; color:inherit }
+  .settings-panel.settings-page .settings-title-block { display:grid; gap:4px }
+  .settings-panel.settings-page .settings-heading h2 { margin:0; font-size:24px; letter-spacing:-.04em }
+  .settings-panel.settings-page .settings-heading h2 { font-size:27px; text-align:left }
+  .settings-panel.settings-page .settings-intro { margin:0; color:#999398; font-size:12px }
+  .settings-panel.settings-page .settings-close { width:32px; height:32px; border-radius:9px }
+  .settings-nav { min-width:0; display:flex; flex-direction:column; gap:4px; padding:23px 14px 23px 0; border-right:1px solid #302a2f }
+  .settings-nav-item { width:calc(100% - 16px); min-height:42px; display:grid; grid-template-columns:20px minmax(0,1fr) 14px; align-items:center; gap:9px; padding:0 10px; border:1px solid transparent; border-radius:8px; color:#aaa4aa; background:transparent; text-align:left; font:inherit; font-size:12px; cursor:pointer; transition:color .16s ease,background .16s ease,border-color .16s ease }
+  .settings-nav-item:hover { color:#f0e9ec; background:#1c191c }
+  .settings-nav-item.active { color:#ffe8ed; border-color:#59313a; background:linear-gradient(100deg,#3b2028,#26191e); box-shadow:inset 2px 0 #ef3f61 }
+  .settings-nav-icon { display:grid; place-items:center; color:#a69da3; font-size:15px }
+  .settings-nav-item.active .settings-nav-icon { color:var(--red) }
+  .settings-nav-item>svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.4; opacity:0; transform:translateX(-3px); transition:opacity .16s ease,transform .16s ease }
+  .settings-nav-item.active>svg { opacity:.8; transform:none }
+  .settings-content { width:100%; min-width:0; min-height:0; padding:26px 0 38px; overflow:auto; scrollbar-color:#49343d transparent; scrollbar-width:thin }
+  .settings-category { width:min(100%,760px); margin:0 auto; animation:settings-category-in .2s ease both }
+  .settings-category[hidden] { display:none }
+  @keyframes settings-category-in { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:translateY(0) } }
+  .settings-category-heading { margin:0 0 20px }
+  .settings-category-heading h3 { margin:5px 0 7px; color:#f0ecee; font-size:24px; font-weight:650; letter-spacing:-.035em }
+  .settings-category-heading p { max-width:580px; margin:0; color:#9d969b; font-size:13px; line-height:1.65 }
+  .settings-panel.settings-page .settings-card { overflow:hidden; padding:4px 18px; border:1px solid #332a30; border-radius:12px; background:linear-gradient(135deg,#171518,#121113); box-shadow:0 8px 24px #0002 }
+  .settings-panel.settings-page .settings-card .settings-row { min-height:64px; border-bottom:1px solid #302a2f }
+  .settings-panel.settings-page .settings-card .settings-row:last-child { border-bottom:0 }
+  .settings-panel.settings-page #settingsPanePrivacy .settings-row { flex-wrap:wrap; padding:10px 0 }
+  .settings-panel.settings-page .settings-row strong { font-size:13px }
+  .settings-panel.settings-page .settings-row small { font-size:11px }
+  .settings-panel.settings-page .theme-toggle { width:34px; height:34px; border:1px solid #41353b; border-radius:9px }
+  .settings-panel.settings-page .setting-switch { flex:none }
+  .settings-panel.settings-page .clear-recents { width:auto; margin:0; padding:8px 12px; white-space:nowrap }
+  .settings-panel.settings-page #settingsPanePrivacy .clear-recents { margin-left:auto }
+  .settings-panel.settings-page .settings-card .update-settings-head { min-height:56px; align-items:center; border-bottom:1px solid #302a2f }
+  .settings-panel.settings-page .update-settings-head strong { color:#e9e4e6; font-size:11px }
+  .settings-panel.settings-page .update-settings-head small { color:#969096; font-size:10px }
+  .settings-panel.settings-page .check-updates-button { margin:16px 0 14px }
+  .update-test-controls { padding:13px 0 9px; border-top:1px solid #302a2f }
+  .settings-panel.settings-page .settings-shortcuts { display:block; padding:3px 18px }
+  .settings-panel.settings-page .settings-shortcuts>div { min-height:49px; border-bottom:1px solid #302a2f; font-size:12px }
+  .settings-panel.settings-page .settings-shortcuts>div:last-child { border-bottom:0 }
+  .settings-panel.settings-page .settings-shortcuts kbd { padding:5px 8px; font-size:10px }
+  :root[data-theme="light"] .settings-panel.settings-page { background:linear-gradient(145deg,#fff,#faf8f9 68%) }
+  :root[data-theme="light"] .settings-panel.settings-page>.settings-heading,:root[data-theme="light"] .settings-nav { border-color:#e5dce0 }
+  :root[data-theme="light"] .settings-nav-item { color:#716a70 }
+  :root[data-theme="light"] .settings-nav-item:hover { color:#332d31; background:#f5eff2 }
+  :root[data-theme="light"] .settings-nav-item.active { color:#562a35; border-color:#ead1d8; background:linear-gradient(100deg,#f8e9ed,#f5eef0); box-shadow:inset 2px 0 #d94763 }
+  :root[data-theme="light"] .setting-switch { border-color:#d8d3d7; background:#e9e6e9 }
+  :root[data-theme="light"] .setting-switch span { background:#fff; box-shadow:0 1px 3px #33202a25 }
+  :root[data-theme="light"] .setting-switch[aria-checked="true"] { border-color:#d87589; background:#de6b80 }
+  :root[data-theme="light"] .setting-switch[aria-checked="true"] span { background:#fff; box-shadow:0 1px 3px #70263845 }
+  :root[data-theme="light"] .settings-category-heading h3 { color:#282428 }
+  :root[data-theme="light"] .settings-category-heading p,:root[data-theme="light"] .settings-panel.settings-page .settings-intro { color:#777078 }
+  :root[data-theme="light"] .settings-panel.settings-page .settings-card { border-color:#e5dce0; background:linear-gradient(135deg,#fff,#fbf8f9); box-shadow:0 8px 24px #33202a08 }
+  :root[data-theme="light"] .settings-panel.settings-page .settings-card .settings-row,:root[data-theme="light"] .settings-panel.settings-page .settings-shortcuts>div,:root[data-theme="light"] .update-test-controls,:root[data-theme="light"] .settings-panel.settings-page .settings-card .update-settings-head { border-color:#e9e0e4 }
+  :root[data-theme="light"] .settings-panel.settings-page .settings-shortcuts>div { color:#696168 }
+  @media(max-width:680px) {
+    .settings-panel.settings-page { grid-template-columns:1fr; grid-template-rows:auto auto minmax(0,1fr); gap:0; padding:20px 17px }
+    .settings-nav { flex-direction:row; gap:4px; padding:12px 0 8px; overflow-x:auto; border-right:0; border-bottom:1px solid #302a2f; scrollbar-width:none }
+    .settings-nav::-webkit-scrollbar { display:none }
+    .settings-nav-item { width:auto; min-width:max-content; min-height:34px; grid-template-columns:16px auto; gap:6px; padding:0 9px }
+    .settings-nav-item>svg { display:none }
+    .settings-nav-item.active { box-shadow:inset 0 -2px #ef3f61 }
+    .settings-content { padding:20px 0 30px }
+    :root[data-theme="light"] .settings-nav { border-bottom-color:#e5dce0 }
+  }
+  @media(max-width:430px) { .settings-panel.settings-page .settings-card { padding-inline:12px } .settings-panel.settings-page .settings-row small { max-width:180px } .settings-panel.settings-page #settingsPanePrivacy .clear-recents { margin:6px 0 0; } .settings-panel.settings-page .clear-recents { font-size:8px } }
+  .nav { gap:4px }
+  .nav button { width:34px; height:34px }
+  .nav button:disabled { color:#565257; cursor:default; background:transparent; transform:none }
+  .nav button svg { width:16px; height:16px }
+  .address-wrap { height:41px; padding:0 14px; gap:11px; border-color:#3b2b31; background:#0c0c0e }
+  .address-wrap:focus-within { border-color:#ef3f61; box-shadow:0 0 0 3px #ef3f611c,0 5px 18px #0005 }
+  #url { font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; letter-spacing:-.025em }
+  .lock svg { width:14px; height:14px }
+  .theme-toggle { width:34px; height:34px }
+  .bookmarks-bar { min-height:39px; padding:0 19px; background:#101012; border-bottom-color:#29262a }
+  .bookmarks-bar.collapsed { display:none }
+  .bookmark-link { height:28px; border-radius:8px; font-size:11px }
+  .stage { background:#08090b }
+  .empty { padding:36px 24px; background:radial-gradient(ellipse at 50% 47%,#171316 0,#0d0d0f 55%,#08090b 100%) }
+  .home-content { width:min(620px,100%) }
+  .home-intro { margin-bottom:28px }
+  .home-kicker { display:flex; justify-content:center; align-items:center; gap:7px; margin-bottom:12px; color:#ec8294; font-size:9px; font-weight:700; letter-spacing:.14em }
+  .home-kicker,.settings-eyebrow,.settings-shortcuts kbd { font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace }
+  .home-kicker span { width:6px; height:6px; border-radius:50%; background:#ef3f61; box-shadow:0 0 0 4px #ef3f6119 }
+  .empty-icon { width:64px; height:64px; margin-bottom:22px; border-radius:20px; border-color:#733944; background:linear-gradient(145deg,#28171c,#1a1417); box-shadow:0 10px 30px #ef3f6118 }
+  .empty-icon svg { width:27px; height:27px }
+  .empty h2 { font-size:clamp(21px,2vw,27px); letter-spacing:-.045em }
+  .empty p { max-width:450px; margin-top:10px; font-size:13px; line-height:1.65 }
+  .privacy-points { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-top:17px }
+  .privacy-points span { display:flex; align-items:center; gap:6px; padding:6px 9px; border:1px solid #30282d; border-radius:999px; color:#aaa1a6; background:#121113; font-size:9px }
+  .privacy-points b { color:#ea778c; font-size:8px; letter-spacing:.04em }
+  .home-sections { margin-top:0 }
+  .home-section { width:min(440px,100%) }
+  .home-section-head { gap:9px; margin-bottom:2px; color:#ded9dc; font-size:12px }
+  .home-section-head small { padding:2px 7px; border:1px solid #493039; border-radius:999px; color:#e77c8f }
+  .home-grid { gap:8px }
+  .home-card { min-height:48px; padding:8px 13px; border-color:#302a2f; border-radius:11px; background:#151416; text-align:left; justify-content:flex-start }
+  .home-card:hover { border-color:#76404b; background:#21181c }
+  .home-card-mark { width:30px; height:30px; border-color:#66343e; border-radius:9px; background:#25171b }
+  .home-card-copy { text-align:left }
+  .below { min-height:43px; padding:0 18px; border-top:1px solid #30272b; color:#969096; background:#111113 }
+  .below-left { gap:9px }
+  .below-left svg { width:14px; height:14px; color:#e86c82 }
+  .below-left span { font-size:11px }
+  .active-dot { width:8px; height:8px; flex:none; border-radius:50%; background:#ef3f61; box-shadow:0 0 0 4px #ef3f6118; animation:active-pulse 2.2s ease-in-out infinite }
+  .active-tab-status { max-width:min(36vw,340px); overflow:hidden; color:#e6e1e3; font-size:11px; font-weight:600; text-overflow:ellipsis; white-space:nowrap }
+  .tab-count-status { padding:3px 8px; border:1px solid #3d3036; border-radius:999px; color:#a9a1a6; font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:9px; white-space:nowrap }
+  .active-tab-status.status-change,.tab-count-status.status-change { animation:status-change .24s ease both }
+  @keyframes active-pulse { 0%,100% { box-shadow:0 0 0 3px #ef3f6114; opacity:.82 } 50% { box-shadow:0 0 0 5px #ef3f612b; opacity:1 } }
+  @keyframes status-change { from { opacity:.45; transform:translateY(3px) } to { opacity:1; transform:translateY(0) } }
+  .update-settings { display:grid; gap:8px; padding:1px 0 3px }
+  .update-settings-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px }
+  .update-settings-head>div { display:grid; gap:3px }
+  .update-settings-head strong { color:#e9e4e6; font-size:10px; font-weight:650 }
+  .update-settings-head small { color:#8d878d; font-size:9px }
+  .test-mode-badge,.update-kicker span { padding:3px 6px; border:1px solid #68404c; border-radius:5px; color:#e58a9e; background:#261a1f; font:700 7px/1 "JetBrains Mono",ui-monospace,monospace; letter-spacing:.08em }
+  .check-updates-button { min-height:31px; border:1px solid #57343f; border-radius:8px; color:#f2e9ec; background:#281a20; font-size:9px; font-weight:600; cursor:pointer; transition:background .16s ease,border-color .16s ease }
+  .check-updates-button:hover { border-color:#a04e64; background:#38202a }
+  .test-scenario-label { color:#979096; font-size:8px }
+  .test-scenario { width:100%; min-height:30px; padding:0 8px; border:1px solid #3b3339; border-radius:7px; color:#d5cdd2; background:#211e22; font-family:inherit; font-size:9px }
+  .test-mode-note { margin:0; color:#827c82; font-size:8px }
+  .update-overlay { position:fixed; inset:0; z-index:60; display:grid; place-items:center; padding:20px; background:#030304a8; backdrop-filter:blur(12px); animation:update-fade .18s ease both }
+  .update-overlay[hidden] { display:none }
+  .update-dialog { position:relative; width:min(450px,100%); padding:30px 34px 24px; overflow:hidden; border:1px solid #49343d; border-radius:20px; color:#f0ebed; background:radial-gradient(ellipse at 50% 0,#2a171e 0,#171518 48%); box-shadow:0 30px 90px #000b,0 0 0 1px #ef3f6108; text-align:center; animation:update-card-in .24s cubic-bezier(.16,1,.3,1) both }
+  .update-close { position:absolute; top:13px; right:13px; width:27px; height:27px; border:1px solid #45353c; border-radius:50%; color:#a59ca2; background:#211d21; font-size:17px; line-height:1; cursor:pointer }
+  .update-close:hover { color:#fff; background:#38232b }
+  .update-app-icon { width:60px; height:60px; display:grid; place-items:center; margin:0 auto 14px; border:1px solid #75404d; border-radius:18px; color:#ff8296; background:linear-gradient(145deg,#351b24,#21171c); box-shadow:0 9px 30px #ef3f611b }
+  .update-app-icon svg { width:27px; height:27px }
+  .update-kicker { display:flex; justify-content:center; align-items:center; gap:8px; color:#e98095; font:700 8px "JetBrains Mono",ui-monospace,monospace; letter-spacing:.13em }
+  .update-dialog h2 { margin:11px 0 0; color:#f5eff1; font-size:23px; letter-spacing:-.045em; line-height:1.2 }
+  .update-summary { max-width:350px; min-height:35px; margin:8px auto 0; color:#aaa2a8; font-size:11px; line-height:1.55 }
+  .update-version-row { display:flex; justify-content:center; align-items:center; gap:11px; margin:17px auto 0; color:#a9a0a6; font:10px "JetBrains Mono",ui-monospace,monospace }
+  .update-version-row[hidden],.release-notes[hidden],.update-progress-wrap[hidden],.update-error[hidden],.update-now[hidden] { display:none }
+  .update-version-row strong { color:#ff8ba0; font-weight:700 }
+  .version-arrow { color:#70656d }
+  .release-notes { margin-top:18px; padding:13px 14px; border:1px solid #3e3037; border-radius:11px; background:#110f12a8; text-align:left }
+  .release-notes-head { display:flex; justify-content:space-between; align-items:center; gap:8px }
+  .release-notes-head strong { color:#eee8eb; font-size:10px }
+  .release-notes-head span { color:#887f86; font-size:8px }
+  .release-notes p { margin:8px 0 0; color:#aaa2a8; font-size:10px; line-height:1.55; white-space:pre-wrap }
+  .update-progress-wrap { margin-top:20px; text-align:left }
+  .update-progress-label { display:flex; justify-content:space-between; margin-bottom:7px; color:#bcb4ba; font-size:9px }
+  .update-progress-track { height:6px; overflow:hidden; border-radius:999px; background:#362a30 }
+  .update-progress-track span { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,#bd3f5d,#f17a91); box-shadow:0 0 10px #ef3f614c; transition:width .16s linear }
+  .update-error { margin-top:16px; padding:10px 12px; border:1px solid #75424c; border-radius:9px; color:#f0a3af; background:#2d1b21; font-size:10px; line-height:1.5; text-align:left }
+  .update-actions { display:flex; justify-content:center; gap:9px; margin-top:20px }
+  .update-actions button { min-width:116px; min-height:35px; padding:0 15px; border-radius:9px; font-size:10px; font-weight:650; cursor:pointer; transition:transform .15s ease,background .15s ease,border-color .15s ease }
+  .update-actions button:active { transform:scale(.97) }
+  .update-later { border:1px solid #493e44; color:#d6cfd3; background:#211e22 }
+  .update-later:hover { border-color:#6a5862; background:#2a252b }
+  .update-now { border:1px solid #e14f6b; color:#fff; background:linear-gradient(180deg,#ed526e,#cb3656); box-shadow:0 4px 14px #d8415e3d }
+  .update-now:hover { background:linear-gradient(180deg,#f3657e,#d8415e) }
+  @keyframes update-fade { from { opacity:0 } to { opacity:1 } }
+  @keyframes update-card-in { from { opacity:0; transform:translateY(9px) scale(.985) } to { opacity:1; transform:translateY(0) scale(1) } }
+  :root[data-theme="light"] .update-settings-head strong { color:#302c30 }
+  :root[data-theme="light"] .update-settings-head small,:root[data-theme="light"] .test-scenario-label { color:#777078 }
+  :root[data-theme="light"] .test-mode-badge,:root[data-theme="light"] .update-kicker span { border-color:#edc6d0; color:#ac3d59; background:#fff0f3 }
+  :root[data-theme="light"] .check-updates-button { border-color:#e6ccd3; color:#61323e; background:#fff2f4 }
+  :root[data-theme="light"] .check-updates-button:hover { border-color:#d99a9f; background:#ffe9ee }
+  :root[data-theme="light"] .test-scenario { border-color:#e1d7dc; color:#514a50; background:#f8f5f7 }
+  :root[data-theme="light"] .test-mode-note { color:#918992 }
+  :root[data-theme="light"] .update-dialog { border-color:#e2cbd2; color:#302c30; background:radial-gradient(ellipse at 50% 0,#fff4f6 0,#fff 55%); box-shadow:0 30px 80px #26171f35 }
+  :root[data-theme="light"] .update-close { border-color:#e6d9de; color:#726b72; background:#fff }
+  :root[data-theme="light"] .update-app-icon { border-color:#edc6d0; color:#c1435e; background:linear-gradient(145deg,#fff,#fff0f3) }
+  :root[data-theme="light"] .update-kicker { color:#b8425d }
+  :root[data-theme="light"] .update-dialog h2 { color:#282428 }
+  :root[data-theme="light"] .update-summary,:root[data-theme="light"] .update-version-row { color:#777078 }
+  :root[data-theme="light"] .update-version-row strong { color:#b63c58 }
+  :root[data-theme="light"] .release-notes { border-color:#e7d9de; background:#fff9fa }
+  :root[data-theme="light"] .release-notes-head strong { color:#3a3339 }
+  :root[data-theme="light"] .release-notes-head span,:root[data-theme="light"] .release-notes p { color:#777078 }
+  :root[data-theme="light"] .update-progress-label { color:#625a62 }
+  :root[data-theme="light"] .update-progress-track { background:#f0e1e6 }
+  :root[data-theme="light"] .update-error { border-color:#e6bac4; color:#8e3047; background:#fff1f4 }
+  :root[data-theme="light"] .update-later { border-color:#ddd3d9; color:#514a50; background:#f8f5f7 }
+  @media(max-width:500px) { .update-dialog { padding:27px 20px 20px } .update-actions button { min-width:0; flex:1 } }
+  .below-right button { font-size:11px }
+  :root[data-theme="light"] body { background:radial-gradient(ellipse at 50% -15%,#f9e9ed 0,transparent 48%),#eeeef1 }
+  :root[data-theme="light"] .browser { border-color:#d8d1d5; background:#fff; box-shadow:0 20px 58px #33232a1c,0 0 0 1px #ef3f6108 }
+  :root[data-theme="light"] .tabstrip { background:#e9e7ea; border-bottom-color:#d8d4d9 }
+  :root[data-theme="light"] .window-brand { color:#716a70 }
+  :root[data-theme="light"] .window-brand span { border-color:#e7cbd2; color:#bd405c; background:#fff0f3 }
+  :root[data-theme="light"] .tab { color:#777178 }
+  :root[data-theme="light"] .tab.active { border-color:#d8cbd0; background:linear-gradient(180deg,#fff,#faf7f8); box-shadow:0 2px 8px #45323a10 }
+  :root[data-theme="light"] .chrome { background:#f6f4f6; border-bottom-color:#e2d9de }
+  :root[data-theme="light"] .settings-button,:root[data-theme="light"] .settings-panel .settings-close { color:#665e65; border-color:#ded1d7 }
+  :root[data-theme="light"] .settings-button:hover,:root[data-theme="light"] .settings-button[aria-expanded="true"] { color:#bd405c; border-color:#d99a9f; background:#fff0f3 }
+  :root[data-theme="light"] .settings-badge { border-color:#f6f4f6 }
+  :root[data-theme="light"] .settings-panel { border-color:#e5d2d8; color:#302c30; background:#fffFfdf9; box-shadow:0 18px 45px #34222a25,0 0 0 1px #ffffffa0 }
+  :root[data-theme="light"] .tab-pane.settings-tab .empty { background:radial-gradient(ellipse at 50% 0,#fff6f8 0,#f7f4f6 58%,#f0eef1 100%) }
+  :root[data-theme="light"] .settings-panel.settings-page { border-color:#e2d1d8; background:linear-gradient(150deg,#fff,#fbf7f9 68%); box-shadow:0 16px 45px #3a263014 }
+  :root[data-theme="light"] .settings-eyebrow { color:#bd405c }
+  :root[data-theme="light"] .settings-heading h2,:root[data-theme="light"] .settings-row strong,:root[data-theme="light"] .settings-shortcuts>strong { color:#302c30 }
+  :root[data-theme="light"] .settings-intro,:root[data-theme="light"] .settings-row small,:root[data-theme="light"] .settings-shortcuts>div { color:#777078 }
+  :root[data-theme="light"] .settings-panel .settings-row { border-top-color:#e8dfe3 }
+  :root[data-theme="light"] .settings-panel .settings-divider { background:#e8dfe3 }
+  :root[data-theme="light"] .settings-panel .theme-toggle,:root[data-theme="light"] .settings-panel .fullscreen-toggle { background:#f8f5f7 }
+  :root[data-theme="light"] .settings-shortcuts kbd { border-color:#e2d7dd; color:#534b52; background:#f6f2f4 }
+  :root[data-theme="light"] .clear-recents { border-color:#ebcbd2; color:#a83b57; background:#fff3f5 }
+  :root[data-theme="light"] .clear-recents:hover { background:#ffe9ed }
+  :root[data-theme="light"] .address-wrap { border-color:#ddd4da; background:#fff }
+  :root[data-theme="light"] .bookmarks-bar { background:#f4f2f4; border-bottom-color:#e3dce0 }
+  :root[data-theme="light"] .bookmarks-bar.collapsed { display:none }
+  :root[data-theme="light"] .stage { background:#f4f3f5 }
+  :root[data-theme="light"] .empty { background:radial-gradient(ellipse at 50% 47%,#fff 0,#f7f5f7 55%,#f0eef1 100%) }
+  :root[data-theme="light"] .home-section-head { color:#302c30 }
+  :root[data-theme="light"] .home-kicker { color:#bd405c }
+  :root[data-theme="light"] .privacy-points span { border-color:#e5dce0; color:#716a70; background:#fff }
+  :root[data-theme="light"] .privacy-points b { color:#bd405c }
+  :root[data-theme="light"] .home-section-head small { border-color:#e8cbd2; color:#bd405c }
+  :root[data-theme="light"] .home-card { border-color:#e5dce0; background:#fff }
+  :root[data-theme="light"] .home-card:hover { border-color:#d99a9f; background:#fff7f8 }
+  :root[data-theme="light"] .below { background:#f6f4f6; border-top-color:#e2d9de }
+  :root[data-theme="light"] .active-tab-status { color:#302c30 }
+  :root[data-theme="light"] .tab-count-status { border-color:#e5dce0; color:#777078 }
+  @media(prefers-reduced-motion:reduce) { .active-dot { animation:none } }
+  @media(max-width:700px) {
+    body { padding:5px }
+    .browser { border-radius:12px }
+    .tabstrip { min-height:46px; padding-inline:8px; gap:4px }
+    .window-brand { margin-right:3px }
+    .traffic { margin-right:3px }
+    .chrome { gap:7px; padding-inline:8px; min-height:55px }
+    .nav { gap:0 }
+    .nav button { width:29px; height:29px }
+    .theme-toggle,.fullscreen-toggle { width:30px; height:30px }
+    .settings-button { width:30px; height:30px }
+    .address-wrap { padding-inline:10px; gap:8px }
+    .below { padding-inline:11px }
+  }
+  @media(max-width:430px) {
+    .traffic { display:none }
+    .window-brand { gap:5px; margin-left:1px; font-size:10px }
+    .window-brand span { width:20px; height:20px }
+    .privacy-points { gap:5px }
+    .privacy-points span { padding:5px 7px }
+    .tab { min-width:112px; max-width:145px; height:34px; padding-inline:8px }
+    .chrome { gap:5px }
+    .nav button { width:25px; height:28px }
+    .nav button svg { width:14px; height:14px }
+    .address-wrap { padding-inline:8px; gap:6px }
+    .bookmark-toggle { width:21px; height:21px }
+    .theme-toggle,.fullscreen-toggle { width:28px; height:28px }
+    .settings-button { width:28px; height:28px }
+    .below-left span { font-size:10px }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <main>
+    <section class="browser" aria-label="Website preview">
+      <div class="tabstrip" id="tabstrip" role="tablist" aria-label="Browser tabs">
+        <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div><div class="window-brand"><span>F</span>Frame</div>
+      </div>
+      <div class="chrome">
+        <div class="nav" role="group" aria-label="Browser navigation">
+          <button id="goBack" type="button" aria-label="Go back" title="Go back" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m15 18-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button id="goForward" type="button" aria-label="Go forward" title="Go forward" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 18 6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button id="reload" type="button" aria-label="Reload page" title="Reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 11a8 8 0 0 0-14-5L4 8m0-5v5h5m-5 5a8 8 0 0 0 14 5l2-2m0 5v-5h-5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <form id="loadForm" style="display:contents">
+          <div class="address-wrap"><span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><input id="url" type="text" inputmode="url" autocomplete="url" placeholder="Enter a website URL" aria-label="Website URL"><span class="replay-cursor" aria-hidden="true"></span><button class="bookmark-toggle" id="bookmarkCurrent" type="button" aria-label="Bookmark this page" aria-pressed="false" disabled><svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+        </form>
+        <button class="fullscreen-toggle" id="fullscreenToggle" type="button" aria-label="Enter fullscreen" title="Enter fullscreen"><svg class="enter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg><svg class="exit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m13-5v3a2 2 0 0 0 2 2h3M3 16h3a2 2 0 0 1 2 2v3m13-5h-3a2 2 0 0 0-2 2v3"/></svg></button>
+        <button class="settings-button" id="settingsButton" type="button" aria-label="Open settings in a new tab" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 2.8h5l.6 2.1a7.8 7.8 0 0 1 1.5.9l2.2-.7 2.5 4.3-1.6 1.6v2l1.6 1.6-2.5 4.3-2.2-.7a7.8 7.8 0 0 1-1.5.9l-.6 2.1h-5l-.6-2.1a7.8 7.8 0 0 1-1.5-.9l-2.2.7-2.5-4.3 1.6-1.6v-2L2.7 9.4l2.5-4.3 2.2.7a7.8 7.8 0 0 1 1.5-.9z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.1"/></svg><span class="settings-badge" id="settingsBadge" aria-hidden="true" hidden></span></button>
+        <div class="settings-panel" id="settingsPanel" hidden>
+          <header class="settings-heading"><div class="settings-title-block"><span class="settings-eyebrow">FRAME · PREFERENCES</span><h2>Settings</h2><p class="settings-intro">Personalize your private browsing space.</p></div><button class="settings-close" id="settingsClose" type="button" aria-label="Close settings">×</button></header>
+          <nav class="settings-nav" role="tablist" aria-label="Settings categories" aria-orientation="vertical">
+            <button class="settings-nav-item active" id="settingsTabAppearance" type="button" role="tab" aria-selected="true" aria-controls="settingsPaneAppearance" data-settings-tab="appearance"><span class="settings-nav-icon">◐</span><span>Appearance</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
+            <button class="settings-nav-item" id="settingsTabPrivacy" type="button" role="tab" aria-selected="false" aria-controls="settingsPanePrivacy" data-settings-tab="privacy" tabindex="-1"><span class="settings-nav-icon">◇</span><span>Privacy & session</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
+            <button class="settings-nav-item" id="settingsTabUpdates" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneUpdates" data-settings-tab="updates" tabindex="-1"><span class="settings-nav-icon">↻</span><span>Software update</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
+            <button class="settings-nav-item" id="settingsTabShortcuts" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneShortcuts" data-settings-tab="shortcuts" tabindex="-1"><span class="settings-nav-icon">⌘</span><span>Shortcuts</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
+          </nav>
+          <div class="settings-content">
+            <section class="settings-category active" id="settingsPaneAppearance" role="tabpanel" aria-labelledby="settingsTabAppearance" data-settings-pane="appearance">
+              <div class="settings-category-heading"><span class="settings-eyebrow">PERSONALIZE</span><h3>Appearance</h3><p>Adjust how Frame looks and what stays within reach.</p></div>
+              <div class="settings-card"><div class="settings-row"><div><strong>Color theme</strong><small>Choose dark or light appearance</small></div><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode" title="Switch to light mode"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.5 15.3A8.5 8.5 0 0 1 8.7 3.5 8.5 8.5 0 1 0 20.5 15.3Z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+              <div class="settings-row"><div><strong>Bookmarks bar</strong><small>Show saved links below the address bar</small></div><button class="setting-switch" id="bookmarkBarToggle" type="button" role="switch" aria-checked="true"><span></span></button></div></div>
+            </section>
+            <section class="settings-category" id="settingsPanePrivacy" role="tabpanel" aria-labelledby="settingsTabPrivacy" data-settings-pane="privacy" hidden>
+              <div class="settings-category-heading"><span class="settings-eyebrow">PRIVATE BY DEFAULT</span><h3>Privacy & session</h3><p>Your browsing history stays in this session and is cleared when you close Frame. Websites may still store their own cookies.</p></div>
+              <div class="settings-card"><div class="settings-row"><div><strong>Recently visited pages</strong><small>Only available during this session</small></div><button class="clear-recents" id="clearRecents" type="button">Clear recent pages</button></div></div>
+            </section>
+            <section class="settings-category" id="settingsPaneUpdates" role="tabpanel" aria-labelledby="settingsTabUpdates" data-settings-pane="updates" hidden>
+              <div class="settings-category-heading"><span class="settings-eyebrow">FRAME VERSION 1.0.0</span><h3>Software update</h3><p>Check whether a newer version is available.</p></div>
+              <div class="settings-card"><div class="update-settings-head"><div><strong>Update status</strong><small id="updateSettingsStatus">Checking for updates…</small></div><span class="test-mode-badge">TEST MODE</span></div>
+                <button class="check-updates-button" id="checkUpdates" type="button">Check for updates</button>
+                <div class="update-test-controls"><label class="test-scenario-label" for="updateScenario">Test scenario</label><select id="updateScenario" class="test-scenario"><option value="available">Update available</option><option value="current">Up to date</option><option value="offline">Offline</option><option value="invalid">Invalid package</option><option value="write-failed">Install permission failed</option></select><p class="test-mode-note">Test mode only. No files are modified.</p></div>
+              </div>
+            </section>
+            <section class="settings-category" id="settingsPaneShortcuts" role="tabpanel" aria-labelledby="settingsTabShortcuts" data-settings-pane="shortcuts" hidden>
+              <div class="settings-category-heading"><span class="settings-eyebrow">QUICK ACTIONS</span><h3>Keyboard shortcuts</h3><p>Use these shortcuts to move around Frame faster.</p></div>
+              <div class="settings-card settings-shortcuts"><div><span>New tab</span><kbd>⌘ / Ctrl&nbsp; T</kbd></div><div><span>Close tab</span><kbd>⌘ / Ctrl&nbsp; W</kbd></div><div><span>Address bar</span><kbd>⌘ / Ctrl&nbsp; L</kbd></div><div><span>Bookmark page</span><kbd>⌘ / Ctrl&nbsp; D</kbd></div><div><span>Toggle bookmarks bar</span><kbd>⌘ / Ctrl&nbsp; ⇧ B</kbd></div></div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <div class="bookmarks-bar" aria-label="Bookmarks bar"><div class="bookmark-items" id="bookmarkItems"><span class="bookmark-empty">Saved pages will appear here</span></div></div>
+      <div class="stage" id="stage"></div>
+      <div class="below"><div class="below-left"><span class="active-dot" aria-hidden="true"></span><span class="active-tab-status" id="activeTabStatus">New tab</span><span class="tab-count-status" id="tabCountStatus">1 tab open</span></div><div class="below-right"><button id="help" type="button">Can’t load?</button></div></div>
+    </section>
+  </main>
+</div>
+<div class="update-overlay" id="updateOverlay" hidden>
+  <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
+    <button class="update-close" id="updateClose" type="button" aria-label="Close update window">×</button>
+    <div class="update-app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 7v5h-5M4 17v-5h5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.6 9a7 7 0 0 1 11.8-2L20 9M4 15l2.6 2a7 7 0 0 0 11.8-2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="update-kicker">FRAME SOFTWARE UPDATE <span>TEST MODE</span></div>
+    <h2 id="updateTitle">Checking for updates</h2>
+    <p class="update-summary" id="updateSummary">Looking for a newer version…</p>
+    <div class="update-version-row" id="updateVersionRow" hidden><span id="updateCurrentVersion"></span><span class="version-arrow">→</span><strong id="updateNewVersion"></strong></div>
+    <div class="release-notes" id="releaseNotes" hidden><div class="release-notes-head"><strong>What’s new</strong><span id="releaseDate"></span></div><p id="releaseBody"></p></div>
+    <div class="update-progress-wrap" id="updateProgressWrap" hidden><div class="update-progress-label"><span id="updateProgressLabel">Preparing update…</span><span id="updateProgressPercent">0%</span></div><div class="update-progress-track"><span id="updateProgressBar"></span></div></div>
+    <div class="update-error" id="updateError" hidden></div>
+    <div class="update-actions"><button class="update-later" id="updateLater" type="button">Later</button><button class="update-now" id="updateNow" type="button" hidden>Update now</button></div>
+  </section>
+</div>
+<div class="context-menu" id="contextMenu" role="menu" aria-label="Browser actions"></div>
+<script>
+(() => {
+  // Update test configuration. Switch to a GitHub release source after the app has a public test repository.
+  const UPDATE_CONFIG = Object.freeze({ mode:'mock', currentVersion:document.querySelector('meta[name="app-version"]').content });
+  const form = document.querySelector('#loadForm');
+  const input = document.querySelector('#url');
+  const strip = document.querySelector('#tabstrip');
+  const stage = document.querySelector('#stage');
+  const bookmarkToggle = document.querySelector('#bookmarkCurrent');
+  const addressWrap = document.querySelector('.address-wrap');
+  const replayCursor = document.querySelector('.replay-cursor');
+  const bookmarkItems = document.querySelector('#bookmarkItems');
+  const themeToggle = document.querySelector('#themeToggle');
+  const contextMenu = document.querySelector('#contextMenu');
+  let contextTarget = null;
+  const root = document.documentElement;
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  const backButton = document.querySelector('#goBack');
+  const forwardButton = document.querySelector('#goForward');
+  const activeTabStatus = document.querySelector('#activeTabStatus');
+  const tabCountStatus = document.querySelector('#tabCountStatus');
+  try { if (localStorage.getItem('frame-theme') === 'light') root.dataset.theme = 'light'; } catch {}
+  function syncThemeToggle() {
+    const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    themeToggle.setAttribute('aria-label', `Switch to ${nextTheme} mode`);
+    themeToggle.title = `Switch to ${nextTheme} mode`;
+    themeColorMeta.content = root.dataset.theme === 'dark' ? '#08090b' : '#f3f2f4';
+  }
+  themeToggle.addEventListener('click', () => {
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('frame-theme', root.dataset.theme); } catch {}
+    syncThemeToggle();
+  });
+  syncThemeToggle();
+
+  const fullscreenToggle = document.querySelector('#fullscreenToggle');
+  const settingsButton = document.querySelector('#settingsButton');
+  const settingsBadge = document.querySelector('#settingsBadge');
+  const settingsPanel = document.querySelector('#settingsPanel');
+  const settingsClose = document.querySelector('#settingsClose');
+  const bookmarkBarToggle = document.querySelector('#bookmarkBarToggle');
+  const bookmarksBar = document.querySelector('.bookmarks-bar');
+  const clearRecentsButton = document.querySelector('#clearRecents');
+  const updateScenario = document.querySelector('#updateScenario');
+  const checkUpdatesButton = document.querySelector('#checkUpdates');
+  const updateSettingsStatus = document.querySelector('#updateSettingsStatus');
+  const updateOverlay = document.querySelector('#updateOverlay');
+  const updateClose = document.querySelector('#updateClose');
+  const updateLater = document.querySelector('#updateLater');
+  const updateNow = document.querySelector('#updateNow');
+  const updateTitle = document.querySelector('#updateTitle');
+  const updateSummary = document.querySelector('#updateSummary');
+  const updateVersionRow = document.querySelector('#updateVersionRow');
+  const updateCurrentVersion = document.querySelector('#updateCurrentVersion');
+  const updateNewVersion = document.querySelector('#updateNewVersion');
+  const releaseNotes = document.querySelector('#releaseNotes');
+  const releaseDate = document.querySelector('#releaseDate');
+  const releaseBody = document.querySelector('#releaseBody');
+  const updateProgressWrap = document.querySelector('#updateProgressWrap');
+  const updateProgressLabel = document.querySelector('#updateProgressLabel');
+  const updateProgressPercent = document.querySelector('#updateProgressPercent');
+  const updateProgressBar = document.querySelector('#updateProgressBar');
+  const updateError = document.querySelector('#updateError');
+  let updateState = 'idle';
+  let updateTimer = null;
+  let checkedRelease = null;
+  function syncFullscreenToggle() {
+    const active = Boolean(document.fullscreenElement);
+    fullscreenToggle.classList.toggle('is-fullscreen', active);
+    fullscreenToggle.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
+    fullscreenToggle.title = active ? 'Exit fullscreen' : 'Enter fullscreen';
+  }
+  async function toggleFullscreen() {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else {
+        const tab = tabs.find(item => item.id === activeId);
+        if (tab?.url && tab.frame.requestFullscreen) await tab.frame.requestFullscreen();
+      }
+    } catch {}
+  }
+  fullscreenToggle.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', syncFullscreenToggle);
+  syncFullscreenToggle();
+
+  function restoreSettingsPanel(tab) {
+    if (!tab?.isSettings) return;
+    tab.isSettings = false;
+    settingsPanel.classList.remove('settings-page');
+    settingsPanel.hidden = true;
+    document.querySelector('.chrome').append(settingsPanel);
+  }
+  function openSettingsTab() {
+    const existing = tabs.find(item => item.isSettings);
+    if (existing) { activate(existing.id); return; }
+    const tab = makeTab();
+    tab.isSettings = true;
+    tab.title = 'Settings';
+    tab.button.querySelector('.tab-title').textContent = tab.title;
+    tab.homeRecent = null;
+    tab.pane.classList.add('settings-tab');
+    const home = tab.pane.querySelector('.empty');
+    home.classList.add('settings-page-wrap');
+    home.replaceChildren(settingsPanel);
+    settingsPanel.classList.add('settings-page');
+    settingsPanel.hidden = false;
+    settingsButton.setAttribute('aria-label', settingsBadge.hidden ? 'Open settings in a new tab' : 'Open settings in a new tab, update available');
+    activate(tab.id);
+  }
+  settingsButton.addEventListener('click', openSettingsTab);
+  settingsClose.addEventListener('click', () => {
+    const tab = tabs.find(item => item.isSettings);
+    if (tab) closeTab(tab.id);
+  });
+  const settingsNav = settingsPanel.querySelector('.settings-nav');
+  function selectSettingsCategory(name, focus = false) {
+    const selectedButton = settingsNav.querySelector(`[data-settings-tab="${name}"]`);
+    if (!selectedButton) return;
+    settingsNav.querySelectorAll('[data-settings-tab]').forEach(button => {
+      const selected = button === selectedButton;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-selected', String(selected));
+      button.tabIndex = selected ? 0 : -1;
+    });
+    settingsPanel.querySelectorAll('[data-settings-pane]').forEach(pane => {
+      const selected = pane.dataset.settingsPane === name;
+      pane.hidden = !selected;
+      pane.classList.toggle('active', selected);
+    });
+    if (focus) selectedButton.focus();
+  }
+  settingsNav.addEventListener('click', event => {
+    const button = event.target.closest('[data-settings-tab]');
+    if (button) selectSettingsCategory(button.dataset.settingsTab);
+  });
+  settingsNav.addEventListener('keydown', event => {
+    const buttons = [...settingsNav.querySelectorAll('[data-settings-tab]')];
+    const current = buttons.indexOf(event.target.closest('[data-settings-tab]'));
+    if (current < 0) return;
+    let next = current;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') next = (current + 1) % buttons.length;
+    else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') next = (current - 1 + buttons.length) % buttons.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = buttons.length - 1;
+    else return;
+    event.preventDefault();
+    selectSettingsCategory(buttons[next].dataset.settingsTab, true);
+  });
+  bookmarkBarToggle.addEventListener('click', () => {
+    const visible = bookmarksBar.classList.toggle('collapsed') === false;
+    bookmarkBarToggle.setAttribute('aria-checked', String(visible));
+  });
+  clearRecentsButton.addEventListener('click', () => {
+    recentPages = [];
+    tabs.forEach(renderHome);
+  });
+
+  function parseSemver(value) {
+    const match = /^(?:v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/.exec(String(value).trim());
+    if (!match) return null;
+    return { core:match.slice(1,4).map(Number), prerelease:match[4] ? match[4].split('.') : [] };
+  }
+  function compareSemver(a, b) {
+    const left = parseSemver(a), right = parseSemver(b);
+    if (!left || !right) throw new Error('Version must use semantic version format, such as 1.2.3.');
+    for (let i=0; i<3; i++) if (left.core[i] !== right.core[i]) return left.core[i] > right.core[i] ? 1 : -1;
+    if (!left.prerelease.length || !right.prerelease.length) return left.prerelease.length === right.prerelease.length ? 0 : left.prerelease.length ? -1 : 1;
+    const length = Math.max(left.prerelease.length, right.prerelease.length);
+    for (let i=0; i<length; i++) {
+      if (left.prerelease[i] === undefined) return -1;
+      if (right.prerelease[i] === undefined) return 1;
+      const l=left.prerelease[i], r=right.prerelease[i];
+      if (l === r) continue;
+      const ln=/^\d+$/.test(l), rn=/^\d+$/.test(r);
+      if (ln && rn) return Number(l) > Number(r) ? 1 : -1;
+      if (ln !== rn) return ln ? -1 : 1;
+      return l > r ? 1 : -1;
+    }
+    return 0;
+  }
+  function mockReleaseForScenario(scenario) {
+    if (scenario === 'current') return { tag_name:'v' + UPDATE_CONFIG.currentVersion, body:'You are already running the newest test release.', published_at:'2026-11-03T12:00:00Z', html:'<!doctype html><html><head><meta name="app-version" content="' + UPDATE_CONFIG.currentVersion + '"><title>Frame</title></head><body>Current test release</body></html>' };
+    if (scenario === 'invalid') return { tag_name:'v1.2.0', body:'This package has a mismatched version and must be rejected.', published_at:'2026-11-03T12:00:00Z', html:'<!doctype html><html><head><meta name="app-version" content="0.0.1"></head><body>Invalid package</body></html>' };
+    return { tag_name:'v1.1.0', body:'A calmer browser frame, clearer privacy details, and smoother tab navigation.', published_at:'2026-11-03T12:00:00Z', html:'<!doctype html><html><head><meta name="app-version" content="1.1.0"><title>Frame</title></head><body>Mock update package</body></html>' };
+  }
+  function resetUpdateDialog() {
+    updateVersionRow.hidden = true;
+    releaseNotes.hidden = true;
+    updateProgressWrap.hidden = true;
+    updateError.hidden = true;
+    updateNow.hidden = true;
+    updateLater.disabled = false;
+    updateLater.textContent = 'Later';
+    updateNow.textContent = 'Update now';
+    updateProgressBar.style.width = '0%';
+    updateProgressPercent.textContent = '0%';
+    updateProgressLabel.textContent = 'Preparing update…';
+  }
+  function openUpdateDialog() {
+    clearInterval(updateTimer);
+    resetUpdateDialog();
+    updateOverlay.hidden = false;
+  }
+  function closeUpdateDialog() {
+    clearInterval(updateTimer);
+    updateTimer = null;
+    updateOverlay.hidden = true;
+  }
+  function setUpdateBadge(available) {
+    settingsBadge.hidden = !available;
+    settingsButton.setAttribute('aria-label', available ? 'Open settings in a new tab, update available' : 'Open settings in a new tab');
+    settingsButton.title = available ? 'Settings · update available' : 'Settings';
+  }
+  function updateVersionDetails(release) {
+    const version = release.tag_name.replace(/^v/,'');
+    updateVersionRow.hidden = false;
+    updateCurrentVersion.textContent = 'v' + UPDATE_CONFIG.currentVersion;
+    updateNewVersion.textContent = 'v' + version;
+    releaseNotes.hidden = false;
+    releaseDate.textContent = new Date(release.published_at).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+    releaseBody.textContent = release.body;
+  }
+  function setUpdateError(title, message, kind='error') {
+    updateState = kind;
+    updateTitle.textContent = title;
+    updateSummary.textContent = 'The original app file has not been changed.';
+    updateError.textContent = message;
+    updateError.hidden = false;
+    updateProgressWrap.hidden = true;
+    updateNow.hidden = true;
+    updateLater.textContent = 'Close';
+  }
+  async function checkForUpdates(showDialog=false) {
+    if (showDialog) openUpdateDialog();
+    setUpdateBadge(false);
+    updateState = 'checking';
+    updateSettingsStatus.textContent = 'Checking for updates…';
+    if (showDialog) {
+      resetUpdateDialog();
+      updateTitle.textContent = 'Checking for updates';
+      updateSummary.textContent = 'Comparing the installed version with the test release…';
+    }
+    await new Promise(resolve => setTimeout(resolve, 450));
+    const scenario = updateScenario.value;
+    if (scenario === 'offline') {
+      updateSettingsStatus.textContent = 'Could not connect';
+      if (showDialog) setUpdateError('Can’t check right now','The test connection is offline. Check your connection and try again.');
+      return;
+    }
+    const release = mockReleaseForScenario(scenario);
+    let downloadedVersion;
+    try {
+      if (!release.tag_name || !parseSemver(release.tag_name)) throw new Error('The release does not contain a valid semantic version.');
+      downloadedVersion = release.html.match(/<meta\s+name=["']app-version["']\s+content=["']([^"']+)["']/i)?.[1];
+      if (!/^<!doctype html>/i.test(release.html.trim()) || !downloadedVersion) throw new Error('The downloaded package is not a valid app HTML file.');
+      if (downloadedVersion !== release.tag_name.replace(/^v/,'')) throw new Error('The package version does not match the release tag.');
+      if (compareSemver(downloadedVersion, UPDATE_CONFIG.currentVersion) < 0) throw new Error('This release is older than the installed app and was rejected.');
+    } catch (error) {
+      updateSettingsStatus.textContent = 'Package rejected';
+      if (showDialog) setUpdateError('Update could not be verified',error.message,'invalid');
+      return;
+    }
+    checkedRelease = release;
+    if (compareSemver(downloadedVersion, UPDATE_CONFIG.currentVersion) <= 0) {
+      updateSettingsStatus.textContent = 'You’re up to date · v' + UPDATE_CONFIG.currentVersion;
+      if (showDialog) {
+        updateState = 'current';
+        updateTitle.textContent = 'You’re up to date';
+        updateSummary.textContent = 'Frame v' + UPDATE_CONFIG.currentVersion + ' is the latest test release.';
+        updateVersionDetails(release);
+        updateNow.hidden = true;
+        updateLater.textContent = 'Done';
+      }
+      return;
+    }
+    updateSettingsStatus.textContent = 'Update available · v' + downloadedVersion;
+    setUpdateBadge(true);
+    if (showDialog) {
+      updateState = 'available';
+      updateTitle.textContent = 'Update available';
+      updateSummary.textContent = 'A newer version of Frame is ready to review.';
+      updateVersionDetails(release);
+      updateNow.hidden = false;
+    }
+  }
+  function runMockInstall() {
+    if (updateState === 'test-complete') { closeUpdateDialog(); return; }
+    if (updateState !== 'available' || !checkedRelease) return;
+    if (updateScenario.value === 'write-failed') {
+      setUpdateError('Install permission failed','Simulated write permission was denied. Your original HTML file was left untouched.','install-failed');
+      return;
+    }
+    updateState = 'installing';
+    updateTitle.textContent = 'Preparing your update';
+    updateSummary.textContent = 'Downloading and validating the test package. No files will be written.';
+    updateProgressWrap.hidden = false;
+    updateError.hidden = true;
+    updateNow.hidden = true;
+    updateLater.disabled = true;
+    updateProgressLabel.textContent = 'Downloading update…';
+    let progress=0;
+    updateTimer=setInterval(() => {
+      progress=Math.min(100,progress+10);
+      updateProgressBar.style.width=progress+'%';
+      updateProgressPercent.textContent=progress+'%';
+      if (progress >= 70) updateProgressLabel.textContent='Validating HTML package…';
+      if (progress >= 100) {
+        clearInterval(updateTimer);
+        updateTimer=null;
+        updateState='test-complete';
+        updateTitle.textContent='Update test complete';
+        updateSummary.textContent='The package passed validation. Test mode skipped writing to disk.';
+        updateProgressLabel.textContent='Validated · original file unchanged';
+        updateLater.disabled=false;
+        updateLater.textContent='Done';
+        updateNow.hidden=false;
+        updateNow.textContent='Close';
+      }
+    },90);
+  }
+  checkUpdatesButton.addEventListener('click', () => checkForUpdates(true));
+  updateScenario.addEventListener('change', () => {
+    setUpdateBadge(false);
+    updateSettingsStatus.textContent='Ready to check · ' + updateScenario.options[updateScenario.selectedIndex].text;
+  });
+  updateNow.addEventListener('click', runMockInstall);
+  updateLater.addEventListener('click', closeUpdateDialog);
+  updateClose.addEventListener('click', closeUpdateDialog);
+  updateOverlay.addEventListener('click', event => { if (event.target === updateOverlay && updateState !== 'installing') closeUpdateDialog(); });
+
+  function hideContextMenu() {
+    contextMenu.classList.remove('open');
+  }
+
+  function showContextMenu(event) {
+    event.preventDefault();
+    const target = event.target;
+    const tabButton = target.closest('.tab');
+    const bookmarkButton = target.closest('.bookmark-link');
+    const currentTab = tabButton ? tabs.find(item => item.button === tabButton) : tabs.find(item => item.id === activeId);
+    const savedBookmark = bookmarkButton ? bookmarks.find(item => item.title === bookmarkButton.querySelector('.bookmark-label')?.textContent && item.url === bookmarkButton.title) : null;
+    const kind = tabButton ? 'tab' : bookmarkButton ? 'bookmark' : target.closest('.address-wrap') ? 'address' : target.closest('.stage') ? 'page' : 'browser';
+    contextTarget = { kind, tab: currentTab, bookmark: savedBookmark };
+    const groups = {
+      tab: [[['↻', 'Reload this tab', 'reload', !currentTab?.url]], [['＋', 'New tab', 'new-tab'], ['×', 'Close this tab', 'close-tab', tabs.length < 2]]],
+      bookmark: [[['↗', 'Open bookmark', 'open-bookmark'], ['−', 'Remove bookmark', 'remove-bookmark']], [['＋', 'New tab', 'new-tab']]],
+      address: [[['↳', 'Paste and go', 'paste-go'], ['▣', 'Select all', 'select-all']], [['☆', 'Bookmark current page', 'bookmark', !currentTab?.url]]],
+      page: [[['↻', 'Reload preview', 'reload', !currentTab?.url], ['☆', bookmarks.some(item => item.url === currentTab?.url) ? 'Remove bookmark' : 'Bookmark this page', 'bookmark', !currentTab?.url]], [['＋', 'New tab', 'new-tab']]],
+      browser: [[['↻', 'Reload preview', 'reload', !currentTab?.url]], [['＋', 'New tab', 'new-tab'], ['⛶', document.fullscreenElement ? 'Exit fullscreen' : 'Enter fullscreen', 'fullscreen'], ['◐', 'Switch appearance', 'theme']]]
+    };
+    contextMenu.replaceChildren();
+    groups[kind].forEach((group, index) => {
+      if (index) contextMenu.append(document.createElement('hr'));
+      group.forEach(([icon, label, action, disabled]) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.role = 'menuitem';
+        button.dataset.action = action;
+        button.disabled = Boolean(disabled);
+        const glyph = document.createElement('span');
+        glyph.textContent = icon;
+        button.append(glyph, document.createTextNode(label));
+        contextMenu.append(button);
+      });
+    });
+    const menuWidth = 204;
+    const x = Math.min(event.clientX, window.innerWidth - menuWidth - 8);
+    contextMenu.style.left = `${Math.max(8, x)}px`;
+    contextMenu.style.top = '8px';
+    contextMenu.classList.add('open');
+    const y = Math.min(event.clientY, window.innerHeight - contextMenu.offsetHeight - 8);
+    contextMenu.style.top = `${Math.max(8, y)}px`;
+  }
+  document.querySelector('.browser').addEventListener('contextmenu', showContextMenu);
+
+  document.addEventListener('pointerdown', event => {
+    if (!contextMenu.contains(event.target)) hideContextMenu();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { hideContextMenu(); if (!updateOverlay.hidden) closeUpdateDialog(); }
+    if (!(event.metaKey || event.ctrlKey)) return;
+    const key = event.key.toLowerCase();
+    if (key === 't') { event.preventDefault(); makeTab(); }
+    else if (key === 'w') { event.preventDefault(); if (tabs.length > 1) closeTab(activeId); }
+    else if (key === 'l') { event.preventDefault(); input.focus(); input.select(); }
+    else if (key === 'r') { event.preventDefault(); const tab = tabs.find(item => item.id === activeId); if (tab?.url) startLoad(tab, tab.url); }
+    else if (key === 'd') { event.preventDefault(); toggleBookmark(tabs.find(item => item.id === activeId)); }
+    else if (key === 'b' && event.shiftKey) { event.preventDefault(); document.querySelector('.bookmarks-bar').classList.toggle('collapsed'); }
+  });
+  contextMenu.addEventListener('click', event => {
+    const action = event.target.closest('button')?.dataset.action;
+    const tab = contextTarget?.tab;
+    if (!action) return;
+    hideContextMenu();
+    if (action === 'reload' && tab?.url) startLoad(tab, tab.url);
+    if (action === 'bookmark' && tab?.url) toggleBookmark(tab);
+    if (action === 'new-tab') makeTab();
+    if (action === 'close-tab' && tab && tabs.length > 1) closeTab(tab.id);
+    if (action === 'theme') themeToggle.click();
+    if (action === 'fullscreen') toggleFullscreen();
+    if (action === 'select-all') input.select();
+    if (action === 'paste-go') navigator.clipboard?.readText().then(text => { if (text?.trim()) { input.value = text.trim(); form.requestSubmit(); } }).catch(() => {});
+    if (action === 'open-bookmark' && contextTarget?.bookmark) { input.value = contextTarget.bookmark.url; form.requestSubmit(); }
+    if (action === 'remove-bookmark' && contextTarget?.bookmark) {
+      bookmarks = bookmarks.filter(item => item.url !== contextTarget.bookmark.url);
+      saveBookmarks(); renderBookmarks(); tabs.forEach(renderHome); syncBookmarkToggle();
+    }
+  });
+  const bookmarkStorageKey = 'frame-bookmarks-v1';
+  const tabs = [];
+  let bookmarks = [];
+  let recentPages = [];
+  try { const stored = JSON.parse(localStorage.getItem(bookmarkStorageKey) || '[]'); if (Array.isArray(stored)) bookmarks = stored.filter(item => item && typeof item.url === 'string' && typeof item.title === 'string'); } catch {}
+  let activeId = null;
+  let nextId = 1;
+  let addressTypingTimer = null;
+
+  function replayAddressTyping(text) {
+    clearInterval(addressTypingTimer);
+    addressWrap.classList.remove('replay-finished');
+    addressWrap.classList.add('replaying');
+    input.value = '';
+    let position = 0;
+    const measure = document.createElement('canvas').getContext('2d');
+    measure.font = getComputedStyle(input).font;
+    addressTypingTimer = setInterval(() => {
+      input.value = text.slice(0, ++position);
+      const inputRect = input.getBoundingClientRect();
+      const wrapRect = addressWrap.getBoundingClientRect();
+      replayCursor.style.left = `${inputRect.left - wrapRect.left + measure.measureText(input.value).width + 1}px`;
+      if (position >= text.length) {
+        clearInterval(addressTypingTimer);
+        addressTypingTimer = null;
+        addressWrap.classList.remove('replaying');
+        addressWrap.classList.add('replay-finished');
+        setTimeout(() => {
+          addressWrap.classList.remove('replay-finished');
+          input.blur();
+        }, 240);
+      }
+    }, 12);
+  }
+
+  function stopAddressReplay() {
+    clearInterval(addressTypingTimer);
+    addressTypingTimer = null;
+    addressWrap.classList.remove('replaying', 'replay-finished');
+  }
+
+
+  function syncBookmarkToggle() {
+    const tab = tabs.find(item => item.id === activeId);
+    const saved = Boolean(tab?.url && bookmarks.some(item => item.url === tab.url));
+    bookmarkToggle.disabled = !tab?.url;
+    bookmarkToggle.classList.toggle('saved', saved);
+    bookmarkToggle.setAttribute('aria-pressed', String(saved));
+    bookmarkToggle.setAttribute('aria-label', saved ? 'Remove bookmark' : 'Bookmark this page');
+    bookmarkToggle.title = saved ? 'Remove bookmark' : 'Bookmark this page';
+  }
+
+  function saveBookmarks() {
+    try { localStorage.setItem(bookmarkStorageKey, JSON.stringify(bookmarks)); } catch {}
+  }
+
+  function renderBookmarks() {
+    bookmarkItems.replaceChildren();
+    if (!bookmarks.length) {
+      const empty = document.createElement('span');
+      empty.className = 'bookmark-empty';
+      empty.textContent = 'Saved pages will appear here';
+      bookmarkItems.append(empty);
+      return;
+    }
+    bookmarks.forEach(item => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'bookmark-link';
+      button.title = item.url;
+      const glyph = document.createElement('span');
+      glyph.className = 'bookmark-glyph';
+      glyph.setAttribute('aria-hidden', 'true');
+      glyph.textContent = '◆';
+      const label = document.createElement('span');
+      label.className = 'bookmark-label';
+      label.textContent = item.title;
+      button.append(glyph, label);
+      button.addEventListener('click', () => {
+        input.value = item.url;
+        form.requestSubmit();
+      });
+      bookmarkItems.append(button);
+    });
+  }
+
+  function makeHomeCard(item) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'home-card';
+    card.title = item.url;
+    const mark = document.createElement('span');
+    mark.className = 'home-card-mark';
+    mark.textContent = new URL(item.url).hostname.replace(/^www\./, '').slice(0, 1);
+    const copy = document.createElement('span');
+    copy.className = 'home-card-copy';
+    const title = document.createElement('span');
+    title.className = 'home-card-title';
+    title.textContent = item.title;
+    const url = document.createElement('span');
+    url.className = 'home-card-url';
+    url.textContent = new URL(item.url).hostname.replace(/^www\./, '');
+    copy.append(title, url);
+    card.append(mark, copy);
+    card.addEventListener('click', () => {
+      input.value = item.url;
+      form.requestSubmit();
+    });
+    return card;
+  }
+
+  function renderHome(tab) {
+    if (!tab?.homeRecent) return;
+    tab.homeRecent.replaceChildren();
+    const section = tab.pane.querySelector('.recent-section');
+    section.hidden = recentPages.length === 0;
+    tab.pane.querySelector('.recent-count').textContent = recentPages.length ? recentPages.length + ' recent' : '';
+    const recent = recentPages.slice(0, 4);
+    if (recent.length) recent.forEach(item => tab.homeRecent.append(makeHomeCard(item)));
+  }
+
+  function toggleBookmark(tab) {
+    if (!tab?.url) return;
+    const index = bookmarks.findIndex(item => item.url === tab.url);
+    if (index >= 0) bookmarks.splice(index, 1);
+    else bookmarks.push({ url: tab.url, title: tab.title });
+    saveBookmarks();
+    renderBookmarks();
+    tabs.forEach(renderHome);
+    if (tab.id === activeId) syncBookmarkToggle();
+  }
+
+  bookmarkToggle.addEventListener('click', () => toggleBookmark(tabs.find(item => item.id === activeId)));
+
+  function makeTab(url = '') {
+    const id = nextId++;
+    const tab = { id, url, title: url ? new URL(url).hostname.replace(/^www\./, '') : 'New tab', history:[], historyIndex:-1 };
+    tab.button = document.createElement('button');
+    tab.button.type = 'button';
+    tab.button.className = 'tab';
+    tab.button.setAttribute('role', 'tab');
+    tab.button.innerHTML = '<span class="favicon" aria-hidden="true"><img alt=""><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3"/><path d="M2 8h12M8 1.7c1.8 1.8 2.7 3.9 2.7 6.3S9.8 12.5 8 14.3C6.2 12.5 5.3 10.4 5.3 8S6.2 3.5 8 1.7Z"/></svg></span><span class="tab-title"></span><span class="tab-close" role="button" aria-label="Close tab">×</span>';
+    tab.favicon = tab.button.querySelector('.favicon');
+    tab.faviconImage = tab.favicon.querySelector('img');
+    tab.faviconImage.addEventListener('load', () => tab.favicon.classList.add('has-image'));
+    tab.faviconImage.addEventListener('error', () => tab.favicon.classList.remove('has-image'));
+    tab.button.querySelector('.tab-title').textContent = tab.title;
+    tab.button.addEventListener('click', event => {
+      if (event.target.closest('.tab-close')) { event.stopPropagation(); event.preventDefault(); tab.button.classList.add('closing'); const finishClose = animationEvent => { if (animationEvent.animationName === 'tab-close') { tab.button.removeEventListener('animationend', finishClose); closeTab(id); } }; tab.button.addEventListener('animationend', finishClose); }
+      else activate(id);
+    });
+    tab.pane = document.createElement('div');
+    tab.pane.className = 'tab-pane';
+    tab.pane.innerHTML = '<div class="empty"><div class="home-content"><div class="home-intro"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M9 14l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="home-kicker"><span></span>PRIVATE SESSION</div><h2>Browse privately. Explore freely.</h2><p>Browsing history stays in this session and is not saved. Embedded sites may still use their own cookies.</p><div class="privacy-points"><span><b>01</b>No saved history</span><span><b>02</b>No referrer</span><span><b>03</b>Session recents</span></div></div><div class="home-sections"><section class="home-section recent-section" hidden><div class="home-section-head">Jump back in <small class="recent-count"></small></div><div class="home-grid home-recent"></div></section></div></div></div><iframe title="Website preview" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads" allow="fullscreen"></iframe><div class="embed-error" role="alert"><div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01" stroke-linecap="round"/></svg></div><h2>This page can’t be embedded</h2><p>The site may block iframe previews or have taken too long to respond.</p><button class="retry" type="button">Try again</button></div>';
+    tab.homeRecent = tab.pane.querySelector('.home-recent');
+        renderHome(tab);
+    tab.frame = tab.pane.querySelector('iframe');
+    tab.frame.addEventListener('error', () => showEmbedError(tab));
+    tab.pane.querySelector('.retry').addEventListener('click', () => { if (tab.url) startLoad(tab, tab.url); });
+    tab.frame.addEventListener('load', () => {
+      if (!tab.loading) return;
+      tab.loading = false;
+      clearTimeout(tab.loadingTimer);
+      if (activeId === tab.id) {
+        stage.classList.remove('loading');
+        stage.classList.add('loaded');
+        document.querySelector('#reload').classList.remove('is-loading');
+      }
+    });
+    tabs.push(tab);
+    strip.insertBefore(tab.button, strip.querySelector('.new-tab'));
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      tab.button.animate(
+        [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }],
+        { duration: 220, easing: 'cubic-bezier(.22,.61,.36,1)' }
+      );
+    }
+    stage.append(tab.pane);
+    activate(id);
+    return tab;
+  }
+
+  function activate(id) {
+    stopAddressReplay();
+    activeId = id;
+    const tab = tabs.find(item => item.id === id);
+    tabs.forEach(item => {
+      const selected = item.id === id;
+      item.button.classList.toggle('active', selected);
+      item.button.setAttribute('aria-selected', String(selected));
+      item.pane.classList.toggle('active', selected);
+    });
+    input.value = tab?.url || '';
+    stage.classList.toggle('loading', Boolean(tab?.loading));
+    stage.classList.toggle('loaded', Boolean(tab?.url && !tab?.loading && !tab?.pane.classList.contains('failed')));
+    document.querySelector('#reload').classList.toggle('is-loading', Boolean(tab?.loading));
+    syncBookmarkToggle();
+    syncNavigationButtons(tab);
+    syncFooterStatus(tab);
+  }
+
+  function syncFooterStatus(tab = tabs.find(item => item.id === activeId)) {
+    const title = tab?.title || 'New tab';
+    const count = tabs.length + (tabs.length === 1 ? ' tab open' : ' tabs open');
+    if (activeTabStatus.textContent !== title) {
+      activeTabStatus.textContent = title;
+      activeTabStatus.classList.remove('status-change');
+      void activeTabStatus.offsetWidth;
+      activeTabStatus.classList.add('status-change');
+    }
+    if (tabCountStatus.textContent !== count) {
+      tabCountStatus.textContent = count;
+      tabCountStatus.classList.remove('status-change');
+      void tabCountStatus.offsetWidth;
+      tabCountStatus.classList.add('status-change');
+    }
+  }
+
+  function syncNavigationButtons(tab = tabs.find(item => item.id === activeId)) {
+    backButton.disabled = !tab || tab.historyIndex <= 0;
+    forwardButton.disabled = !tab || tab.historyIndex < 0 || tab.historyIndex >= tab.history.length - 1;
+  }
+
+  function navigateTab(tab, url, record = true) {
+    if (!tab) return;
+    if (record && tab.history[tab.historyIndex] !== url) {
+      tab.history = tab.history.slice(0, tab.historyIndex + 1);
+      tab.history.push(url);
+      tab.historyIndex = tab.history.length - 1;
+    }
+    tab.title = new URL(url).hostname.replace(/^www\./, '');
+    tab.button.querySelector('.tab-title').textContent = tab.title;
+    syncNavigationButtons(tab);
+    if (tab.id === activeId) syncFooterStatus(tab);
+    startLoad(tab, url);
+  }
+
+  function stepNavigation(direction) {
+    const tab = tabs.find(item => item.id === activeId);
+    if (!tab) return;
+    const next = tab.historyIndex + direction;
+    if (next < 0 || next >= tab.history.length) return;
+    tab.historyIndex = next;
+    const url = tab.history[next];
+    tab.title = new URL(url).hostname.replace(/^www\./, '');
+    tab.button.querySelector('.tab-title').textContent = tab.title;
+    input.value = url;
+    startLoad(tab, url);
+    syncNavigationButtons(tab);
+    syncFooterStatus(tab);
+  }
+
+  function closeTab(id) {
+    const index = tabs.findIndex(item => item.id === id);
+    if (index < 0) return;
+    const [tab] = tabs.splice(index, 1);
+    restoreSettingsPanel(tab);
+    clearTimeout(tab.loadingTimer);
+    tab.button.remove();
+    tab.pane.remove();
+    if (!tabs.length) makeTab();
+    else if (activeId === id) activate(tabs[Math.min(index, tabs.length - 1)].id);
+    else syncFooterStatus();
+  }
+
+  function normalize(value) {
+    const text = value.trim();
+    if (!text) return '';
+    const explicitWebUrl = /^https?:\/\//i.test(text);
+    const looksLikeHost = /^localhost(?::\d+)?(?:\/.*)?$/i.test(text)
+      || /^(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?(?:\/.*)?$/.test(text)
+      || /^(?=.*\.)[^\s/]+(?:\/.*)?$/.test(text);
+    if (!explicitWebUrl && !looksLikeHost) {
+      const search = new URL('https://www.google.com/search?igu=1');
+      search.searchParams.set('q', text);
+      return search.href;
+    }
+    const address = explicitWebUrl ? text : 'https://' + text;
+    try {
+      const parsed = new URL(address);
+      if (!['http:', 'https:'].includes(parsed.protocol)) return '';
+      return parsed.href;
+    } catch { return ''; }
+  }
+
+  function showEmbedError(tab, force = false) {
+    if (!tab.loading && !force) return;
+    tab.loading = false;
+    clearTimeout(tab.loadingTimer);
+    tab.pane.classList.add('failed');
+    if (activeId === tab.id) {
+      stage.classList.remove('loading', 'loaded');
+      document.querySelector('#reload').classList.remove('is-loading');
+    }
+  }
+
+  function startLoad(tab, url) {
+    tab.url = url;
+    recentPages = [{ url, title: tab.title }, ...recentPages.filter(item => item.url !== url)].slice(0, 6);
+    tabs.forEach(renderHome);
+    tab.favicon.classList.remove('has-image');
+    tab.faviconImage.src = new URL('/favicon.ico', url).href;
+    syncBookmarkToggle();
+    tab.loading = true;
+    tab.pane.classList.remove('failed');
+    tab.pane.classList.add('loaded');
+    clearTimeout(tab.loadingTimer);
+    tab.loadingTimer = setTimeout(() => showEmbedError(tab), 15000);
+    if (activeId === tab.id) {
+      stage.classList.remove('loaded');
+      stage.classList.add('loading');
+      document.querySelector('#reload').classList.add('is-loading');
+    }
+    tab.frame.src = url;
+  }
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const url = normalize(input.value);
+    if (!url) { input.focus(); input.setCustomValidity('Enter a valid website address.'); input.reportValidity(); return; }
+    input.setCustomValidity('');
+    const tab = tabs.find(item => item.id === activeId);
+    restoreSettingsPanel(tab);
+    navigateTab(tab, url);
+    replayAddressTyping(url);
+  });
+  input.addEventListener('input', () => {
+    input.setCustomValidity('');
+    if (addressTypingTimer) {
+      stopAddressReplay();
+    }
+  });
+  input.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); form.requestSubmit(); } });
+  document.querySelector('#help').addEventListener('click', () => {
+    const tab = tabs.find(item => item.id === activeId);
+    if (tab?.url) showEmbedError(tab, true);
+    else input.focus();
+  });
+  document.querySelector('#reload').addEventListener('click', () => {
+    const tab = tabs.find(item => item.id === activeId);
+    if (tab?.url) startLoad(tab, tab.url);
+    else input.focus();
+  });
+  backButton.addEventListener('click', () => stepNavigation(-1));
+  forwardButton.addEventListener('click', () => stepNavigation(1));
+
+  const add = document.createElement('button');
+  add.type = 'button'; add.className = 'new-tab'; add.textContent = '+'; add.setAttribute('aria-label', 'New tab');
+  add.addEventListener('click', () => makeTab());
+  strip.append(add);
+  renderBookmarks();
+  makeTab();
+  setTimeout(() => checkForUpdates(false), 350);
+})();
+</script>
+</body>
+</html>
