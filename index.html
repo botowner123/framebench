@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#08090b">
-<meta name="app-version" content="1.0.0">
+<meta name="app-version" content="1.0.1">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame — Web Preview</title>
 <style>
@@ -612,9 +612,9 @@
             </section>
             <section class="settings-category" id="settingsPaneUpdates" role="tabpanel" aria-labelledby="settingsTabUpdates" data-settings-pane="updates" hidden>
               <div class="settings-category-heading"><span class="settings-eyebrow">FRAME VERSION 1.0.0</span><h3>Software update</h3><p>Check whether a newer version is available.</p></div>
-              <div class="settings-card"><div class="update-settings-head"><div><strong>Update status</strong><small id="updateSettingsStatus">Checking for updates…</small></div><span class="test-mode-badge">TEST MODE</span></div>
+              <div class="settings-card"><div class="update-settings-head"><div><strong>Update status</strong><small id="updateSettingsStatus">Checking for updates…</small></div><span class="test-mode-badge">GITHUB</span></div>
                 <button class="check-updates-button" id="checkUpdates" type="button">Check for updates</button>
-                <div class="update-test-controls"><label class="test-scenario-label" for="updateScenario">Test scenario</label><select id="updateScenario" class="test-scenario"><option value="available">Update available</option><option value="current">Up to date</option><option value="offline">Offline</option><option value="invalid">Invalid package</option><option value="write-failed">Install permission failed</option></select><p class="test-mode-note">Test mode only. No files are modified.</p></div>
+                <div class="update-test-controls"><label class="test-scenario-label" for="updateScenario">Check source</label><select id="updateScenario" class="test-scenario"><option value="github" selected>GitHub release</option><option value="available">Test · update available</option><option value="current">Test · up to date</option><option value="offline">Test · offline</option><option value="invalid">Test · invalid package</option><option value="write-failed">Test · install permission failed</option></select><p class="test-mode-note">Test scenarios are simulated. No files are modified.</p></div>
               </div>
             </section>
             <section class="settings-category" id="settingsPaneShortcuts" role="tabpanel" aria-labelledby="settingsTabShortcuts" data-settings-pane="shortcuts" hidden>
@@ -634,7 +634,7 @@
   <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
     <button class="update-close" id="updateClose" type="button" aria-label="Close update window">×</button>
     <div class="update-app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 7v5h-5M4 17v-5h5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.6 9a7 7 0 0 1 11.8-2L20 9M4 15l2.6 2a7 7 0 0 0 11.8-2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <div class="update-kicker">FRAME SOFTWARE UPDATE <span>TEST MODE</span></div>
+    <div class="update-kicker">FRAME SOFTWARE UPDATE <span>RELEASE CHECK</span></div>
     <h2 id="updateTitle">Checking for updates</h2>
     <p class="update-summary" id="updateSummary">Looking for a newer version…</p>
     <div class="update-version-row" id="updateVersionRow" hidden><span id="updateCurrentVersion"></span><span class="version-arrow">→</span><strong id="updateNewVersion"></strong></div>
@@ -647,8 +647,8 @@
 <div class="context-menu" id="contextMenu" role="menu" aria-label="Browser actions"></div>
 <script>
 (() => {
-  // Update test configuration. Switch to a GitHub release source after the app has a public test repository.
-  const UPDATE_CONFIG = Object.freeze({ mode:'mock', currentVersion:document.querySelector('meta[name="app-version"]').content });
+  // Public release source. The release asset must be named index.html and contain the matching app-version meta tag.
+  const UPDATE_CONFIG = Object.freeze({ mode:'github', owner:'botowner123', repo:'framebench', currentVersion:document.querySelector('meta[name="app-version"]').content });
   const form = document.querySelector('#loadForm');
   const input = document.querySelector('#url');
   const strip = document.querySelector('#tabstrip');
@@ -830,6 +830,23 @@
     if (scenario === 'invalid') return { tag_name:'v1.2.0', body:'This package has a mismatched version and must be rejected.', published_at:'2026-11-03T12:00:00Z', html:'<!doctype html><html><head><meta name="app-version" content="0.0.1"></head><body>Invalid package</body></html>' };
     return { tag_name:'v1.1.0', body:'A calmer browser frame, clearer privacy details, and smoother tab navigation.', published_at:'2026-11-03T12:00:00Z', html:'<!doctype html><html><head><meta name="app-version" content="1.1.0"><title>Frame</title></head><body>Mock update package</body></html>' };
   }
+  async function fetchLatestGitHubRelease() {
+    const endpoint = `https://api.github.com/repos/${encodeURIComponent(UPDATE_CONFIG.owner)}/${encodeURIComponent(UPDATE_CONFIG.repo)}/releases/latest`;
+    const response = await fetch(endpoint, { headers:{ Accept:'application/vnd.github+json' }, cache:'no-store' });
+    if (!response.ok) throw new Error(response.status === 404 ? 'No published release was found in the configured repository.' : `GitHub returned status ${response.status}.`);
+    const release = await response.json();
+    if (!release || typeof release.tag_name !== 'string' || !Array.isArray(release.assets)) throw new Error('GitHub returned an unexpected release response.');
+    const asset = release.assets.find(item => item.name === 'index.html' && typeof item.browser_download_url === 'string');
+    if (!asset) throw new Error('The latest release does not include an index.html asset.');
+    const assetUrl = new URL(asset.browser_download_url);
+    if (assetUrl.protocol !== 'https:' || !['github.com','release-assets.githubusercontent.com'].includes(assetUrl.hostname)) throw new Error('The release asset is hosted outside the trusted GitHub download domains.');
+    const htmlResponse = await fetch(assetUrl.href, { cache:'no-store' });
+    if (!htmlResponse.ok) throw new Error(`Could not download the release HTML (status ${htmlResponse.status}).`);
+    if (!['github.com','release-assets.githubusercontent.com'].includes(new URL(htmlResponse.url).hostname)) throw new Error('The release download redirected outside the trusted GitHub domains.');
+    const html = await htmlResponse.text();
+    if (html.length > 5_000_000) throw new Error('The release HTML is larger than the allowed 5 MB limit.');
+    return { tag_name:release.tag_name, body:release.body || 'No release notes were provided.', published_at:release.published_at, html };
+  }
   function resetUpdateDialog() {
     updateVersionRow.hidden = true;
     releaseNotes.hidden = true;
@@ -885,16 +902,22 @@
     if (showDialog) {
       resetUpdateDialog();
       updateTitle.textContent = 'Checking for updates';
-      updateSummary.textContent = 'Comparing the installed version with the test release…';
+      updateSummary.textContent = 'Checking the latest published Frame release…';
     }
-    await new Promise(resolve => setTimeout(resolve, 450));
     const scenario = updateScenario.value;
-    if (scenario === 'offline') {
-      updateSettingsStatus.textContent = 'Could not connect';
-      if (showDialog) setUpdateError('Can’t check right now','The test connection is offline. Check your connection and try again.');
+    let release;
+    try {
+      if (scenario === 'github') release = await fetchLatestGitHubRelease();
+      else {
+        await new Promise(resolve => setTimeout(resolve, 450));
+        if (scenario === 'offline') throw new Error('The simulated test connection is offline.');
+        release = mockReleaseForScenario(scenario);
+      }
+    } catch (error) {
+      updateSettingsStatus.textContent = 'Could not check for updates';
+      if (showDialog) setUpdateError('Can’t check right now', error.message || 'Check your connection and try again.');
       return;
     }
-    const release = mockReleaseForScenario(scenario);
     let downloadedVersion;
     try {
       if (!release.tag_name || !parseSemver(release.tag_name)) throw new Error('The release does not contain a valid semantic version.');
@@ -913,7 +936,7 @@
       if (showDialog) {
         updateState = 'current';
         updateTitle.textContent = 'You’re up to date';
-        updateSummary.textContent = 'Frame v' + UPDATE_CONFIG.currentVersion + ' is the latest test release.';
+        updateSummary.textContent = 'Frame v' + UPDATE_CONFIG.currentVersion + ' is the latest release.';
         updateVersionDetails(release);
         updateNow.hidden = true;
         updateLater.textContent = 'Done';
@@ -925,9 +948,100 @@
     if (showDialog) {
       updateState = 'available';
       updateTitle.textContent = 'Update available';
-      updateSummary.textContent = 'A newer version of Frame is ready to review.';
+      updateSummary.textContent = scenario === 'github' ? 'Review the release notes, then choose Update now to select this app file.' : 'A newer version of Frame is ready to review.';
       updateVersionDetails(release);
       updateNow.hidden = false;
+      updateNow.textContent = scenario === 'github' ? 'Update now' : 'Run test install';
+    }
+  }
+  function readAppVersion(source) {
+    return source.match(/<meta\s+name=["']app-version["']\s+content=["']([^"']+)["']/i)?.[1] || null;
+  }
+  function validateRelease(release) {
+    const version = readAppVersion(release.html || '');
+    if (!release.tag_name || !parseSemver(release.tag_name)) throw new Error('The release does not contain a valid semantic version.');
+    if (!/^<!doctype html>/i.test((release.html || '').trim()) || !version) throw new Error('The downloaded package is not a valid app HTML file.');
+    if (version !== release.tag_name.replace(/^v/,'')) throw new Error('The package version does not match the release tag.');
+    if (compareSemver(version, UPDATE_CONFIG.currentVersion) < 0) throw new Error('This release is older than the installed app and was rejected.');
+    return version;
+  }
+  function setInstallProgress(percent, label) {
+    updateProgressWrap.hidden = false;
+    updateProgressBar.style.width = percent + '%';
+    updateProgressPercent.textContent = percent + '%';
+    updateProgressLabel.textContent = label;
+  }
+  function downloadUpdateFile(html, version) {
+    const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Frame-v${version}-update.html`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  }
+  async function installGitHubUpdate() {
+    if (updateState !== 'available' || !checkedRelease) return;
+    if (typeof window.showOpenFilePicker !== 'function') {
+      const version = validateRelease(checkedRelease);
+      downloadUpdateFile(checkedRelease.html, version);
+      updateState = 'manual-download';
+      updateTitle.textContent = 'Update downloaded';
+      updateSummary.textContent = 'Replace your current Frame HTML file with the downloaded update to install it.';
+      updateNow.hidden = true;
+      updateLater.textContent = 'Done';
+      return;
+    }
+    updateState = 'installing';
+    updateTitle.textContent = 'Choose your Frame file';
+    updateSummary.textContent = 'Select the existing index.html file you opened to launch Frame.';
+    updateProgressWrap.hidden = true;
+    updateError.hidden = true;
+    updateNow.hidden = true;
+    updateLater.disabled = true;
+    let writable;
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        multiple:false,
+        types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }]
+      });
+      setInstallProgress(20, 'Confirming selected app file…');
+      const selectedFile = await handle.getFile();
+      const selectedSource = await selectedFile.text();
+      if (!/^<!doctype html>/i.test(selectedSource.trim()) || readAppVersion(selectedSource) !== UPDATE_CONFIG.currentVersion) {
+        throw new Error('That file does not appear to be this installed version of Frame. Your file was not changed.');
+      }
+      setInstallProgress(40, 'Fetching the latest release…');
+      const release = await fetchLatestGitHubRelease();
+      const version = validateRelease(release);
+      if (compareSemver(version, UPDATE_CONFIG.currentVersion) <= 0) throw new Error('The latest release is no longer newer than this app. Your file was not changed.');
+      setInstallProgress(65, 'Release verified…');
+      writable = await handle.createWritable({ keepExistingData:false });
+      await writable.write(release.html);
+      setInstallProgress(90, 'Saving update…');
+      await writable.close();
+      writable = null;
+      updateState = 'installed';
+      setUpdateProgress(100, 'Installed successfully');
+      updateTitle.textContent = 'Update installed';
+      updateSummary.textContent = `Frame v${version} is ready. Reload to open the updated app.`;
+      updateNow.hidden = true;
+      updateLater.disabled = false;
+      updateLater.textContent = 'Reload Frame';
+      setUpdateBadge(false);
+    } catch (error) {
+      if (writable) { try { await writable.abort(); } catch {} }
+      updateLater.disabled = false;
+      if (error?.name === 'AbortError') {
+        updateState = 'available';
+        updateTitle.textContent = 'Update paused';
+        updateSummary.textContent = 'No file was selected, so nothing was changed.';
+        updateProgressWrap.hidden = true;
+        updateNow.hidden = false;
+        updateNow.textContent = 'Try again';
+      } else {
+        setUpdateError('Update could not be installed', error?.message || 'The file could not be written. Your original file was left unchanged.', 'install-failed');
+        updateLater.disabled = false;
+      }
     }
   }
   function runMockInstall() {
@@ -970,8 +1084,8 @@
     setUpdateBadge(false);
     updateSettingsStatus.textContent='Ready to check · ' + updateScenario.options[updateScenario.selectedIndex].text;
   });
-  updateNow.addEventListener('click', runMockInstall);
-  updateLater.addEventListener('click', closeUpdateDialog);
+  updateNow.addEventListener('click', () => updateScenario.value === 'github' ? installGitHubUpdate() : runMockInstall());
+  updateLater.addEventListener('click', () => updateState === 'installed' ? location.reload() : closeUpdateDialog());
   updateClose.addEventListener('click', closeUpdateDialog);
   updateOverlay.addEventListener('click', event => { if (event.target === updateOverlay && updateState !== 'installing') closeUpdateDialog(); });
 
