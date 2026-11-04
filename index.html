@@ -1073,7 +1073,9 @@
   }
   async function fetchLatestGitHubRelease() {
     const endpoint = `https://api.github.com/repos/${encodeURIComponent(UPDATE_CONFIG.owner)}/${encodeURIComponent(UPDATE_CONFIG.repo)}/releases/latest`;
-    const response = await fetch(endpoint, { headers:{ Accept:'application/vnd.github+json' }, cache:'no-store' });
+    let response;
+    try { response = await fetch(endpoint, { headers:{ Accept:'application/vnd.github+json' }, cache:'no-store' }); }
+    catch (error) { throw new Error(`Could not reach GitHub’s release API: ${error.message || 'network error'}`); }
     if (!response.ok) throw new Error(response.status === 404 ? 'No published release was found in the configured repository.' : `GitHub returned status ${response.status}.`);
     const release = await response.json();
     if (!release || typeof release.tag_name !== 'string' || !Array.isArray(release.assets)) throw new Error('GitHub returned an unexpected release response.');
@@ -1092,13 +1094,27 @@
     } else {
       sourceUrl = `https://raw.githubusercontent.com/${encodeURIComponent(UPDATE_CONFIG.owner)}/${encodeURIComponent(UPDATE_CONFIG.repo)}/${tag}/index.html`;
     }
-    const htmlResponse = await fetch(sourceUrl, { cache:'no-store' });
-    if (!htmlResponse.ok) throw new Error(`Could not download the release HTML (status ${htmlResponse.status}).`);
+    let htmlResponse;
+    let usedAsset = Boolean(asset);
+    try {
+      htmlResponse = await fetch(sourceUrl, { cache:'no-store' });
+      if (!htmlResponse.ok) throw new Error(`Release asset returned status ${htmlResponse.status}.`);
+    } catch (assetError) {
+      if (!asset) throw new Error(`Could not download the tagged app file: ${assetError.message || 'network error'}`);
+      const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(UPDATE_CONFIG.owner)}/${encodeURIComponent(UPDATE_CONFIG.repo)}/${tag}/index.html`;
+      try {
+        htmlResponse = await fetch(rawUrl, { cache:'no-store' });
+        if (!htmlResponse.ok) throw new Error(`Tagged app file returned status ${htmlResponse.status}.`);
+        usedAsset = false;
+      } catch (rawError) {
+        throw new Error(`Could not download the release asset or tagged app file: ${rawError.message || 'network error'}`);
+      }
+    }
     const finalHost = new URL(htmlResponse.url).hostname;
-    if (asset ? !['github.com','release-assets.githubusercontent.com'].includes(finalHost) : finalHost !== 'raw.githubusercontent.com') throw new Error('The release source redirected outside trusted GitHub content.');
+    if (usedAsset ? !['github.com','release-assets.githubusercontent.com'].includes(finalHost) : finalHost !== 'raw.githubusercontent.com') throw new Error('The release source redirected outside trusted GitHub content.');
     const html = await htmlResponse.text();
     if (html.length > 5_000_000) throw new Error('The release HTML is larger than the allowed 5 MB limit.');
-    return { tag_name:release.tag_name, body:release.body || 'No release notes were provided.', published_at:release.published_at, html, source:asset ? `release asset “${asset.name}”` : `tagged repository file for ${release.tag_name}` };
+    return { tag_name:release.tag_name, body:release.body || 'No release notes were provided.', published_at:release.published_at, html, source:usedAsset ? `release asset “${asset.name}”` : `tagged repository file for ${release.tag_name}` };
   }
   function resetUpdateDialog() {
     updateVersionRow.hidden = true;
@@ -1186,9 +1202,10 @@
       if (showDialog) {
         updateState = 'current';
         updateTitle.textContent = 'You’re up to date';
-        updateSummary.textContent = 'Frame v' + UPDATE_CONFIG.currentVersion + ' is the latest release. Package source: ' + release.source + '.';
+        updateSummary.textContent = 'Frame v' + UPDATE_CONFIG.currentVersion + ' is the latest release. You can reinstall it to refresh this file. Package source: ' + release.source + '.';
         updateVersionDetails(release);
-        updateNow.hidden = true;
+        updateNow.hidden = false;
+        updateNow.textContent = 'Reinstall latest';
         updateLater.textContent = 'Done';
       }
       return;
@@ -1269,7 +1286,8 @@
   }
   restoreUpdateFileHandle();
   async function installGitHubUpdate() {
-    if (updateState !== 'available' || !checkedRelease) return;
+    const reinstall = updateState === 'current';
+    if ((updateState !== 'available' && !reinstall) || !checkedRelease) return;
     if (typeof window.showOpenFilePicker !== 'function' && typeof window.showSaveFilePicker !== 'function') {
       setUpdateError('Direct file updates are unavailable','This browser does not provide local file access. Open this same HTML app directly in Google Chrome and try again. No replacement file was downloaded.','unsupported');
       updateLater.textContent = 'Done';
@@ -1315,7 +1333,8 @@
       setInstallProgress(40, 'Fetching the latest release…');
       const release = await fetchLatestGitHubRelease();
       const version = validateRelease(release);
-      if (compareSemver(version, UPDATE_CONFIG.currentVersion) <= 0) throw new Error('The latest release is no longer newer than this app. Your file was not changed.');
+      const comparison = compareSemver(version, UPDATE_CONFIG.currentVersion);
+      if (comparison < 0 || (!reinstall && comparison === 0)) throw new Error('The latest release is no longer newer than this app. Your file was not changed.');
       setInstallProgress(65, 'Release verified…');
       writable = await handle.createWritable({ keepExistingData:false });
       await writable.write(release.html);
@@ -1334,12 +1353,12 @@
       if (writable) { try { await writable.abort(); } catch {} }
       updateLater.disabled = false;
       if (error?.name === 'AbortError') {
-        updateState = 'available';
+        updateState = reinstall ? 'current' : 'available';
         updateTitle.textContent = 'Update paused';
         updateSummary.textContent = 'No file was selected, so nothing was changed.';
         updateProgressWrap.hidden = true;
         updateNow.hidden = false;
-        updateNow.textContent = 'Try again';
+        updateNow.textContent = reinstall ? 'Reinstall latest' : 'Try again';
       } else {
         setUpdateError('Update could not be installed', error?.message || 'The file could not be written. Your original file was left unchanged.', 'install-failed');
         updateLater.disabled = false;
