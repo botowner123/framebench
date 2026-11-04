@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#08090b">
-<meta name="app-version" content="1.0.2">
+<meta name="app-version" content="1.0.3">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame — Web Preview</title>
 <style>
@@ -957,6 +957,53 @@
     updateProgressPercent.textContent = percent + '%';
     updateProgressLabel.textContent = label;
   }
+  const UPDATE_HANDLE_DB = 'frame-update-access-v1';
+  const UPDATE_HANDLE_STORE = 'handles';
+  let savedUpdateFileHandle = null;
+  function openUpdateHandleDb() {
+    return new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) { reject(new Error('IndexedDB is unavailable.')); return; }
+      const request = indexedDB.open(UPDATE_HANDLE_DB, 1);
+      request.onupgradeneeded = () => request.result.createObjectStore(UPDATE_HANDLE_STORE);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Could not open saved file access.'));
+    });
+  }
+  async function storeUpdateFileHandle(handle) {
+    const db = await openUpdateHandleDb();
+    await new Promise((resolve, reject) => {
+      const request = db.transaction(UPDATE_HANDLE_STORE, 'readwrite').objectStore(UPDATE_HANDLE_STORE).put(handle, 'app-file');
+      request.onsuccess = resolve;
+      request.onerror = () => reject(request.error || new Error('Could not remember the selected app file.'));
+    });
+    db.close();
+    savedUpdateFileHandle = handle;
+  }
+  async function restoreUpdateFileHandle() {
+    try {
+      const db = await openUpdateHandleDb();
+      const handle = await new Promise((resolve, reject) => {
+        const request = db.transaction(UPDATE_HANDLE_STORE, 'readonly').objectStore(UPDATE_HANDLE_STORE).get('app-file');
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(request.error);
+      });
+      db.close();
+      savedUpdateFileHandle = handle;
+    } catch { savedUpdateFileHandle = null; }
+  }
+  async function forgetUpdateFileHandle() {
+    savedUpdateFileHandle = null;
+    try {
+      const db = await openUpdateHandleDb();
+      await new Promise((resolve, reject) => {
+        const request = db.transaction(UPDATE_HANDLE_STORE, 'readwrite').objectStore(UPDATE_HANDLE_STORE).delete('app-file');
+        request.onsuccess = resolve;
+        request.onerror = () => reject(request.error);
+      });
+      db.close();
+    } catch {}
+  }
+  restoreUpdateFileHandle();
   async function installGitHubUpdate() {
     if (updateState !== 'available' || !checkedRelease) return;
     if (typeof window.showOpenFilePicker !== 'function' && typeof window.showSaveFilePicker !== 'function') {
@@ -965,23 +1012,42 @@
       return;
     }
     updateState = 'installing';
-    updateTitle.textContent = 'Choose your Frame file';
-    updateSummary.textContent = 'Select the existing index.html file you opened to launch Frame.';
+    updateTitle.textContent = 'Preparing your update';
+    updateSummary.textContent = savedUpdateFileHandle ? 'Checking saved access to your Frame file…' : 'Choose the existing index.html file you opened to launch Frame.';
     updateProgressWrap.hidden = true;
     updateError.hidden = true;
     updateNow.hidden = true;
     updateLater.disabled = true;
     let writable;
     try {
-      const handle = typeof window.showOpenFilePicker === 'function'
-        ? (await window.showOpenFilePicker({ multiple:false, types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }] }))[0]
-        : await window.showSaveFilePicker({ suggestedName:'index.html', types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }], excludeAcceptAllOption:true });
+      let handle = savedUpdateFileHandle;
+      if (handle) {
+        try {
+          const permission = await handle.requestPermission({ mode:'readwrite' });
+          const file = await handle.getFile();
+          const source = await file.text();
+          if (permission !== 'granted' || readAppVersion(source) !== UPDATE_CONFIG.currentVersion) {
+            await forgetUpdateFileHandle();
+            handle = null;
+          }
+        } catch { await forgetUpdateFileHandle(); handle = null; }
+      }
+      if (!handle) {
+        updateTitle.textContent = 'Choose your Frame file';
+        updateSummary.textContent = 'Select the existing index.html file you opened to launch Frame.';
+        handle = typeof window.showOpenFilePicker === 'function'
+          ? (await window.showOpenFilePicker({ multiple:false, types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }] }))[0]
+          : await window.showSaveFilePicker({ suggestedName:'index.html', types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }], excludeAcceptAllOption:true });
+      }
       setInstallProgress(20, 'Confirming selected app file…');
       const selectedFile = await handle.getFile();
       const selectedSource = await selectedFile.text();
       if (!/^<!doctype html>/i.test(selectedSource.trim()) || readAppVersion(selectedSource) !== UPDATE_CONFIG.currentVersion) {
         throw new Error('That file does not appear to be this installed version of Frame. Your file was not changed.');
       }
+      const writePermission = await handle.requestPermission({ mode:'readwrite' });
+      if (writePermission !== 'granted') throw new Error('Write access was not granted. Your file was not changed.');
+      try { await storeUpdateFileHandle(handle); } catch {}
       setInstallProgress(40, 'Fetching the latest release…');
       const release = await fetchLatestGitHubRelease();
       const version = validateRelease(release);
