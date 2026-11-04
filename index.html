@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#08090b">
-<meta name="app-version" content="1.0.3">
+<meta name="app-version" content="1.0.4">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame — Web Preview</title>
 <style>
@@ -270,7 +270,10 @@
   .new-tab { width:31px; height:31px; border-radius:9px; font-size:21px }
   .chrome { position:relative; z-index:8; min-height:61px; gap:11px; padding:0 17px; border-bottom:1px solid #30272b; background:#151416 }
   .settings-button,.settings-close { display:grid; place-items:center; flex:none; padding:0; border:1px solid #42343a; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease }
+  .settings-control { display:flex; align-items:center; gap:8px }
   .settings-button { position:relative; width:34px; height:34px }
+  .settings-update-label { color:#ee8296; font-size:10px; font-weight:650; white-space:nowrap; animation:settings-enter .18s ease both }
+  .settings-update-label[hidden] { display:none }
   .settings-badge { position:absolute; top:-3px; right:-3px; width:10px; height:10px; border:2px solid #151416; border-radius:50%; background:#d94b67; box-shadow:0 0 0 2px #d94b671c; animation:update-badge-in .24s cubic-bezier(.16,1,.3,1) both }
   .settings-badge[hidden] { display:none }
   @keyframes update-badge-in { from { opacity:0; transform:scale(.5) } to { opacity:1; transform:scale(1) } }
@@ -333,13 +336,15 @@
   .settings-panel.settings-page .settings-intro { margin:0; color:#999398; font-size:12px }
   .settings-panel.settings-page .settings-close { width:32px; height:32px; border-radius:9px }
   .settings-nav { min-width:0; display:flex; flex-direction:column; gap:4px; padding:23px 14px 23px 0; border-right:1px solid #302a2f }
-  .settings-nav-item { width:calc(100% - 16px); min-height:42px; display:grid; grid-template-columns:20px minmax(0,1fr) 14px; align-items:center; gap:9px; padding:0 10px; border:1px solid transparent; border-radius:8px; color:#aaa4aa; background:transparent; text-align:left; font:inherit; font-size:12px; cursor:pointer; transition:color .16s ease,background .16s ease,border-color .16s ease }
+  .settings-nav-item { width:calc(100% - 16px); min-height:42px; display:grid; grid-template-columns:20px minmax(0,1fr) auto 14px; align-items:center; gap:9px; padding:0 10px; border:1px solid transparent; border-radius:8px; color:#aaa4aa; background:transparent; text-align:left; font:inherit; font-size:12px; cursor:pointer; transition:color .16s ease,background .16s ease,border-color .16s ease }
   .settings-nav-item:hover { color:#f0e9ec; background:#1c191c }
   .settings-nav-item.active { color:#ffe8ed; border-color:#59313a; background:linear-gradient(100deg,#3b2028,#26191e); box-shadow:inset 2px 0 #ef3f61 }
   .settings-nav-icon { display:grid; place-items:center; color:#a69da3; font-size:15px }
   .settings-nav-item.active .settings-nav-icon { color:var(--red) }
   .settings-nav-item>svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.4; opacity:0; transform:translateX(-3px); transition:opacity .16s ease,transform .16s ease }
   .settings-nav-item.active>svg { opacity:.8; transform:none }
+  .settings-tab-badge { padding:3px 6px; border:1px solid #75404a; border-radius:999px; color:#ff9bad; background:#3a2028; font:700 8px/1 "JetBrains Mono",ui-monospace,monospace; letter-spacing:.04em; white-space:nowrap }
+  .settings-tab-badge[hidden] { display:none }
   .settings-content { width:100%; min-width:0; min-height:0; padding:26px 0 38px; overflow:auto; scrollbar-color:#49343d transparent; scrollbar-width:thin }
   .settings-category { width:min(100%,760px); margin:0 auto; animation:settings-category-in .2s ease both }
   .settings-category[hidden] { display:none }
@@ -370,6 +375,8 @@
   :root[data-theme="light"] .settings-panel.settings-page>.settings-heading,:root[data-theme="light"] .settings-nav { border-color:#e5dce0 }
   :root[data-theme="light"] .settings-nav-item { color:#716a70 }
   :root[data-theme="light"] .settings-nav-item:hover { color:#332d31; background:#f5eff2 }
+  :root[data-theme="light"] .settings-update-label { color:#b83853 }
+  :root[data-theme="light"] .settings-tab-badge { border-color:#e9bdc8; color:#a92f4a; background:#fbe8ed }
   :root[data-theme="light"] .settings-nav-item.active { color:#562a35; border-color:#ead1d8; background:linear-gradient(100deg,#f8e9ed,#f5eef0); box-shadow:inset 2px 0 #d94763 }
   :root[data-theme="light"] .setting-switch { border-color:#d8d3d7; background:#e9e6e9 }
   :root[data-theme="light"] .setting-switch span { background:#fff; box-shadow:0 1px 3px #33202a25 }
@@ -384,7 +391,7 @@
     .settings-panel.settings-page { grid-template-columns:1fr; grid-template-rows:auto auto minmax(0,1fr); gap:0; padding:20px 17px }
     .settings-nav { flex-direction:row; gap:4px; padding:12px 0 8px; overflow-x:auto; border-right:0; border-bottom:1px solid #302a2f; scrollbar-width:none }
     .settings-nav::-webkit-scrollbar { display:none }
-    .settings-nav-item { width:auto; min-width:max-content; min-height:34px; grid-template-columns:16px auto; gap:6px; padding:0 9px }
+    .settings-nav-item { width:auto; min-width:max-content; min-height:34px; grid-template-columns:16px auto auto; gap:6px; padding:0 9px }
     .settings-nav-item>svg { display:none }
     .settings-nav-item.active { box-shadow:inset 0 -2px #ef3f61 }
     .settings-content { padding:20px 0 30px }
@@ -591,13 +598,13 @@
           <div class="address-wrap"><span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><input id="url" type="text" inputmode="url" autocomplete="url" placeholder="Enter a website URL" aria-label="Website URL"><span class="replay-cursor" aria-hidden="true"></span><button class="bookmark-toggle" id="bookmarkCurrent" type="button" aria-label="Bookmark this page" aria-pressed="false" disabled><svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
         </form>
         <button class="fullscreen-toggle" id="fullscreenToggle" type="button" aria-label="Enter fullscreen" title="Enter fullscreen"><svg class="enter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg><svg class="exit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m13-5v3a2 2 0 0 0 2 2h3M3 16h3a2 2 0 0 1 2 2v3m13-5h-3a2 2 0 0 0-2 2v3"/></svg></button>
-        <button class="settings-button" id="settingsButton" type="button" aria-label="Open settings in a new tab" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 2.8h5l.6 2.1a7.8 7.8 0 0 1 1.5.9l2.2-.7 2.5 4.3-1.6 1.6v2l1.6 1.6-2.5 4.3-2.2-.7a7.8 7.8 0 0 1-1.5.9l-.6 2.1h-5l-.6-2.1a7.8 7.8 0 0 1-1.5-.9l-2.2.7-2.5-4.3 1.6-1.6v-2L2.7 9.4l2.5-4.3 2.2.7a7.8 7.8 0 0 1 1.5-.9z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.1"/></svg><span class="settings-badge" id="settingsBadge" aria-hidden="true" hidden></span></button>
+        <div class="settings-control"><button class="settings-button" id="settingsButton" type="button" aria-label="Open settings in a new tab" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 2.8h5l.6 2.1a7.8 7.8 0 0 1 1.5.9l2.2-.7 2.5 4.3-1.6 1.6v2l1.6 1.6-2.5 4.3-2.2-.7a7.8 7.8 0 0 1-1.5.9l-.6 2.1h-5l-.6-2.1a7.8 7.8 0 0 1-1.5-.9l-2.2.7-2.5-4.3 1.6-1.6v-2L2.7 9.4l2.5-4.3 2.2.7a7.8 7.8 0 0 1 1.5-.9z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.1"/></svg><span class="settings-badge" id="settingsBadge" aria-hidden="true" hidden></span></button><span class="settings-update-label" id="settingsUpdateLabel" hidden>Update available</span></div>
         <div class="settings-panel" id="settingsPanel" hidden>
           <header class="settings-heading"><div class="settings-title-block"><span class="settings-eyebrow">FRAME · PREFERENCES</span><h2>Settings</h2><p class="settings-intro">Personalize your private browsing space.</p></div><button class="settings-close" id="settingsClose" type="button" aria-label="Close settings">×</button></header>
           <nav class="settings-nav" role="tablist" aria-label="Settings categories" aria-orientation="vertical">
             <button class="settings-nav-item active" id="settingsTabAppearance" type="button" role="tab" aria-selected="true" aria-controls="settingsPaneAppearance" data-settings-tab="appearance"><span class="settings-nav-icon">◐</span><span>Appearance</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
             <button class="settings-nav-item" id="settingsTabPrivacy" type="button" role="tab" aria-selected="false" aria-controls="settingsPanePrivacy" data-settings-tab="privacy" tabindex="-1"><span class="settings-nav-icon">◇</span><span>Privacy & session</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
-            <button class="settings-nav-item" id="settingsTabUpdates" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneUpdates" data-settings-tab="updates" tabindex="-1"><span class="settings-nav-icon">↻</span><span>Software update</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
+            <button class="settings-nav-item" id="settingsTabUpdates" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneUpdates" data-settings-tab="updates" tabindex="-1"><span class="settings-nav-icon">↻</span><span>Software update</span><span class="settings-tab-badge" id="settingsUpdatesBadge" hidden>UPDATE</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
             <button class="settings-nav-item" id="settingsTabShortcuts" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneShortcuts" data-settings-tab="shortcuts" tabindex="-1"><span class="settings-nav-icon">⌘</span><span>Shortcuts</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
           </nav>
           <div class="settings-content">
@@ -683,6 +690,8 @@
   const fullscreenToggle = document.querySelector('#fullscreenToggle');
   const settingsButton = document.querySelector('#settingsButton');
   const settingsBadge = document.querySelector('#settingsBadge');
+  const settingsUpdateLabel = document.querySelector('#settingsUpdateLabel');
+  const settingsUpdatesBadge = document.querySelector('#settingsUpdatesBadge');
   const settingsPanel = document.querySelector('#settingsPanel');
   const settingsClose = document.querySelector('#settingsClose');
   const bookmarkBarToggle = document.querySelector('#bookmarkBarToggle');
@@ -864,6 +873,8 @@
   }
   function setUpdateBadge(available) {
     settingsBadge.hidden = !available;
+    settingsUpdateLabel.hidden = !available;
+    settingsUpdatesBadge.hidden = !available;
     settingsButton.setAttribute('aria-label', available ? 'Open settings in a new tab, update available' : 'Open settings in a new tab');
     settingsButton.title = available ? 'Settings · update available' : 'Settings';
   }
