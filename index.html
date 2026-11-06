@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#08090b">
-<meta name="app-version" content="1.0.9">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; frame-src https: http:; connect-src https://api.github.com https://github.com https://raw.githubusercontent.com https://release-assets.githubusercontent.com https://objects.githubusercontent.com; base-uri 'none'; form-action 'none'">
+<meta name="app-version" content="1.1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame — Web Preview</title>
 <style>
@@ -16,20 +17,7 @@
   button,input { font:inherit }
   .shell { height:100vh; min-height:0; display:flex; flex-direction:column }
   header { height:70px; display:flex; align-items:center; justify-content:space-between; padding:0 34px; border-bottom:1px solid var(--line); background:rgba(255,255,255,.8) }
-  .brand { display:flex; align-items:center; gap:11px; font-size:16px; font-weight:700; letter-spacing:-.04em }
-  .mark { width:29px; height:29px; display:grid; place-items:center; border-radius:9px; background:#ef3f61; color:white; box-shadow:0 3px 10px #ef3f6148 }
-  .mark svg { width:16px; height:16px }
-  .brand small { margin-left:1px; color:#8f8c8a; font-size:12px; font-weight:500; letter-spacing:0 }
-  .top-right { display:flex; align-items:center; gap:9px; color:var(--muted); font-size:12px }
-  .live-dot { width:7px; height:7px; border-radius:50%; background:#43a77a; box-shadow:0 0 0 3px #43a77a1c }
   main { width:100%; min-height:0; margin:0; padding:0; flex:1; display:flex }
-  .intro { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:27px }
-  .eyebrow { display:flex; align-items:center; gap:8px; color:var(--red); text-transform:uppercase; font-size:10px; font-weight:750; letter-spacing:.14em; margin-bottom:10px }
-  .eyebrow:before { content:""; width:17px; height:1px; background:currentColor }
-  h1 { margin:0; font-size:clamp(26px, 4vw, 36px); line-height:1.08; letter-spacing:-.055em; font-weight:650 }
-  .subtitle { margin:9px 0 0; color:var(--muted); font-size:14px }
-  .shortcut { color:#a49f9a; font-size:11px }
-  .shortcut kbd { font:inherit; padding:3px 6px; border:1px solid #454347; border-radius:5px; color:#e97786; background:#27272a; margin-left:4px }
   .browser { width:100%; min-height:0; display:flex; flex-direction:column; overflow:hidden; border:0; border-radius:0; background:var(--paper); box-shadow:none }
   .chrome { min-height:54px; display:flex; align-items:center; gap:16px; padding:0 16px; border-bottom:1px solid #382326; background:#131416 }
   .traffic { display:flex; gap:6px; flex:none }
@@ -40,15 +28,15 @@
   .nav { display:flex; align-items:center; gap:14px; color:#969397; flex:none }
   .nav svg { width:15px; height:15px; transition:color .18s, transform .18s }
   .nav svg:hover { color:var(--red); transform:scale(1.08) }
-  .nav button { width:27px; height:27px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; color:inherit; background:transparent; cursor:pointer; transition:color .18s ease,background .18s ease,transform .18s ease }
+  .nav button { width:27px; height:27px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; color:inherit; background:transparent; cursor:pointer; transition:color .18s var(--ease-out),background .18s var(--ease-out),transform .18s var(--ease-out) }
   .nav button:hover { color:#ece9e8; background:#2a2b2f; transform:scale(1.06) }
   .nav button:active { color:#ef3f61 }
   .nav button:active { transform:scale(.92) }
-  .theme-toggle { width:32px; height:32px; display:grid; place-items:center; flex:none; padding:0; border:1px solid #493034; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:color .18s ease,background .18s ease,border-color .18s ease,transform .18s ease }
+  .theme-toggle { width:32px; height:32px; display:grid; place-items:center; flex:none; padding:0; border:1px solid #493034; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:color .18s var(--ease-out),background .18s var(--ease-out),border-color .18s var(--ease-out),transform .18s var(--ease-out) }
   .theme-toggle:hover { color:#fff; background:#292a2e; border-color:#494a4f; transform:scale(1.05) }
   .theme-toggle:active { color:#ef3f61; border-color:#77383c }
   .theme-toggle svg { width:15px; height:15px }
-  .fullscreen-toggle { width:32px; height:32px; display:grid; place-items:center; flex:none; padding:0; border:0; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:color .18s ease,background .18s ease,transform .18s ease }
+  .fullscreen-toggle { width:32px; height:32px; display:grid; place-items:center; flex:none; padding:0; border:0; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:color .18s var(--ease-out),background .18s var(--ease-out),transform .18s var(--ease-out) }
   .fullscreen-toggle:hover { color:#fff; background:#292a2e; transform:scale(1.05) }
   .fullscreen-toggle:active { color:#ef3f61; transform:scale(.95) }
   .fullscreen-toggle svg { width:15px; height:15px }
@@ -63,18 +51,19 @@
   :root[data-theme="light"] .theme-toggle .sun { display:none }
   :root[data-theme="light"] .theme-toggle .moon { display:block }
   .nav button svg { width:15px; height:15px }
-  .address-wrap { position:relative; flex:1; display:flex; min-width:0; align-items:center; gap:10px; height:36px; padding:0 12px; border:1px solid #35272a; border-radius:999px; background:#0d0e10; transition:border-color .25s ease, box-shadow .3s cubic-bezier(.2,.8,.2,1), background .25s ease, transform .25s cubic-bezier(.2,.8,.2,1) }
+  .address-wrap { position:relative; flex:1; display:flex; min-width:0; align-items:center; gap:10px; height:36px; padding:0 12px; border:1px solid #35272a; border-radius:999px; background:#0d0e10; transition:border-color .25s var(--ease-out), box-shadow .3s var(--ease-out), background .25s var(--ease-out), transform .25s var(--ease-out) }
   .address-wrap:focus-within { border-color:#ef3f61; box-shadow:0 0 0 3px #ef3f6125, 0 4px 16px #ef3f6115; transform:translateY(-1px) }
-  .lock { display:flex; color:#ef3f61; flex:none }
+  .lock { display:flex; color:#8f8a90; flex:none; transition:color .2s var(--ease-out) }
+  .address-wrap:focus-within .lock { color:#ef3f61 }
   .lock svg { width:13px; height:13px }
   #url { width:100%; min-width:0; padding:0; border:0; outline:0; color:#e7e5e3; background:transparent; font-size:12px }
   .address-wrap.replaying #url,.address-wrap.replay-finished #url { caret-color:transparent }
-  .replay-cursor { position:absolute; z-index:2; top:50%; width:6px; height:14px; border-radius:1px; background:#ef3f61; box-shadow:0 0 8px #ef3f6170; opacity:0; pointer-events:none; transform:translateY(-50%); transition:opacity .22s ease }
+  .replay-cursor { position:absolute; z-index:2; top:50%; width:6px; height:14px; border-radius:1px; background:#ef3f61; box-shadow:0 0 8px #ef3f6170; opacity:0; pointer-events:none; transform:translateY(-50%); transition:opacity .22s var(--ease-out) }
   .address-wrap.replaying .replay-cursor { opacity:1 }
   .address-wrap.replay-finished .replay-cursor { opacity:0 }
-  #url::placeholder { color:#88878b }
-  .bookmark-toggle { width:25px; height:25px; display:grid; place-items:center; flex:none; padding:0; border:0; border-radius:50%; color:#89888d; background:transparent; cursor:pointer; transition:color .18s ease,background .18s ease,transform .18s ease }
-  .bookmark-toggle svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; transition:fill .18s ease,transform .18s ease }
+  #url::placeholder { color:#88878b; font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing:0 }
+  .bookmark-toggle { width:25px; height:25px; display:grid; place-items:center; flex:none; padding:0; border:0; border-radius:50%; color:#89888d; background:transparent; cursor:pointer; transition:color .18s var(--ease-out),background .18s var(--ease-out),transform .18s var(--ease-out) }
+  .bookmark-toggle svg { width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.7; transition:fill .18s var(--ease-out),transform .18s var(--ease-out) }
   .bookmark-toggle:hover:not(:disabled) { color:#e9687e; background:#ef3f6118; transform:scale(1.08) }
   .bookmark-toggle.saved { color:#e95270 }
   .bookmark-toggle.saved svg { fill:#ef3f6140 }
@@ -82,8 +71,8 @@
   .bookmarks-bar { min-height:36px; display:flex; align-items:center; gap:7px; padding:0 15px; border-bottom:1px solid #1c1d20; background:#0d0e10; overflow:hidden }
   .bookmark-items { min-width:0; flex:1; display:flex; align-items:center; gap:4px; overflow-x:auto; scrollbar-width:none }
   .bookmark-items::-webkit-scrollbar { display:none }
-  .bookmark-empty { color:#737278; font-size:10px; padding:0 4px }
-  .bookmark-link { max-width:170px; height:26px; display:flex; align-items:center; gap:7px; padding:0 9px; overflow:hidden; border:1px solid transparent; border-radius:6px; color:#b5b1b1; background:transparent; cursor:pointer; font-size:10px; white-space:nowrap; transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease }
+  .bookmark-empty { color:#8d8c93; font-size:11px; padding:0 4px }
+  .bookmark-link { max-width:170px; height:26px; display:flex; align-items:center; gap:7px; padding:0 9px; overflow:hidden; border:1px solid transparent; border-radius:6px; color:#b5b1b1; background:transparent; cursor:pointer; font-size:10px; white-space:nowrap; transition:background .16s var(--ease-out),color .16s var(--ease-out),border-color .16s var(--ease-out),transform .16s var(--ease-out) }
   .bookmark-link:hover { color:#fff0ee; background:#302022; border-color:#6b3436; transform:translateY(-1px) }
   .bookmark-link:active { background:#3a2023 }
   .bookmark-glyph { width:13px; height:13px; display:grid; place-items:center; flex:none; color:#e95270; font-size:11px }
@@ -93,8 +82,8 @@
   .bookmark-label { overflow:hidden; text-overflow:ellipsis }
   .tabstrip { position:relative; min-height:46px; display:flex; align-items:center; gap:4px; padding:5px 12px; background:#0a0b0d; border-bottom:1px solid #202125; overflow-x:auto; scrollbar-width:none }
   .tabstrip::-webkit-scrollbar { display:none }
-  .tab { min-width:136px; max-width:220px; height:35px; display:flex; align-items:center; gap:9px; padding:0 8px 0 11px; border:1px solid transparent; border-radius:13px; color:#969398; background:transparent; cursor:pointer; font-size:11px; text-align:left; flex:none; transition:background .16s ease,color .16s ease,border-color .16s ease; overflow:hidden }
-  .tab { transition:background .16s ease,color .16s ease,border-color .16s ease,transform .18s cubic-bezier(.2,.75,.25,1),opacity .16s ease }
+  .tab { min-width:136px; max-width:220px; height:35px; display:flex; align-items:center; gap:9px; padding:0 8px 0 11px; border:1px solid transparent; border-radius:13px; color:#969398; background:transparent; cursor:pointer; font-size:11px; text-align:left; flex:none; transition:background .16s var(--ease-out),color .16s var(--ease-out),border-color .16s var(--ease-out); overflow:hidden }
+  .tab { transition:background .16s var(--ease-out),color .16s var(--ease-out),border-color .16s var(--ease-out),transform .18s var(--ease-out),opacity .16s var(--ease-out) }
   .tab.compact { min-width:88px; width:var(--tab-compact-width); max-width:230px; gap:7px; padding-inline:8px }
   .tab.dragging { opacity:.4; transform:scale(.97) }
   .tab.drop-before { box-shadow:inset 2px 0 var(--red) }
@@ -104,12 +93,12 @@
   .tab:not(.active):hover { color:#e4e1e0; background:#141518 }
   .tab:not(.active):hover .favicon { color:#df6479 }
   .tab:not(.active):active { background:#18191c }
-  .tab.active { position:relative; z-index:1; color:#f0eeed; border-color:#3a292c; background:#111215; animation:tab-select .18s ease both }
+  .tab.active { position:relative; z-index:1; color:#f0eeed; border-color:#3a292c; background:#111215; animation:tab-select .18s var(--ease-out) both }
   .tab.active:before { display:none }
-  .tab-indicator { position:absolute; z-index:3; left:0; bottom:0; width:0; height:2px; border-radius:2px; opacity:0; pointer-events:none; background:#ef3f61; box-shadow:0 0 9px #ef3f6170; transform:translateX(0); transition:transform .34s cubic-bezier(.22,.8,.24,1),width .34s cubic-bezier(.22,.8,.24,1),opacity .14s ease }
+  .tab-indicator { position:absolute; z-index:3; left:0; bottom:0; width:0; height:2px; border-radius:2px; opacity:0; pointer-events:none; background:#ef3f61; box-shadow:0 0 9px #ef3f6170; transform:translateX(0); transition:transform .3s var(--ease-out),width .3s var(--ease-out),opacity .14s var(--ease-out) }
   .tab-indicator.visible { opacity:1 }
 
-  .favicon { position:relative; width:16px; height:16px; display:grid; place-items:center; flex:none; color:#77777d; transition:color .16s ease }
+  .favicon { position:relative; width:16px; height:16px; display:grid; place-items:center; flex:none; color:#77777d; transition:color .16s var(--ease-out) }
   .favicon svg { width:11px; height:11px; stroke:currentColor; stroke-width:1.7; fill:none }
   .favicon img { display:none; width:13px; height:13px; border-radius:3px; object-fit:contain }
   .favicon.has-image img { display:block }
@@ -117,26 +106,28 @@
   .tab.active .favicon { color:#e95270 }
   .tab:not(.active):hover .favicon { color:#b9b5b4 }
   .tab-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
-  .tab-close { width:19px; height:19px; display:grid; place-items:center; flex:none; border:0; border-radius:5px; color:#a3a0a3; background:transparent; cursor:pointer; font-size:14px; line-height:1; opacity:0; transform:scale(.8); transition:opacity .16s ease,color .16s ease,background .16s ease,transform .16s ease }
+  .tab-close { width:19px; height:19px; display:grid; place-items:center; flex:none; border:0; border-radius:5px; color:#a3a0a3; background:transparent; cursor:pointer; font-size:14px; line-height:1; opacity:0; transform:scale(.8); transition:opacity .16s var(--ease-out),color .16s var(--ease-out),background .16s var(--ease-out),transform .16s var(--ease-out) }
   .tab.active .tab-close,.tab:hover .tab-close,.tab:focus-visible .tab-close { opacity:1; transform:scale(1) }
     .tab-close:hover { color:#ef3f61; background:#3a2023 }
-  .tab.closing { pointer-events:none; animation:tab-close .1s cubic-bezier(.4,0,1,1) both }
+  .tab.closing { pointer-events:none; animation:tab-close .12s cubic-bezier(.5,0,.75,0) both }
   .new-tab { width:29px; height:29px; display:grid; place-items:center; flex:none; align-self:center; border:0; border-radius:6px; color:#e95270; background:transparent; cursor:pointer; font-size:19px }
-  .new-tab { transition:color .18s ease,background .18s ease,transform .2s cubic-bezier(.2,.8,.2,1) }
+  .new-tab { transition:color .18s var(--ease-out),background .18s var(--ease-out),transform .2s var(--ease-out) }
   .new-tab:hover { color:#ef3f61; background:#321b1e; transform:scale(1.06); box-shadow:0 3px 12px #ef3f612c }
   .new-tab:active { transform:scale(.92) }
   .traffic { height:100%; align-items:center; margin-right:8px }
+  .traffic i[data-act] { cursor:pointer; transition:filter .15s var(--ease-out),transform .15s var(--ease-out) }
+  .traffic i[data-act]:hover { filter:brightness(1.15); transform:scale(1.12) }
   .traffic i { width:12px; height:12px; }
   .stage { flex:1; min-height:0; position:relative; background:#08090b; isolation:isolate }
   .stage.loading:before { content:""; position:absolute; z-index:5; top:0; left:0; width:100%; height:2px; pointer-events:none; background:linear-gradient(90deg, transparent, #ef3f61 18%, #ff8296 52%, #ef3f61 82%, transparent); transform:scaleX(0); transform-origin:left center; animation:load-sweep 1.35s cubic-bezier(.16,.72,.28,1) infinite; filter:drop-shadow(0 0 5px #ef3f6180) }
-  .stage.loaded:before { animation:load-finish .42s ease forwards }
+  .stage.loaded:before { animation:load-finish .3s var(--ease-out) forwards }
   .tab-pane { position:absolute; inset:0; display:none }
-  .tab-pane.active { display:block; animation:pane-in .24s ease both }
+  .tab-pane.active { display:block; animation:pane-in .2s var(--ease-out) both }
   .tab-pane iframe { display:none; width:100%; height:100%; border:0; background:#fff }
-  .tab-pane.loaded iframe { display:block; animation:frame-in .35s ease both }
+  .tab-pane.loaded iframe { display:block; animation:frame-in .22s var(--ease-out) both }
   .tab-pane.failed iframe,.tab-pane.failed .empty,.tab-pane.failed .frame-status { display:none !important }
   .tab-pane .embed-error { display:none }
-  .tab-pane.failed .embed-error { display:flex; animation:error-enter .3s cubic-bezier(.16,1,.3,1) both }
+  .tab-pane.failed .embed-error { display:flex; animation:error-enter .3s var(--ease-out) both }
   .tab-pane .empty { display:flex }
   .tab-pane.loaded .empty { display:none }
   .tab-pane .frame-status { display:none }
@@ -154,7 +145,7 @@
   .home-section-head { display:flex; justify-content:center; align-items:center; gap:8px; color:#e4dfdf; font-size:11px; font-weight:650 }
   .home-section-head small { color:#8f898c; font-size:9px; font-weight:500 }
   .home-grid { display:grid; gap:7px; margin-top:9px }
-  .home-card { width:100%; min-width:0; display:flex; align-items:center; justify-content:center; gap:9px; padding:9px 10px; border:1px solid #30272a; border-radius:9px; color:#e8e3e2; background:#151416a8; text-align:center; cursor:pointer; transition:border-color .16s ease,background .16s ease,transform .16s ease }
+  .home-card { width:100%; min-width:0; display:flex; align-items:center; justify-content:center; gap:9px; padding:9px 10px; border:1px solid #30272a; border-radius:9px; color:#e8e3e2; background:#151416a8; text-align:center; cursor:pointer; transition:border-color .16s var(--ease-out),background .16s var(--ease-out),transform .16s var(--ease-out) }
   .home-card:hover { border-color:#704044; background:#21191b; transform:translateY(-1px) }
   .home-card-mark { width:27px; height:27px; display:grid; place-items:center; flex:none; border:1px solid #633338; border-radius:8px; color:#ef3f61; background:#27191c; font-size:11px; font-weight:700; text-transform:uppercase }
   .home-card-mark img { display:none; width:16px; height:16px; border-radius:3px; object-fit:contain }
@@ -168,27 +159,32 @@
   .home-card-url { color:#8f898c; font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:9px }
   .home-empty-note { margin-top:9px; padding:10px; border:1px dashed #373034; border-radius:9px; color:#898387; font-size:10px; line-height:1.5 }
   @media(max-width:620px) { .home-sections { grid-template-columns:1fr; gap:14px } }
-  .frame-status { position:absolute; left:16px; bottom:14px; display:none; align-items:center; gap:7px; padding:6px 9px; border:1px solid #493034; border-radius:6px; color:#b2aeac; background:#141518eb; font-size:10px; box-shadow:0 2px 6px #00000045; transition:opacity .3s ease, transform .3s ease }
+  .frame-status { position:absolute; left:16px; bottom:14px; display:none; align-items:center; gap:7px; padding:6px 9px; border:1px solid #493034; border-radius:6px; color:#b2aeac; background:#141518eb; font-size:10px; box-shadow:0 2px 6px #00000045; transition:opacity .3s var(--ease-out), transform .3s var(--ease-out) }
   .frame-status b { width:6px; height:6px; border-radius:50%; background:#48a777 }
   .embed-error { position:absolute; inset:0; align-items:center; justify-content:center; flex-direction:column; padding:24px; text-align:center; background:radial-gradient(ellipse at 50% 45%,#191618 0,#101113 62%,#0b0c0e 100%) }
   .error-icon { width:56px; height:56px; display:grid; place-items:center; margin-bottom:18px; border:1px solid #5a302e; border-radius:17px; color:#e9687e; background:#382321; box-shadow:0 8px 28px #ef3f611a }
   .error-icon svg { width:24px; height:24px }
   .embed-error h2 { margin:0; color:#f3eeee; font-size:17px; letter-spacing:-.03em; font-weight:650 }
   .embed-error p { max-width:350px; margin:8px 0 19px; color:#aaa4a4; font-size:12px }
-  .retry { min-height:34px; padding:0 14px; border:1px solid #ef3f61; border-radius:7px; color:#fff; background:#ef3f61; font-size:11px; font-weight:650; cursor:pointer; box-shadow:0 3px 14px #ef3f6145; transition:transform .18s ease,background .18s ease,box-shadow .18s ease }
+  .retry { min-height:34px; padding:0 14px; border:1px solid #ef3f61; border-radius:7px; color:#fff; background:#ef3f61; font-size:11px; font-weight:650; cursor:pointer; box-shadow:0 3px 14px #ef3f6145; transition:transform .18s var(--ease-out),background .18s var(--ease-out),box-shadow .18s var(--ease-out) }
+  .error-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:8px }
+  .retry-alt { color:#ef8a9b; background:transparent; box-shadow:none }
+  .retry-alt:hover { color:#fff; background:#ef3f61 }
+  :root[data-theme="light"] .retry-alt { color:var(--red-dark); border-color:#e0a3ae }
+  :root[data-theme="light"] .retry-alt:hover { color:#fff; background:var(--red) }
   .retry:hover { transform:translateY(-1px); background:#e93658; box-shadow:0 5px 18px #ef3f6160 }
   .retry:active { transform:scale(.97) }
   .below { display:flex; justify-content:space-between; align-items:center; padding:12px 17px; border-top:1px solid #422b2e; color:#a6a2a0; font-size:10px }
   .below-left { display:flex; align-items:center; gap:7px }
   .below-left svg { width:12px; height:12px; color:#d9586d }
   .below-right { display:flex; gap:15px }
-  .below button { padding:0; border:0; color:#b0adaa; background:none; cursor:pointer; font-size:10px; transition:color .18s ease, transform .18s ease }
+  .below button { padding:0; border:0; color:#b0adaa; background:none; cursor:pointer; font-size:10px; transition:color .18s var(--ease-out), transform .18s var(--ease-out) }
   .below button:active { transform:scale(.96) }
-  #reload svg { width:15px; height:15px; transition:transform .3s ease }
+  #reload svg { width:15px; height:15px; transition:transform .3s var(--ease-out) }
   #reload.is-loading svg { animation:spin .8s linear infinite }
   .below button:hover { color:var(--red) }
   .below button:hover svg { color:#ef3f61 }
-  .context-menu { position:fixed; z-index:20; width:204px; padding:5px; border:1px solid #493034; border-radius:11px; color:#e8e5e4; background:#171719f5; box-shadow:0 12px 34px #0009,0 0 0 1px #ffffff08; backdrop-filter:blur(16px); opacity:0; transform:translateY(4px) scale(.98); transform-origin:top left; pointer-events:none; transition:opacity .12s ease,transform .12s ease }
+  .context-menu { position:fixed; z-index:20; width:204px; padding:5px; border:1px solid #493034; border-radius:11px; color:#e8e5e4; background:#171719f5; box-shadow:0 12px 34px #0009,0 0 0 1px #ffffff08; backdrop-filter:blur(16px); opacity:0; transform:translateY(4px) scale(.98); transform-origin:top left; pointer-events:none; transition:opacity .12s var(--ease-out),transform .12s var(--ease-out) }
   .context-menu.open { opacity:1; transform:translateY(0) scale(1); pointer-events:auto }
   .context-menu button { width:100%; min-height:32px; display:flex; align-items:center; gap:10px; padding:0 9px; border:0; border-radius:6px; color:inherit; background:transparent; text-align:left; font-size:11px; cursor:pointer }
   .context-menu button:hover:not(:disabled) { color:#fff; background:#382326 }
@@ -199,12 +195,6 @@
   :root[data-theme="light"] .context-menu button:hover:not(:disabled) { color:#252225; background:#f8e9e9 }
   :root[data-theme="light"] .context-menu button:disabled { color:#aaa5aa }
   :root[data-theme="light"] .context-menu hr { background:#eee3e4 }
-  .hint { display:flex; align-items:center; gap:8px; margin:18px 2px 0; color:#99948f; font-size:11px }
-  .hint svg { width:14px; height:14px; color:var(--red) }
-  .hint strong { color:#6f6a66; font-weight:600 }
-  footer { display:flex; justify-content:space-between; padding:16px 34px; border-top:1px solid var(--line); color:#aaa5a0; font-size:10px }
-  footer span:last-child { display:flex; align-items:center; gap:6px }
-  footer svg { width:12px; height:12px; color:var(--red) }
 
   :root[data-theme="light"] { color-scheme:light; --ink:#242326; --muted:#777378; --line:#dedde1; --paper:#fff; --canvas:#f3f2f4; --red:#c93652; --red-dark:#a92642; }
   :root[data-theme="light"] ::selection { color:#4d1d2a; background:#efb7c2 }
@@ -219,7 +209,7 @@
   :root[data-theme="light"] .tab { color:#6f6c72; border-color:transparent; background:transparent }
   :root[data-theme="light"] .tab:not(.active):hover { color:#27262a; background:#dedce1 }
   :root[data-theme="light"] .tab:not(.active):active { background:#d4d2d8 }
-  :root[data-theme="light"] .tab.active { color:#29272b; border-color:#e5cdd0; background:#fff; animation:tab-select-light .18s ease both }
+  :root[data-theme="light"] .tab.active { color:#29272b; border-color:#e5cdd0; background:#fff; animation:tab-select-light .18s var(--ease-out) both }
   :root[data-theme="light"] .tab.active:before { background:var(--red); box-shadow:0 0 7px #ef3f6140 }
   :root[data-theme="light"] .tab-indicator { background:var(--red); box-shadow:0 0 7px #c9365240 }
   :root[data-theme="light"] .favicon { color:#918d93 }
@@ -259,8 +249,8 @@
   @keyframes tab-select-light { from { background:#f7e9e8 } to { background:#fff } }
   @keyframes accent-in { from { width:14px; opacity:0; transform:translateX(-50%) scaleX(.45) } to { width:calc(100% - 20px); opacity:1; transform:translateX(-50%) scaleX(1) } }
   @keyframes tab-close { to { opacity:0; max-width:0; min-width:0; width:0; margin-left:-3px; padding-left:0; padding-right:0; transform:scale(.84); border-color:transparent } }
-  @keyframes pane-in { from { opacity:.55; transform:translateY(5px) scale(.997) } to { opacity:1; transform:translateY(0) scale(1) } }
-  @keyframes frame-in { from { opacity:0; filter:blur(2px) } to { opacity:1; filter:blur(0) } }
+  @keyframes pane-in { from { opacity:.4; transform:translateY(4px) } to { opacity:1; transform:translateY(0) } }
+  @keyframes frame-in { from { opacity:0 } to { opacity:1 } }
   @keyframes load-sweep { 0% { transform:scaleX(.04); opacity:.5 } 55% { transform:scaleX(.72); opacity:1 } 100% { transform:scaleX(.94); opacity:.9 } }
   @keyframes load-finish { 0% { transform:scaleX(.94); opacity:1 } 75% { transform:scaleX(1); opacity:1 } 100% { transform:scaleX(1); opacity:0 } }
   @keyframes icon-float { 0%,100% { transform:translateY(0); box-shadow:0 7px 20px #a6382910 } 50% { transform:translateY(-3px); box-shadow:0 12px 24px #a6382918 } }
@@ -280,30 +270,32 @@
   .tabstrip { min-height:51px; gap:7px; padding:7px 14px 6px; background:#111113; border-bottom:1px solid #2a2529 }
   .window-brand { width:24px; height:24px; display:grid; place-items:center; flex:none; margin:0 8px 0 1px }
   .window-brand svg { display:block; width:22px; height:22px }
+  :root[data-theme="light"] .window-brand svg rect:nth-child(1) { fill:#f6e4e8 }
+  :root[data-theme="light"] .window-brand svg rect:nth-child(2) { fill:#fff }
   .traffic { margin-right:7px }
   .tab { height:37px; min-width:144px; max-width:230px; gap:10px; border-radius:11px; background:transparent; font-size:12px }
   .tab:not(.active):hover { background:#1b191c }
   .tab.active { border-color:#3c2a30; background:linear-gradient(180deg,#21191d,#171619); box-shadow:0 2px 9px #0004 }
   .tab.active { overflow:visible }
   .tab.active:before { display:none }
-  .browser.vertical-tabs .tab.active:before { display:block; content:"" }
+  .browser.vertical-tabs .tab.active:before { display:block; content:""; position:absolute; background:var(--red); box-shadow:0 0 7px #ef3f6170 }
   .browser.vertical-tabs .tab-indicator { display:none }
   .new-tab { width:31px; height:31px; border-radius:9px; font-size:21px }
   .chrome { position:relative; z-index:8; min-height:61px; gap:11px; padding:0 17px; border-bottom:1px solid #30272b; background:#151416 }
-  .settings-button,.settings-close { display:grid; place-items:center; flex:none; padding:0; border:1px solid #42343a; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease }
+  .settings-button,.settings-close { display:grid; place-items:center; flex:none; padding:0; border:1px solid #42343a; border-radius:50%; color:#c5c1bf; background:transparent; cursor:pointer; transition:background .16s var(--ease-out),color .16s var(--ease-out),border-color .16s var(--ease-out),transform .16s var(--ease-out) }
   .settings-control { display:flex; align-items:center; gap:8px }
   .settings-button { position:relative; width:34px; height:34px }
   .settings-button.has-update { width:auto; min-width:34px; display:flex; align-items:center; justify-content:center; gap:7px; padding:0 10px; border-radius:999px }
   .settings-button.has-update svg { flex:none }
-  .settings-update-label { color:#ee8296; font-size:10px; font-weight:650; white-space:nowrap; animation:settings-enter .18s ease both }
+  .settings-update-label { color:#ee8296; font-size:10px; font-weight:650; white-space:nowrap; animation:settings-enter .18s var(--ease-out) both }
   .settings-update-label[hidden] { display:none }
-  .settings-badge { position:absolute; top:-3px; right:-3px; width:10px; height:10px; border:2px solid #151416; border-radius:50%; background:#d94b67; box-shadow:0 0 0 2px #d94b671c; animation:update-badge-in .24s cubic-bezier(.16,1,.3,1) both }
+  .settings-badge { position:absolute; top:-3px; right:-3px; width:10px; height:10px; border:2px solid #151416; border-radius:50%; background:#d94b67; box-shadow:0 0 0 2px #d94b671c; animation:update-badge-in .24s var(--ease-out) both }
   .settings-badge[hidden] { display:none }
   @keyframes update-badge-in { from { opacity:0; transform:scale(.5) } to { opacity:1; transform:scale(1) } }
-  .settings-button svg { width:16px; height:16px; transition:transform .25s ease }
+  .settings-button svg { width:16px; height:16px; transition:transform .25s var(--ease-out) }
   .settings-button:hover,.settings-button[aria-expanded="true"] { color:#ff8296; border-color:#75404a; background:#28191e }
   .settings-button[aria-expanded="true"] svg { transform:rotate(28deg) }
-  .settings-panel { position:absolute; z-index:12; top:calc(100% + 9px); right:14px; width:min(326px,calc(100vw - 30px)); max-height:calc(100vh - 120px); overflow:auto; padding:17px; border:1px solid #49343d; border-radius:15px; color:#eee9eb; background:#171518f7; box-shadow:0 18px 55px #000a,0 0 0 1px #ffffff07; backdrop-filter:blur(20px); animation:settings-enter .16s ease both }
+  .settings-panel { position:absolute; z-index:12; top:calc(100% + 9px); right:14px; width:min(326px,calc(100vw - 30px)); max-height:calc(100vh - 120px); overflow:auto; padding:17px; border:1px solid #49343d; border-radius:15px; color:#eee9eb; background:#171518f7; box-shadow:0 18px 55px #000a,0 0 0 1px #ffffff07; backdrop-filter:blur(20px); animation:settings-enter .16s var(--ease-out) both }
   .settings-panel[hidden] { display:none }
   .settings-heading { display:flex; justify-content:space-between; align-items:center }
   .settings-eyebrow { color:var(--red); font-size:8px; font-weight:750; letter-spacing:.16em }
@@ -317,8 +309,8 @@
   .settings-row small { color:#8d878d; font-size:9px }
   .settings-panel .theme-toggle,.settings-panel .fullscreen-toggle { width:30px; height:30px; border-radius:9px; background:#201d21 }
   .settings-panel .theme-toggle:hover,.settings-panel .fullscreen-toggle:hover { background:#332329; border-color:#75404a }
-  .setting-switch { width:34px; height:20px; display:flex; align-items:center; padding:2px; border:1px solid #51474e; border-radius:999px; background:#302c30; cursor:pointer; transition:background .18s ease,border-color .18s ease }
-  .setting-switch span { width:14px; height:14px; border-radius:50%; background:#c6c0c4; transition:transform .18s ease,background .18s ease }
+  .setting-switch { width:34px; height:20px; display:flex; align-items:center; padding:2px; border:1px solid #51474e; border-radius:999px; background:#302c30; cursor:pointer; transition:background .18s var(--ease-out),border-color .18s var(--ease-out) }
+  .setting-switch span { width:14px; height:14px; border-radius:50%; background:#c6c0c4; transition:transform .26s var(--ease-spring),background .18s var(--ease-out) }
   .setting-switch[aria-checked="true"] { border-color:#a64961; background:#733346 }
   .setting-switch[aria-checked="true"] span { background:#fff; transform:translateX(14px) }
   .settings-divider { height:1px; margin:5px 0 12px; background:#302a2f }
@@ -326,12 +318,12 @@
   .settings-shortcuts>strong { margin-bottom:1px }
   .settings-shortcuts>div { display:flex; justify-content:space-between; align-items:center; color:#aaa4aa; font-size:9px }
   .settings-shortcuts kbd { padding:3px 6px; border:1px solid #423940; border-radius:5px; color:#d5cdd2; background:#211e22; font:inherit; font-size:8px }
-  .clear-recents { width:100%; margin-top:13px; padding:8px 10px; border:1px solid #49343d; border-radius:8px; color:#e77d91; background:#251a1e; text-align:center; font-size:9px; cursor:pointer; transition:background .15s ease,border-color .15s ease }
+  .clear-recents { width:100%; margin-top:13px; padding:8px 10px; border:1px solid #49343d; border-radius:8px; color:#e77d91; background:#251a1e; text-align:center; font-size:9px; cursor:pointer; transition:background .15s var(--ease-out),border-color .15s var(--ease-out) }
   .clear-recents:hover { border-color:#9a4a5d; background:#321d24 }
   @keyframes settings-enter { from { opacity:0; transform:translateY(-4px) scale(.99) } to { opacity:1; transform:translateY(0) scale(1) } }
   .tab-pane.settings-tab .empty { inset:0; padding:0; background:#0c0c0e; text-align:left }
   .settings-page-wrap { position:absolute; inset:0; width:100%; height:100%; display:block; overflow:auto; padding:0; text-align:left; background:#0c0c0e }
-  .settings-panel.settings-page { position:relative; top:auto; right:auto; width:100%; min-height:100%; max-height:none; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-content:start; align-items:start; column-gap:clamp(22px,5vw,64px); row-gap:0; overflow:visible; padding:clamp(26px,5vw,56px) clamp(22px,8vw,100px); border:0; border-radius:0; background:linear-gradient(145deg,#151316,#0c0c0e 68%); box-shadow:none; animation:settings-enter .22s ease both }
+  .settings-panel.settings-page { position:relative; top:auto; right:auto; width:100%; min-height:100%; max-height:none; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-content:start; align-items:start; column-gap:clamp(22px,5vw,64px); row-gap:0; overflow:visible; padding:clamp(26px,5vw,56px) clamp(22px,8vw,100px); border:0; border-radius:0; background:linear-gradient(145deg,#151316,#0c0c0e 68%); box-shadow:none; animation:settings-enter .22s var(--ease-out) both }
   .settings-panel.settings-page>.settings-heading,.settings-panel.settings-page>.settings-intro { grid-column:1/-1 }
   .settings-panel.settings-page .settings-heading h2 { font-size:22px }
   .settings-panel.settings-page .settings-intro { margin-bottom:18px; font-size:11px }
@@ -351,7 +343,7 @@
   @media(max-width:700px) { .settings-panel.settings-page { grid-template-columns:minmax(0,1fr); } .settings-panel.settings-page>.settings-heading,.settings-panel.settings-page>.settings-intro { grid-column:1 } }
   @media(max-width:520px) { .settings-panel.settings-page { padding:24px 18px } }
   /* Full-page Settings workspace with Chrome-style vertical category tabs. */
-  .settings-panel.settings-page { min-height:100%; display:grid; grid-template-columns:210px minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); align-content:start; align-items:stretch; gap:0 32px; padding:28px clamp(22px,4.2vw,62px); background:linear-gradient(145deg,#151316,#0c0c0e 68%) }
+  .settings-panel.settings-page { min-height:100%; display:grid; grid-template-columns:232px minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); align-content:start; align-items:stretch; gap:0 32px; padding:28px clamp(22px,4.2vw,62px); background:linear-gradient(145deg,#151316,#0c0c0e 68%) }
   .settings-panel.settings-page>.settings-heading { grid-column:1/-1; width:100%; height:auto; min-height:0; display:flex; align-items:center; justify-content:space-between; padding:0 0 20px; border:0; border-bottom:1px solid #302a2f; background:transparent; color:inherit }
   .settings-panel.settings-page .settings-title-block { display:grid; gap:4px }
   .settings-panel.settings-page .settings-heading h2 { margin:0; font-size:24px; letter-spacing:-.04em }
@@ -359,11 +351,11 @@
   .settings-panel.settings-page .settings-intro { margin:0; color:#999398; font-size:12px }
   .settings-panel.settings-page .settings-close { width:32px; height:32px; border-radius:9px }
   .settings-nav { min-width:0; display:flex; flex-direction:column; gap:4px; padding:23px 14px 23px 0; border-right:1px solid #302a2f }
-  .settings-nav-item { width:calc(100% - 16px); min-height:42px; display:grid; grid-template-columns:20px minmax(0,1fr) auto 14px; align-items:center; gap:9px; padding:0 10px; border:1px solid transparent; border-radius:8px; color:#aaa4aa; background:transparent; text-align:left; font:inherit; font-size:12px; cursor:pointer; transition:color .16s ease,background .16s ease,border-color .16s ease }
+  .settings-nav-item { width:100%; white-space:nowrap; min-height:42px; display:grid; grid-template-columns:20px minmax(0,1fr) auto 14px; align-items:center; gap:9px; padding:0 10px; border:1px solid transparent; border-radius:8px; color:#aaa4aa; background:transparent; text-align:left; font:inherit; font-size:12px; cursor:pointer; transition:color .16s var(--ease-out),background .16s var(--ease-out),border-color .16s var(--ease-out) }
   .settings-nav-item:hover { color:#f0e9ec; background:#1c191c }
   .settings-nav-item.active { color:#ffe8ed; border-color:#59313a; background:linear-gradient(100deg,#3b2028,#26191e); box-shadow:inset 2px 0 #ef3f61 }
   .settings-nav-icon { display:grid; place-items:center; color:#a69da3 }
-  .settings-nav-icon svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.55; stroke-linecap:round; stroke-linejoin:round; transition:color .18s ease,transform .18s ease }
+  .settings-nav-icon svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.55; stroke-linecap:round; stroke-linejoin:round; transition:color .18s var(--ease-out),transform .18s var(--ease-out) }
   #settingsTabAccessibility .settings-nav-icon svg { fill:currentColor; stroke:none }
   #settingsTabShortcuts .settings-nav-icon svg { fill:currentColor; stroke:none }
   #settingsTabBrowsing .settings-nav-icon svg { fill:currentColor; stroke:none }
@@ -371,12 +363,12 @@
   #settingsTabUpdates .settings-nav-icon svg { fill:currentColor; stroke:none }
   .update-app-icon svg { fill:currentColor; stroke:none }
   .settings-nav-item.active .settings-nav-icon { color:var(--red) }
-  .settings-nav-item>svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.4; opacity:0; transform:translateX(-3px); transition:opacity .16s ease,transform .16s ease }
+  .settings-nav-item>svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.4; opacity:0; transform:translateX(-3px); transition:opacity .16s var(--ease-out),transform .16s var(--ease-out) }
   .settings-nav-item.active>svg { opacity:.8; transform:none }
   .settings-tab-badge { padding:3px 6px; border:1px solid #75404a; border-radius:999px; color:#ff9bad; background:#3a2028; font:700 8px/1 "JetBrains Mono",ui-monospace,monospace; letter-spacing:.04em; white-space:nowrap }
   .settings-tab-badge[hidden] { display:none }
-  .settings-content { width:100%; min-width:0; min-height:0; padding:26px 0 38px; overflow:auto; scrollbar-color:#49343d transparent; scrollbar-width:thin }
-  .settings-category { width:min(100%,760px); margin:0 auto; animation:settings-category-in .2s ease both }
+  .settings-content { -webkit-mask-image:linear-gradient(#000 calc(100% - 26px),transparent); mask-image:linear-gradient(#000 calc(100% - 26px),transparent); width:100%; min-width:0; min-height:0; padding:26px 0 38px; overflow:auto; scrollbar-color:#49343d transparent; scrollbar-width:thin }
+  .settings-category { width:min(100%,760px); margin:0; animation:settings-category-in .2s var(--ease-out) both }
   .settings-category[hidden] { display:none }
   @keyframes settings-category-in { from { opacity:0; transform:translateY(5px) } to { opacity:1; transform:translateY(0) } }
   .settings-category-heading { margin:0 0 20px; text-align:left }
@@ -430,7 +422,7 @@
   @media(max-width:430px) { .settings-panel.settings-page .settings-card { padding-inline:12px } .settings-panel.settings-page .settings-row small { max-width:180px } .settings-panel.settings-page #settingsPanePrivacy .clear-recents { margin:6px 0 0; } .settings-panel.settings-page .clear-recents { font-size:8px } }
   .nav { gap:4px }
   .nav button { width:34px; height:34px }
-  .nav button:disabled { color:#565257; cursor:default; background:transparent; transform:none }
+  .nav button:disabled { color:#6d6970; cursor:default; background:transparent; transform:none }
   .nav button svg { width:16px; height:16px }
   .address-wrap { height:41px; padding:0 14px; gap:11px; border-color:#3b2b31; background:#0c0c0e }
   .address-wrap:focus-within { border-color:#ef3f61; box-shadow:0 0 0 3px #ef3f611c,0 5px 18px #0005 }
@@ -472,7 +464,7 @@
   @keyframes dot-glow { 0%,100% { box-shadow:0 0 0 3px #ef3f611c,0 0 7px #ef3f6150 } 50% { box-shadow:0 0 0 5px #ef3f612b,0 0 17px #ef3f61b8 } }
   .active-tab-status { max-width:min(36vw,340px); overflow:hidden; color:#e6e1e3; font-size:11px; font-weight:600; text-overflow:ellipsis; white-space:nowrap }
   .tab-count-status { padding:3px 8px; border:1px solid #3d3036; border-radius:999px; color:#a9a1a6; font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:9px; white-space:nowrap }
-  .active-tab-status.status-change,.tab-count-status.status-change { animation:status-change .24s ease both }
+  .active-tab-status.status-change,.tab-count-status.status-change { animation:status-change .24s var(--ease-out) both }
   @keyframes active-pulse { 0%,100% { box-shadow:0 0 0 3px #ef3f6114; opacity:.82 } 50% { box-shadow:0 0 0 5px #ef3f612b; opacity:1 } }
   @keyframes status-change { from { opacity:.45; transform:translateY(3px) } to { opacity:1; transform:translateY(0) } }
   .update-settings { display:grid; gap:8px; padding:1px 0 3px }
@@ -481,14 +473,14 @@
   .update-settings-head strong { color:#e9e4e6; font-size:10px; font-weight:650 }
   .update-settings-head small { color:#8d878d; font-size:9px }
   .test-mode-badge,.update-kicker span { padding:3px 6px; border:1px solid #68404c; border-radius:5px; color:#e58a9e; background:#261a1f; font:700 7px/1 "JetBrains Mono",ui-monospace,monospace; letter-spacing:.08em }
-  .check-updates-button { min-height:31px; border:1px solid #57343f; border-radius:8px; color:#f2e9ec; background:#281a20; font-size:9px; font-weight:600; cursor:pointer; transition:background .16s ease,border-color .16s ease }
+  .check-updates-button { min-height:31px; border:1px solid #57343f; border-radius:8px; color:#f2e9ec; background:#281a20; font-size:9px; font-weight:600; cursor:pointer; transition:background .16s var(--ease-out),border-color .16s var(--ease-out) }
   .check-updates-button:hover { border-color:#a04e64; background:#38202a }
   .test-scenario-label { color:#979096; font-size:8px }
   .test-scenario { width:100%; min-height:30px; padding:0 8px; border:1px solid #3b3339; border-radius:7px; color:#d5cdd2; background:#211e22; font-family:inherit; font-size:9px }
   .test-mode-note { margin:0; color:#827c82; font-size:8px }
-  .update-overlay { position:fixed; inset:0; z-index:60; display:grid; place-items:center; padding:20px; background:#030304a8; backdrop-filter:blur(12px); animation:update-fade .18s ease both }
+  .update-overlay { position:fixed; inset:0; z-index:60; display:grid; place-items:center; padding:20px; background:#030304a8; backdrop-filter:blur(12px); animation:update-fade .18s var(--ease-out) both }
   .update-overlay[hidden] { display:none }
-  .update-dialog { position:relative; width:min(450px,100%); padding:30px 34px 24px; overflow:hidden; border:1px solid #49343d; border-radius:20px; color:#f0ebed; background:radial-gradient(ellipse at 50% 0,#2a171e 0,#171518 48%); box-shadow:0 30px 90px #000b,0 0 0 1px #ef3f6108; text-align:center; animation:update-card-in .24s cubic-bezier(.16,1,.3,1) both }
+  .update-dialog { position:relative; width:min(450px,100%); padding:30px 34px 24px; overflow:hidden; border:1px solid #49343d; border-radius:20px; color:#f0ebed; background:radial-gradient(ellipse at 50% 0,#2a171e 0,#171518 48%); box-shadow:0 30px 90px #000b,0 0 0 1px #ef3f6108; text-align:center; animation:update-card-in .24s var(--ease-out) both }
   .update-close { position:absolute; top:13px; right:13px; width:27px; height:27px; border:1px solid #45353c; border-radius:50%; color:#a59ca2; background:#211d21; font-size:17px; line-height:1; cursor:pointer }
   .update-close:hover { color:#fff; background:#38232b }
   .update-app-icon { width:60px; height:60px; display:grid; place-items:center; margin:0 auto 14px; border:1px solid #75404d; border-radius:18px; color:#ff8296; background:linear-gradient(145deg,#351b24,#21171c); box-shadow:0 9px 30px #ef3f611b }
@@ -511,7 +503,7 @@
   .update-progress-track span { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,#bd3f5d,#f17a91); box-shadow:0 0 10px #ef3f614c; transition:width .16s linear }
   .update-error { margin-top:16px; padding:10px 12px; border:1px solid #75424c; border-radius:9px; color:#f0a3af; background:#2d1b21; font-size:10px; line-height:1.5; text-align:left }
   .update-actions { display:flex; justify-content:center; gap:9px; margin-top:20px }
-  .update-actions button { min-width:116px; min-height:35px; padding:0 15px; border-radius:9px; font-size:10px; font-weight:650; cursor:pointer; transition:transform .15s ease,background .15s ease,border-color .15s ease }
+  .update-actions button { min-width:116px; min-height:35px; padding:0 15px; border-radius:9px; font-size:10px; font-weight:650; cursor:pointer; transition:transform .15s var(--ease-out),background .15s var(--ease-out),border-color .15s var(--ease-out) }
   .update-actions button:active { transform:scale(.97) }
   .update-later { border:1px solid #493e44; color:#d6cfd3; background:#211e22 }
   .update-later:hover { border-color:#6a5862; background:#2a252b }
@@ -541,7 +533,7 @@
   :root[data-theme="light"] .update-error { border-color:#e6bac4; color:#8e3047; background:#fff1f4 }
   :root[data-theme="light"] .update-later { border-color:#ddd3d9; color:#514a50; background:#f8f5f7 }
   @media(max-width:500px) { .update-dialog { padding:27px 20px 20px } .update-actions button { min-width:0; flex:1 } }
-  .below-right button { font-size:11px }
+  .below-right button { font-size:12px }
   :root[data-theme="light"] body { background:radial-gradient(ellipse at 50% -15%,#f9e9ed 0,transparent 48%),#eeeef1 }
   :root[data-theme="light"] .browser { border-color:#d8d1d5; background:#fff; box-shadow:0 20px 58px #33232a1c,0 0 0 1px #ef3f6108 }
   :root[data-theme="light"] .tabstrip { background:#e9e7ea; border-bottom-color:#d8d4d9 }
@@ -600,7 +592,7 @@
     .privacy-points span { padding:5px 7px }
     .tab { min-width:112px; max-width:145px; height:34px; padding-inline:8px }
     .chrome { gap:5px }
-    .nav button { width:25px; height:28px }
+    .nav button { width:31px; height:38px }
     .nav button svg { width:14px; height:14px }
     .address-wrap { padding-inline:8px; gap:6px }
     .bookmark-toggle { width:21px; height:21px }
@@ -654,7 +646,7 @@
     transform:translateY(-50%);
     animation:none;
   }
-  .browser.vertical-tabs .tab.closing { animation:vertical-tab-close .1s cubic-bezier(.4,0,1,1) both }
+  .browser.vertical-tabs .tab.closing { animation:vertical-tab-close .12s cubic-bezier(.5,0,.75,0) both }
   @keyframes vertical-tab-close {
     to { opacity:0; height:0; min-height:0; margin-top:-2.5px; margin-bottom:-2.5px; padding-top:0; padding-bottom:0; transform:scale(.98); border-color:transparent }
   }
@@ -667,13 +659,15 @@
     border:1px solid transparent;
     border-radius:9px;
   }
-  .browser.vertical-tabs .new-tab:hover { border-color:#49343d }
+  .browser.vertical-tabs .new-tab { border-style:dashed; border-color:#2f292d }
+  .browser.vertical-tabs .new-tab:hover { border-color:#49343d; border-style:solid }
   .browser.vertical-tabs .chrome { grid-column:2; grid-row:1; min-width:0 }
   .browser.vertical-tabs .bookmarks-bar { grid-column:2; grid-row:2; min-width:0 }
   .browser.vertical-tabs .stage { grid-column:2; grid-row:3; min-width:0 }
   .browser.vertical-tabs .below { grid-column:2; grid-row:4; min-width:0 }
   :root[data-theme="light"] .browser.vertical-tabs .tabstrip { background:#f0eef1; border-right-color:#e5dce0 }
   :root[data-theme="light"] .browser.vertical-tabs .tab.active:before { background:var(--red); box-shadow:0 0 7px #c9365240 }
+  :root[data-theme="light"] .browser.vertical-tabs .new-tab { border-color:#e0d6db }
   :root[data-theme="light"] .browser.vertical-tabs .new-tab:hover { border-color:#ead1d8 }
   @media(max-width:680px) {
     .browser.vertical-tabs { grid-template-columns:58px minmax(0,1fr) }
@@ -736,9 +730,9 @@
     overflow:hidden;
     visibility:visible;
     transform:translateY(0);
-    transition:height .26s cubic-bezier(.22,.8,.24,1),min-height .26s cubic-bezier(.22,.8,.24,1),padding .26s cubic-bezier(.22,.8,.24,1),border-width .26s ease,opacity .18s ease,transform .26s cubic-bezier(.22,.8,.24,1),visibility 0s linear;
+    transition:height .26s var(--ease-out),min-height .26s var(--ease-out),padding .26s var(--ease-out),border-width .26s var(--ease-out),opacity .18s var(--ease-out),transform .26s var(--ease-out),visibility 0s linear;
   }
-  .bookmarks-bar.collapsed {
+  .bookmarks-bar.collapsed, .browser:not(.bookmark-sidebar-right) .bookmarks-bar.no-items {
     height:0 !important;
     min-height:0 !important;
     max-height:0;
@@ -749,19 +743,20 @@
     transform:translateY(-5px);
     visibility:hidden;
     pointer-events:none;
-    transition:height .26s cubic-bezier(.22,.8,.24,1),min-height .26s cubic-bezier(.22,.8,.24,1),padding .26s cubic-bezier(.22,.8,.24,1),border-width .26s ease,opacity .18s ease,transform .26s cubic-bezier(.22,.8,.24,1),visibility 0s linear .26s;
+    transition:height .26s var(--ease-out),min-height .26s var(--ease-out),padding .26s var(--ease-out),border-width .26s var(--ease-out),opacity .18s var(--ease-out),transform .26s var(--ease-out),visibility 0s linear .26s;
   }
   .settings-panel.settings-page .settings-row.bookmark-placement-row { display:block; padding:15px 0 17px }
   .settings-panel.settings-page .bookmark-placement-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px }
   .bookmark-placement-head>div { display:grid; gap:3px }
   .bookmark-placement-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px }
-  .bookmark-placement-option { min-width:0; min-height:68px; display:flex; align-items:center; gap:9px; padding:10px; border:1px solid #393137; border-radius:10px; color:#aaa4aa; background:#121113; text-align:left; cursor:pointer; transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease }
+  .bookmark-placement-option { min-width:0; min-height:68px; display:flex; align-items:center; gap:9px; padding:10px; border:1px solid #393137; border-radius:10px; color:#aaa4aa; background:#121113; text-align:left; cursor:pointer; transition:background .18s var(--ease-out),border-color .18s var(--ease-out),color .18s var(--ease-out),transform .18s var(--ease-out),box-shadow .18s var(--ease-out) }
   .bookmark-placement-option:hover { border-color:#70404a; color:#eee6e9; background:#21191d; transform:translateY(-1px) }
   .bookmark-placement-option:focus-visible { outline:2px solid var(--red); outline-offset:2px }
   .home-sections { display:contents }
   .home-intro .jumpback-section,.home-intro .recent-section { margin:18px auto 0 }
   .recent-empty-note { min-height:76px; display:grid; place-items:center }
   .recent-empty-note[hidden] { display:none }
+  .empty .home-privacy-note { font-size:11px; text-wrap:balance }
   .home-privacy-note { max-width:480px; margin:22px auto 0; padding-top:12px; border-top:1px solid #302a2f; color:#898387; font-size:10px; line-height:1.55; text-align:center }
   :root[data-theme="light"] .home-privacy-note { border-top-color:#e5dce0; color:#89838a }
   .home-content { padding:clamp(20px,4vw,34px); border:1px solid #38292e; border-radius:20px; background:linear-gradient(145deg,#111012eF,#0c0c0eeF); box-shadow:0 16px 44px #0003,0 0 30px #ef3f6108 }
@@ -778,7 +773,7 @@
   .home-card-copy { display:flex; flex:1; align-items:center; gap:12px; text-align:left }
   .home-card-title { color:#e8e3e5; font-size:12px; font-weight:600 }
   .home-card-url { display:none }
-  .home-card-time { flex:none; margin-left:auto; color:#615d63; font:10px "JetBrains Mono",ui-monospace,monospace }
+  .home-card-time { flex:none; margin-left:auto; color:#827d84; font:10px "JetBrains Mono",ui-monospace,monospace }
   .jumpback-card { min-height:60px; margin-bottom:8px; padding:7px 12px 7px 17px; border:1px solid #302b30; border-left:3px solid var(--red); border-radius:12px; background:#171719 }
   .jumpback-card:hover { border-color:#4a363d; border-left-color:var(--red); border-radius:15px; background:#1d191d }
   .jumpback-card .home-card-mark { width:38px; height:38px; border-radius:9px }
@@ -822,11 +817,198 @@
   html { scroll-behavior:smooth }
   button { -webkit-tap-highlight-color:transparent }
   button:active:not(:disabled):not(.new-tab) { transform:scale(.985) }
-  body,.browser,.chrome,.tabstrip,.stage,.bookmarks-bar,.home-content,.settings-panel,.settings-card,.tab,.home-card,.bookmark-placement-option { transition-timing-function:cubic-bezier(.22,.8,.24,1) }
-  body,.browser,.chrome,.tabstrip,.stage,.bookmarks-bar,.home-content,.settings-panel,.settings-card { transition:background-color .24s ease,color .2s ease,border-color .24s ease,box-shadow .24s ease }
-  :focus-visible { outline:2px solid #ef3f61; outline-offset:2px; transition:outline-offset .16s ease,box-shadow .16s ease }
-  .settings-category.active { animation:settings-category-in .22s cubic-bezier(.22,.8,.24,1) both }
+  body,.browser,.chrome,.tabstrip,.stage,.bookmarks-bar,.home-content,.settings-panel,.settings-card,.tab,.home-card,.bookmark-placement-option { transition-timing-function:var(--ease-out) }
+  body,.browser,.chrome,.tabstrip,.stage,.bookmarks-bar,.home-content,.settings-panel,.settings-card { transition:background-color .24s var(--ease-out),color .2s var(--ease-out),border-color .24s var(--ease-out),box-shadow .24s var(--ease-out) }
+  :focus-visible { outline:2px solid #ef3f61; outline-offset:2px; transition:outline-offset .16s var(--ease-out),box-shadow .16s var(--ease-out) }
+  .settings-category.active { animation:settings-category-in .22s var(--ease-out) both }
   @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto } button:active:not(:disabled):not(.new-tab) { transform:none } }
+  /* ===== Productivity features ===== */
+  .browser { position:relative }
+  .tab[hidden] { display:none !important }
+  .settings-row[hidden] { display:none !important }
+  .tab.asleep .tab-title,.tab.asleep .favicon { opacity:.5 }
+  .tab.in-split:not(.active) { border-color:#4b3139 }
+  :root[data-theme="light"] .tab.in-split:not(.active) { border-color:#dcb7c0 }
+  .chip-btn { background:transparent; cursor:pointer; transition:color .16s var(--ease-out),border-color .16s var(--ease-out),background .16s var(--ease-out) }
+  .chip-btn:hover { color:#e8e3e5; border-color:#76404b; background:#21181c }
+  .chip-btn[hidden] { display:none }
+  #wsChip { max-width:140px; overflow:hidden; text-overflow:ellipsis }
+  :root[data-theme="light"] .chip-btn:hover { color:#302c30; border-color:#d99a9f; background:#fff7f8 }
+  .below-right button.on { color:var(--red) }
+  @media(max-width:560px) { #paletteButton,#splitButton { display:none } #wsChip { max-width:84px } }
+
+  /* Split view */
+  .stage.split .tab-pane.active { display:block }
+  .stage.split .tab-pane.slot-0 { right:50% }
+  .stage.split .tab-pane.slot-1 { left:50% }
+  .stage.split.split-v .tab-pane.slot-0 { right:0; bottom:50% }
+  .stage.split.split-v .tab-pane.slot-1 { left:0; top:50% }
+  .stage.split:after { content:""; position:absolute; z-index:4; left:50%; top:0; bottom:0; width:1px; pointer-events:none; background:#3a2a30 }
+  .stage.split.split-v:after { left:0; right:0; top:50%; bottom:auto; width:auto; height:1px }
+  .stage.split .tab-pane.focused:after { content:""; position:absolute; z-index:5; inset:0; pointer-events:none; box-shadow:inset 0 2px 0 var(--red) }
+  :root[data-theme="light"] .stage.split:after { background:#ddd3d8 }
+
+  /* Home launcher tiles */
+  .tile-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:8px; margin:0 0 4px }
+  .tile { min-width:0; display:flex; flex-direction:column; align-items:center; gap:8px; padding:14px 6px 11px; border:1px solid #302a2f; border-radius:12px; color:#e8e3e5; background:#151416; cursor:pointer; transition:border-color .16s var(--ease-out),background .16s var(--ease-out),transform .16s var(--ease-out) }
+  .tile:hover { border-color:#76404b; background:#21181c; transform:translateY(-1px) }
+  .tile-icon { width:34px; height:34px; display:grid; place-items:center; border-radius:10px; background:#25171b; color:#ef3f61; font-size:14px; font-weight:700; text-transform:uppercase }
+  .tile-icon img { display:none; width:22px; height:22px; border-radius:5px; object-fit:contain }
+  .tile-icon.has-image { font-size:0 }
+  .tile-icon.has-image img { display:block }
+  .tile-name { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; font-weight:600 }
+  .tile.add { border-style:dashed; color:#a09b98; background:transparent }
+  .tile.add .tile-icon { border:1px dashed #4a3a40; background:transparent; font-size:19px; font-weight:400 }
+  :root[data-theme="light"] .tile { border-color:#e5dce0; color:#302c30; background:#fff }
+  :root[data-theme="light"] .tile:hover { border-color:#d99a9f; background:#fff7f8 }
+  :root[data-theme="light"] .tile-icon { background:#fff1f3 }
+  :root[data-theme="light"] .tile.add { color:#857f86; background:transparent }
+  :root[data-theme="light"] .tile.add .tile-icon { border-color:#dccdd2; background:transparent }
+
+  /* Bookmark folders and drag */
+  .bookmark-link.dragging { opacity:.4 }
+  .bookmark-link.drop-before { box-shadow:inset 2px 0 var(--red) }
+  .bookmark-link.drop-after { box-shadow:inset -2px 0 var(--red) }
+  .browser.bookmark-sidebar-right .bookmark-link.drop-before { box-shadow:inset 0 2px var(--red) }
+  .browser.bookmark-sidebar-right .bookmark-link.drop-after { box-shadow:inset 0 -2px var(--red) }
+
+  /* Command palette */
+  .palette-overlay { position:fixed; inset:0; z-index:70; display:flex; justify-content:center; align-items:flex-start; padding:12vh 16px 16px; background:#030304a8; backdrop-filter:blur(8px); animation:update-fade .14s var(--ease-out) both }
+  .palette-overlay[hidden] { display:none }
+  .palette { width:min(600px,100%); max-height:72vh; display:flex; flex-direction:column; overflow:hidden; border:1px solid #49343d; border-radius:16px; color:#eee9eb; background:#171518; box-shadow:0 30px 90px #000b,0 0 0 1px #ef3f6108; animation:update-card-in .2s var(--ease-out) both }
+  .palette-input-row { display:flex; align-items:center; gap:12px; padding:0 16px; border-bottom:1px solid #302a2f }
+  .palette-input-row kbd { flex:none; padding:3px 6px; border:1px solid #423940; border-radius:5px; color:#d5cdd2; background:#211e22; font:9px "JetBrains Mono",ui-monospace,monospace }
+  #paletteInput { flex:1; min-width:0; height:54px; border:0; outline:0; color:#eee9eb; background:transparent; font-size:15px; letter-spacing:-.01em }
+  #paletteInput::placeholder { color:#8d878d }
+  .palette-list { overflow:auto; padding:6px; scrollbar-width:thin; scrollbar-color:#49343d transparent }
+  .palette-group { padding:10px 10px 4px; color:#8f898e; font:700 9px "JetBrains Mono",ui-monospace,monospace; letter-spacing:.13em; text-transform:uppercase }
+  .palette-item { width:100%; min-height:40px; display:flex; align-items:center; gap:12px; padding:0 10px; border:0; border-radius:9px; color:#e8e3e5; background:transparent; text-align:left; font-size:13px; cursor:pointer }
+  .palette-item.selected { color:#fff; background:#382326 }
+  .palette-icon { width:18px; flex:none; color:#df646b; text-align:center; font-size:13px }
+  .palette-label { min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .palette-hint { flex:none; max-width:44%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#8f898e; font:10px "JetBrains Mono",ui-monospace,monospace }
+  .palette-empty { padding:26px 12px; color:#8f898e; text-align:center; font-size:12px }
+  .palette-foot { display:flex; gap:16px; padding:10px 16px; border-top:1px solid #302a2f; color:#8f898e; font:10px "JetBrains Mono",ui-monospace,monospace }
+  :root[data-theme="light"] .palette { border-color:#e2cbd2; color:#302c30; background:#fff; box-shadow:0 30px 80px #26171f35 }
+  :root[data-theme="light"] .palette-input-row,:root[data-theme="light"] .palette-foot { border-color:#eadfe3 }
+  :root[data-theme="light"] #paletteInput { color:#302c30 }
+  :root[data-theme="light"] .palette-input-row kbd { border-color:#e2d7dd; color:#534b52; background:#f6f2f4 }
+  :root[data-theme="light"] .palette-item { color:#302c30 }
+  :root[data-theme="light"] .palette-item.selected { color:#2a2226; background:#f8e9ed }
+  :root[data-theme="light"] .palette-hint,:root[data-theme="light"] .palette-group,:root[data-theme="light"] .palette-empty,:root[data-theme="light"] .palette-foot { color:#857f86 }
+
+  /* Scratchpad */
+  .notes-panel { position:absolute; z-index:8; top:0; right:0; bottom:0; width:min(330px,100%); display:flex; flex-direction:column; border-left:1px solid #38292e; color:#eee9eb; background:#131214f7; box-shadow:-14px 0 40px #0006; backdrop-filter:blur(14px); animation:settings-enter .18s var(--ease-out) both }
+  .notes-panel[hidden] { display:none }
+  .notes-head { display:flex; align-items:center; gap:8px; padding:11px 12px; border-bottom:1px solid #302a2f }
+  .notes-head strong { flex:1; font-size:12px }
+  .notes-count { color:#8d878d; font:10px "JetBrains Mono",ui-monospace,monospace }
+  .notes-head button { min-height:26px; padding:0 9px; border:1px solid #403540; border-radius:7px; color:#cfc7cc; background:#211e22; font-size:11px; cursor:pointer }
+  .notes-head button:hover { color:#fff; border-color:#76404b; background:#2c1f24 }
+  .notes-head .notes-close { width:26px; padding:0; font-size:15px; line-height:1 }
+  .notes-text { flex:1; width:100%; padding:14px; resize:none; border:0; outline:0; color:#e8e3e5; background:transparent; font:13px/1.6 Inter,ui-sans-serif,system-ui,sans-serif }
+  .notes-text::placeholder { color:#7d777d }
+  :root[data-theme="light"] .notes-panel { border-left-color:#e5dce0; color:#302c30; background:#fffffff7; box-shadow:-14px 0 40px #33202a14 }
+  :root[data-theme="light"] .notes-head { border-bottom-color:#e8dfe3 }
+  :root[data-theme="light"] .notes-head button { border-color:#e0d6db; color:#514a50; background:#f8f5f7 }
+  :root[data-theme="light"] .notes-text { color:#302c30 }
+
+  /* App mode */
+  .browser.app-mode { display:flex !important; flex-direction:column }
+  .browser.app-mode .tabstrip,.browser.app-mode .chrome,.browser.app-mode .bookmarks-bar,.browser.app-mode .below { display:none !important }
+  .browser.app-mode .stage { flex:1 }
+  .app-pill { position:absolute; z-index:30; right:14px; bottom:14px; display:flex; gap:2px; padding:4px; border:1px solid #49343d; border-radius:999px; background:#171518e6; box-shadow:0 8px 28px #0007; backdrop-filter:blur(14px); opacity:.32; transition:opacity .2s var(--ease-out) }
+  .app-pill:hover,.app-pill:focus-within { opacity:1 }
+  .app-pill[hidden] { display:none }
+  .app-pill button { min-width:30px; height:30px; padding:0 8px; border:0; border-radius:999px; color:#d5cdd2; background:transparent; font-size:15px; line-height:1; cursor:pointer }
+  .app-pill button[data-pill="palette"] { font:10px "JetBrains Mono",ui-monospace,monospace }
+  .app-pill button:hover { color:#fff; background:#382326 }
+  :root[data-theme="light"] .app-pill { border-color:#e2cbd2; background:#ffffffe6; box-shadow:0 8px 28px #33202a22 }
+  :root[data-theme="light"] .app-pill button { color:#514a50 }
+  :root[data-theme="light"] .app-pill button:hover { color:#2a2226; background:#f8e9ed }
+
+
+  .tile-cell { position:relative; display:flex }
+  .tile-cell .tile { flex:1 }
+  .tile-remove { position:absolute; top:5px; right:5px; width:18px; height:18px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; color:#c9c1c6; background:#2a2227; font-size:13px; line-height:1; opacity:0; cursor:pointer; transition:opacity .15s var(--ease-out),background .15s var(--ease-out) }
+  .tile-cell:hover .tile-remove,.tile-remove:focus-visible { opacity:1 }
+  .tile-remove:hover { color:#fff; background:#ef3f61 }
+  :root[data-theme="light"] .tile-remove { color:#6a626a; background:#efe6ea }
+  .tile.add { width:100%; min-height:76px }
+  .folder-pop { position:fixed; z-index:45; min-width:190px; max-width:290px; max-height:50vh; overflow:auto; display:flex; flex-direction:column; gap:2px; padding:6px; border:1px solid #49343d; border-radius:12px; background:#171518; box-shadow:0 16px 44px #000a; animation:update-card-in .16s var(--ease-out) both }
+  .folder-pop[hidden] { display:none }
+  .folder-pop .bookmark-link { width:100%; max-width:none; justify-content:flex-start }
+  :root[data-theme="light"] .folder-pop { border-color:#e2cbd2; background:#fff; box-shadow:0 16px 44px #33202a2a }
+  .folder-btn[aria-expanded="true"] { color:#fff; border-color:#76404b }
+  /* Settings extras */
+  .settings-select { width:auto; min-width:150px; max-width:240px; flex:none }
+  .settings-panel.settings-page .settings-row.accent-row { display:block; padding:15px 0 17px }
+  .accent-head { display:grid; gap:3px; margin-bottom:12px }
+  .settings-panel.settings-page .accent-swatches { display:flex !important; flex-direction:row !important; align-items:center; flex-wrap:wrap; gap:9px }
+  .settings-panel.settings-page .accent-swatch { width:26px; height:26px; min-height:0; flex:none }
+  .below .chip-btn { padding:3px 8px; border:1px solid #3d3036; border-radius:999px; color:#a9a1a6; font:9px "JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace }
+  :root[data-theme="light"] .below .chip-btn { border-color:#e5dce0; color:#777078 }
+  .accent-swatch { width:26px; height:26px; padding:0; border:2px solid transparent; border-radius:50%; background:var(--sw); cursor:pointer; box-shadow:inset 0 0 0 1px #0004; transition:transform .16s var(--ease-out),border-color .16s var(--ease-out) }
+  .accent-swatch:hover { transform:scale(1.1) }
+  .accent-swatch[aria-checked="true"] { border-color:#f4f0f2; box-shadow:0 0 0 2px #0006 }
+  .accent-custom { position:relative; width:26px; height:26px; display:grid; place-items:center; overflow:hidden; border:1px dashed #6a5a61; border-radius:50%; cursor:pointer }
+  .accent-custom input { position:absolute; inset:-6px; width:40px; height:40px; padding:0; border:0; opacity:0; cursor:pointer }
+  .accent-custom:before { content:"+"; color:#a99fa5; font-size:14px; line-height:1 }
+  :root[data-theme="light"] .accent-swatch[aria-checked="true"] { border-color:#302c30; box-shadow:0 0 0 2px #fff }
+  :root[data-theme="light"] .accent-custom { border-color:#c9bcc2 }
+  .backup-actions { display:flex; flex-wrap:wrap; gap:8px }
+  .settings-panel.settings-page #settingsPanePrivacy .backup-actions .clear-recents { margin-left:0 }
+  .backup-btn { color:#d9d2d6; border-color:#40353b; background:#211e22 }
+  .backup-btn:hover { color:#fff; border-color:#76404b; background:#2c1f24 }
+  :root[data-theme="light"] .backup-btn { color:#514a50; border-color:#e0d6db; background:#f8f5f7 }
+
+  /* ===== Motion system: quick, calm, GPU-friendly ===== */
+  :root { --ease-out:cubic-bezier(.22,1,.36,1); --ease-in:cubic-bezier(.5,0,.75,0); --ease-spring:cubic-bezier(.34,1.45,.64,1) }
+  @keyframes pop-in { from { opacity:0; transform:translateY(8px) scale(.965) } to { opacity:1; transform:none } }
+  @keyframes sheet-out { to { opacity:0; transform:translateY(-4px) scale(.985) } }
+  @keyframes fade-out { to { opacity:0 } }
+  @keyframes panel-in { from { opacity:0; transform:translateX(16px) } to { opacity:1; transform:none } }
+  @keyframes panel-out { to { opacity:0; transform:translateX(14px) } }
+  @keyframes pill-in { from { opacity:0; transform:translateY(10px) scale(.94) } }
+  @keyframes soft-in { from { opacity:0 } }
+  @keyframes stage-switch { from { opacity:.35 } }
+  @keyframes ping { from { opacity:.45; transform:scale(1) } to { opacity:0; transform:scale(2.7) } }
+  @keyframes star-pop { 0% { transform:scale(1) } 35% { transform:scale(1.34) rotate(-12deg) } 100% { transform:scale(1) } }
+
+  /* ambient dots: transform/opacity ring instead of repainting box-shadows */
+  .active-dot,.home-kicker span { position:relative; animation:none !important; box-shadow:0 0 0 3px #ef3f6124 }
+  .active-dot:after,.home-kicker span:after { content:""; position:absolute; inset:0; border-radius:50%; background:#ef3f61; pointer-events:none; animation:ping 2.6s var(--ease-out) infinite }
+
+  /* overlays enter and leave */
+  .palette-overlay { animation:update-fade .16s var(--ease-out) both }
+  .palette { animation:pop-in .22s var(--ease-out) both; transform-origin:50% 0 }
+  .palette-overlay.leaving { pointer-events:none; animation:fade-out .12s var(--ease-in) both }
+  .palette-overlay.leaving .palette { animation:sheet-out .12s var(--ease-in) both }
+  .palette-item { transition:background-color .1s linear,color .1s linear }
+  .palette-item:active { transform:scale(.99) }
+  .notes-panel { animation:panel-in .22s var(--ease-out) both }
+  .notes-panel.leaving { pointer-events:none; animation:panel-out .14s var(--ease-in) both }
+  .folder-pop { animation:pop-in .16s var(--ease-out) both; transform-origin:top left }
+  .app-pill { animation:pill-in .28s var(--ease-out) backwards }
+  .browser.mode-switching .stage { animation:stage-switch .26s var(--ease-out) both }
+
+  /* split view glides between layouts */
+  .tab-pane { transition:right .24s var(--ease-out),bottom .24s var(--ease-out),left .24s var(--ease-out),top .24s var(--ease-out) }
+  .stage.split:after { animation:soft-in .3s var(--ease-out) backwards }
+  .stage.split .tab-pane.focused:after { animation:soft-in .22s var(--ease-out) backwards }
+
+  /* tactile press + lift */
+  .tile { transition:border-color .16s var(--ease-out),background-color .16s var(--ease-out),transform .2s var(--ease-out),box-shadow .2s var(--ease-out) }
+  .tile:hover { box-shadow:0 10px 24px #0006 }
+  .tile:active { transform:scale(.97); transition-duration:.08s }
+  .bookmark-link:active,.home-card:active,.palette-item:active { transform:scale(.98); transition-duration:.08s }
+  :root[data-theme="light"] .tile:hover { box-shadow:0 10px 24px #33202a1c }
+  #bookmarkCurrent.pop svg { animation:star-pop .32s var(--ease-spring) }
+
+  /* theme / accent changes cross-fade instead of snapping */
+  :root.theme-switching *,:root.theme-switching *::before,:root.theme-switching *::after { transition:background-color .26s var(--ease-out),color .26s var(--ease-out),border-color .26s var(--ease-out),fill .26s var(--ease-out),stroke .26s var(--ease-out),box-shadow .26s var(--ease-out) !important }
+
+  @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important } }
 </style>
 </head>
 <body>
@@ -834,7 +1016,7 @@
   <main>
     <section class="browser" aria-label="Website preview">
       <div class="tabstrip" id="tabstrip" role="tablist" aria-label="Browser tabs">
-        <div class="traffic" aria-hidden="true"><i></i><i></i><i></i></div><div class="window-brand" aria-label="Frame"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#171719"/><rect x="13" y="15" width="38" height="34" rx="7" fill="#211719" stroke="#ef3f61" stroke-width="3"/><path d="M14.5 25h35" stroke="#ef3f61" stroke-width="3"/><circle cx="20" cy="20" r="1.7" fill="#ef3f61"/><circle cx="25.5" cy="20" r="1.7" fill="#ef3f61" opacity=".72"/><path d="m24 36 5.5 5.5L41 30" fill="none" stroke="#ef3f61" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="traffic"><i data-act="close" title="Close tab"></i><i></i><i data-act="fullscreen" title="Toggle fullscreen"></i></div><div class="window-brand" aria-label="Frame"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#171719"/><rect x="13" y="15" width="38" height="34" rx="7" fill="#211719" stroke="#ef3f61" stroke-width="3"/><path d="M14.5 25h35" stroke="#ef3f61" stroke-width="3"/><circle cx="20" cy="20" r="1.7" fill="#ef3f61"/><circle cx="25.5" cy="20" r="1.7" fill="#ef3f61" opacity=".72"/><path d="m24 36 5.5 5.5L41 30" fill="none" stroke="#ef3f61" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       </div>
       <div class="chrome">
         <div class="nav" role="group" aria-label="Browser navigation">
@@ -862,15 +1044,15 @@
               <div class="settings-category-heading"><span class="settings-eyebrow">PERSONALIZE</span><h3>Appearance</h3><p>Adjust how Frame looks and what stays within reach.</p></div>
               <div class="settings-card"><div class="settings-row"><div><strong>Color theme</strong><small>Choose dark or light appearance</small></div><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode" title="Switch to light mode"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.5 15.3A8.5 8.5 0 0 1 8.7 3.5 8.5 8.5 0 1 0 20.5 15.3Z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
               <div class="settings-row bookmark-placement-row"><div class="bookmark-placement-head"><div><strong>Bookmarks</strong><small>Choose where saved links appear</small></div></div><div class="bookmark-placement-options" id="bookmarkPlacementOptions" role="radiogroup" aria-label="Bookmark placement"><button class="bookmark-placement-option" type="button" role="radio" aria-checked="true" data-bookmark-placement="bar"><span class="bookmark-placement-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="2.5" y="3.5" width="15" height="13" rx="2"/><path d="M2.5 7.5h15M5 5.5h.1m2.4 0h.1M5.5 11h9M5.5 13.5h6"/></svg></span><span class="bookmark-placement-copy"><strong>Below address bar</strong><small>Compact row</small></span></button><button class="bookmark-placement-option" type="button" role="radio" aria-checked="false" data-bookmark-placement="sidebar"><span class="bookmark-placement-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="2.5" y="3.5" width="15" height="13" rx="2"/><path d="M7.5 3.5v13M10.5 7h4m-4 3h4m-4 3h4"/></svg></span><span class="bookmark-placement-copy"><strong>Right sidebar</strong><small>Vertical list</small></span></button><button class="bookmark-placement-option" type="button" role="radio" aria-checked="false" data-bookmark-placement="hidden"><span class="bookmark-placement-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M3 10s2.4-4 7-4 7 4 7 4-2.4 4-7 4-7-4-7-4Z"/><circle cx="10" cy="10" r="1.8"/><path d="m4 16 12-12"/></svg></span><span class="bookmark-placement-copy"><strong>Hidden</strong><small>Keep bookmarks saved</small></span></button></div></div>
-              <div class="settings-row"><div><strong>Vertical tabs</strong><small>Show tabs in a sidebar like Chrome</small></div><button class="setting-switch" id="verticalTabsToggle" type="button" role="switch" aria-checked="false"><span></span></button></div></div>
+              <div class="settings-row"><div><strong>Vertical tabs</strong><small>Show tabs in a sidebar like Chrome</small></div><button class="setting-switch" id="verticalTabsToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row accent-row"><div class="accent-head"><strong>Accent color</strong><small>Tints highlights, icons and active states</small></div><div class="accent-swatches" id="accentSwatches" role="radiogroup" aria-label="Accent color"><label class="accent-custom" title="Custom color"><input type="color" id="accentCustom" value="#ef3f61" aria-label="Custom accent color"></label></div></div></div>
             </section>
             <section class="settings-category" id="settingsPaneBrowsing" role="tabpanel" aria-labelledby="settingsTabBrowsing" data-settings-pane="browsing" hidden>
               <div class="settings-category-heading"><span class="settings-eyebrow">BROWSER BEHAVIOR</span><h3>Browsing</h3><p>Choose how tabs and new tab pages behave.</p></div>
-              <div class="settings-card"><div class="settings-row"><div><strong>Open new tabs in background</strong><small>Keep your current page selected when creating a tab</small></div><button class="setting-switch" id="backgroundTabsToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row"><div><strong>Show session recents</strong><small>Show Jump Back In and recent pages on new tabs</small></div><button class="setting-switch" id="showRecentsToggle" type="button" role="switch" aria-checked="true"><span></span></button></div></div>
+              <div class="settings-card"><div class="settings-row"><div><strong>Open new tabs in background</strong><small>Keep your current page selected when creating a tab</small></div><button class="setting-switch" id="backgroundTabsToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row"><div><strong>Show session recents</strong><small>Show Jump Back In and recent pages on new tabs</small></div><button class="setting-switch" id="showRecentsToggle" type="button" role="switch" aria-checked="true"><span></span></button></div><div class="settings-row"><div><strong>Continue where I left off</strong><small>Reopen your tabs and workspaces next time. Saved on this device only</small></div><button class="setting-switch" id="restoreToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row"><div><strong>Put inactive tabs to sleep</strong><small>Unloads background tabs to save memory. Media stops and unsaved forms are lost</small></div><select class="test-scenario settings-select" id="sleepSelect" aria-label="Tab sleep delay"><option value="0">Never</option><option value="5">After 5 min</option><option value="15">After 15 min</option><option value="30">After 30 min</option><option value="60">After 1 hour</option></select></div><div class="settings-row"><div><strong>Search engine</strong><small>Used when you type words instead of a website. Some engines refuse to load inside Frame</small></div><select class="test-scenario settings-select" id="searchEngine" aria-label="Search engine"></select></div><div class="settings-row" id="searchCustomRow" hidden><div><strong>Custom search address</strong><small>Put %s where the search words should go</small></div><input class="test-scenario settings-select" id="searchCustom" type="text" placeholder="https://example.com/?q=%s" spellcheck="false" aria-label="Custom search address"></div></div>
             </section>
             <section class="settings-category" id="settingsPanePrivacy" role="tabpanel" aria-labelledby="settingsTabPrivacy" data-settings-pane="privacy" hidden>
               <div class="settings-category-heading"><span class="settings-eyebrow">PRIVATE BY DEFAULT</span><h3>Privacy & session</h3><p>Your browsing history stays in this session and is cleared when you close Frame. Websites may still store their own cookies.</p></div>
-              <div class="settings-card"><div class="settings-row"><div><strong>Recently visited pages</strong><small>Only available during this session</small></div><button class="clear-recents" id="clearRecents" type="button">Clear recent pages</button></div></div>
+              <div class="settings-card"><div class="settings-row"><div><strong>Recently visited pages</strong><small>Only available during this session</small></div><button class="clear-recents" id="clearRecents" type="button">Clear recent pages</button></div><div class="settings-row"><div><strong>Backup &amp; restore</strong><small>Bookmarks, shortcuts, workspaces, scratchpad and settings as a JSON file</small></div><div class="backup-actions"><button class="clear-recents backup-btn" id="exportBackup" type="button">Export backup</button><button class="clear-recents backup-btn" id="importBackup" type="button">Import backup…</button><input type="file" id="importFile" accept="application/json,.json" hidden></div></div><div class="settings-row"><div><strong>Load site icons</strong><small>Fetches icons from Google’s favicon service, which sees the domains you visit</small></div><button class="setting-switch" id="siteIconsToggle" type="button" role="switch" aria-checked="true"><span></span></button></div></div>
             </section>
             <section class="settings-category" id="settingsPaneAccessibility" role="tabpanel" aria-labelledby="settingsTabAccessibility" data-settings-pane="accessibility" hidden>
               <div class="settings-category-heading"><span class="settings-eyebrow">COMFORT & MOTION</span><h3>Accessibility</h3><p>Adjust motion effects to suit your preferences.</p></div>
@@ -884,16 +1066,24 @@
             </section>
             <section class="settings-category" id="settingsPaneShortcuts" role="tabpanel" aria-labelledby="settingsTabShortcuts" data-settings-pane="shortcuts" hidden>
               <div class="settings-category-heading"><span class="settings-eyebrow">QUICK ACTIONS</span><h3>Keyboard shortcuts</h3><p>Use these shortcuts to move around Frame faster.</p></div>
-              <div class="settings-card settings-shortcuts"><div><span>New tab</span><kbd>⌘ / Ctrl&nbsp; T</kbd></div><div><span>Close tab</span><kbd>⌘ / Ctrl&nbsp; W</kbd></div><div><span>Address bar</span><kbd>⌘ / Ctrl&nbsp; L</kbd></div><div><span>Bookmark page</span><kbd>⌘ / Ctrl&nbsp; D</kbd></div><div><span>Toggle bookmarks bar</span><kbd>⌘ / Ctrl&nbsp; ⇧ B</kbd></div></div>
+              <div class="settings-card settings-shortcuts"><div><span>New tab</span><kbd>⌘ / Ctrl / Alt&nbsp; T</kbd></div><div><span>Close tab</span><kbd>⌘ / Ctrl / Alt&nbsp; W</kbd></div><div><span>Address bar</span><kbd>⌘ / Ctrl&nbsp; L</kbd></div><div><span>Bookmark page</span><kbd>⌘ / Ctrl&nbsp; D</kbd></div><div><span>Toggle bookmarks bar</span><kbd>⌘ / Ctrl&nbsp; ⇧ B</kbd></div><div><span>Command palette</span><kbd>⌘ / Ctrl / Alt&nbsp; K</kbd></div><div><span>Reopen closed tab</span><kbd>⌘ / Ctrl / Alt&nbsp; ⇧ T</kbd></div><div><span>Split view</span><kbd>Alt&nbsp; S</kbd></div><div><span>Scratchpad</span><kbd>Alt&nbsp; N</kbd></div><div><span>Zoom in / out / reset</span><kbd>Alt&nbsp; + / − / 0</kbd></div><div><span>App mode</span><kbd>Alt&nbsp; ⇧ A</kbd></div></div>
             </section>
           </div>
         </div>
       </div>
       <div class="bookmarks-bar" aria-label="Bookmarks bar"><div class="bookmark-items" id="bookmarkItems"><span class="bookmark-empty">Saved pages will appear here</span></div></div>
       <div class="stage" id="stage"></div>
-      <div class="below"><div class="below-left"><span class="active-dot" aria-hidden="true"></span><span class="active-tab-status" id="activeTabStatus">New tab</span><span class="tab-count-status" id="tabCountStatus">1 tab open</span></div><div class="below-right"><button id="help" type="button">Can’t load?</button></div></div>
+      <div class="below"><div class="below-left"><span class="active-dot" aria-hidden="true"></span><span class="active-tab-status" id="activeTabStatus">New tab</span><span class="tab-count-status" id="tabCountStatus">1 tab open</span><button class="tab-count-status chip-btn" id="wsChip" type="button" title="Switch workspace" aria-haspopup="menu">Main</button><button class="tab-count-status chip-btn" id="zoomChip" type="button" title="Reset zoom" hidden>100%</button></div><div class="below-right"><button id="paletteButton" type="button" title="Command palette (Ctrl/⌘ K)">Commands</button><button id="splitButton" type="button" title="Split view (Alt S)">Split</button><button id="notesButton" type="button" title="Scratchpad (Alt N)">Notes</button><button id="help" type="button">Can’t load?</button></div></div>
+      <div class="app-pill" id="appPill" hidden role="toolbar" aria-label="App mode controls"><button type="button" data-pill="back" title="Back" aria-label="Back">‹</button><button type="button" data-pill="forward" title="Forward" aria-label="Forward">›</button><button type="button" data-pill="reload" title="Reload" aria-label="Reload">↻</button><button type="button" data-pill="palette" title="Commands" aria-label="Commands">⌘K</button><button type="button" data-pill="exit" title="Exit app mode (Alt Shift A)" aria-label="Exit app mode">✕</button></div>
     </section>
   </main>
+</div>
+<div class="palette-overlay" id="paletteOverlay" hidden>
+  <section class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="palette-input-row"><kbd>⌘K</kbd><input id="paletteInput" type="text" autocomplete="off" spellcheck="false" placeholder="Search or type a URL, or a command…" aria-label="Command palette search"></div>
+    <div class="palette-list" id="paletteList" role="listbox"></div>
+    <div class="palette-foot"><span>↑↓ navigate</span><span>↵ select</span><span>esc close</span></div>
+  </section>
 </div>
 <div class="update-overlay" id="updateOverlay" hidden>
   <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
@@ -1016,6 +1206,11 @@
     } catch {}
   }
   fullscreenToggle.addEventListener('click', toggleFullscreen);
+  document.querySelector('.traffic').addEventListener('click', event => {
+    const act = event.target.closest('[data-act]')?.dataset.act;
+    if (act === 'fullscreen') toggleFullscreen();
+    else if (act === 'close' && tabs.length > 1) closeTab(activeId);
+  });
   document.addEventListener('fullscreenchange', syncFullscreenToggle);
   syncFullscreenToggle();
 
@@ -1028,13 +1223,14 @@
   }
   function openSettingsTab() {
     const existing = tabs.find(item => item.isSettings);
-    if (existing) { activate(existing.id); return; }
+    if (existing) { if (existing.ws !== activeWs) { if (split.on) exitSplit(); existing.ws = activeWs; applyWorkspaceVisibility(); } activate(existing.id); return; }
     const tab = makeTab();
     tab.isSettings = true;
     tab.title = 'Settings';
     tab.button.querySelector('.tab-title').textContent = tab.title;
     tab.button.title = tab.title;
     tab.homeRecent = null;
+    tab.favicon.querySelector('svg').replaceWith(settingsButton.querySelector('svg').cloneNode(true));
     tab.pane.classList.add('settings-tab');
     const home = tab.pane.querySelector('.empty');
     home.classList.add('settings-page-wrap');
@@ -1045,6 +1241,8 @@
     activate(tab.id);
   }
   settingsButton.addEventListener('click', openSettingsTab);
+  let siteIcons = true;
+  try { siteIcons = localStorage.getItem('frame-site-icons') !== 'false'; } catch {}
   const settingsNav = settingsPanel.querySelector('.settings-nav');
   function selectSettingsCategory(name, focus = false) {
     const selectedButton = settingsNav.querySelector(`[data-settings-tab="${name}"]`);
@@ -1132,6 +1330,20 @@
     showSessionRecents = !showSessionRecents;
     showRecentsToggle.setAttribute('aria-checked', String(showSessionRecents));
     try { localStorage.setItem('frame-show-recents', String(showSessionRecents)); } catch {}
+    tabs.forEach(renderHome);
+  });
+  const siteIconsToggle = document.querySelector('#siteIconsToggle');
+  siteIconsToggle.setAttribute('aria-checked', String(siteIcons));
+  siteIconsToggle.addEventListener('click', () => {
+    siteIcons = !siteIcons;
+    siteIconsToggle.setAttribute('aria-checked', String(siteIcons));
+    try { localStorage.setItem('frame-site-icons', String(siteIcons)); } catch {}
+    tabs.forEach(tab => {
+      tab.favicon.classList.remove('has-image');
+      if (siteIcons && tab.url) { tab.faviconImage.dataset.siteFallback = ''; tab.faviconImage.src = `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(new URL(tab.url).origin)}&sz=128`; }
+      else tab.faviconImage.removeAttribute('src');
+    });
+    renderBookmarks();
     tabs.forEach(renderHome);
   });
   reduceMotionToggle.addEventListener('click', () => {
@@ -1222,15 +1434,19 @@
     updateProgressPercent.textContent = '0%';
     updateProgressLabel.textContent = 'Preparing update…';
   }
+  let updateReturnFocus = null;
   function openUpdateDialog() {
     clearInterval(updateTimer);
     resetUpdateDialog();
     updateOverlay.hidden = false;
+    updateReturnFocus = document.activeElement;
+    setTimeout(() => (updateNow.hidden ? updateLater : updateNow).focus(), 30);
   }
   function closeUpdateDialog() {
     clearInterval(updateTimer);
     updateTimer = null;
     updateOverlay.hidden = true;
+    try { updateReturnFocus?.focus(); } catch {}
   }
   function setUpdateBadge(available) {
     settingsBadge.hidden = !available;
@@ -1284,6 +1500,7 @@
       if (!/^<!doctype html>/i.test(release.html.trim()) || !downloadedVersion) throw new Error('The downloaded package is not a valid app HTML file.');
       if (downloadedVersion !== release.tag_name.replace(/^v/,'')) throw new Error('The package version does not match the release tag.');
       if (compareSemver(downloadedVersion, UPDATE_CONFIG.currentVersion) < 0) throw new Error('This release is older than the installed app and was rejected.');
+      await verifyChecksum(release);
     } catch (error) {
       updateSettingsStatus.textContent = 'Package rejected';
       if (showDialog) setUpdateError('Update could not be verified',error.message,'invalid');
@@ -1324,6 +1541,14 @@
     if (version !== release.tag_name.replace(/^v/,'')) throw new Error('The package version does not match the release tag.');
     if (compareSemver(version, UPDATE_CONFIG.currentVersion) < 0) throw new Error('This release is older than the installed app and was rejected.');
     return version;
+  }
+  async function verifyChecksum(release) {
+    const expected = /sha-?256\s*[:=]?\s*([a-f0-9]{64})/i.exec(release.body || '')?.[1];
+    if (!expected) return;
+    const bytes = new TextEncoder().encode(release.html);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    const actual = [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+    if (actual.toLowerCase() !== expected.toLowerCase()) throw new Error('The downloaded file does not match the SHA-256 published in the release notes. Update rejected.');
   }
   function setInstallProgress(percent, label) {
     updateProgressWrap.hidden = false;
@@ -1426,6 +1651,7 @@
       setInstallProgress(40, 'Fetching the latest release…');
       const release = await fetchLatestGitHubRelease();
       const version = validateRelease(release);
+      await verifyChecksum(release);
       const comparison = compareSemver(version, UPDATE_CONFIG.currentVersion);
       if (comparison < 0 || (!reinstall && comparison === 0)) throw new Error('The latest release is no longer newer than this app. Your file was not changed.');
       setInstallProgress(65, 'Release verified…');
@@ -1475,11 +1701,12 @@
     const bookmarkButton = target.closest('.bookmark-link');
     const currentTab = tabButton ? tabs.find(item => item.button === tabButton) : tabs.find(item => item.id === activeId);
     const savedBookmark = bookmarkButton ? bookmarks.find(item => item.title === bookmarkButton.querySelector('.bookmark-label')?.textContent && item.url === bookmarkButton.title) : null;
-    const kind = tabButton ? 'tab' : bookmarkButton ? 'bookmark' : target.closest('.address-wrap') ? 'address' : target.closest('.stage') ? 'page' : 'browser';
-    contextTarget = { kind, tab: currentTab, bookmark: savedBookmark };
+    const kind = tabButton ? 'tab' : bookmarkButton ? (bookmarkButton.dataset.folder ? 'folder' : 'bookmark') : target.closest('.address-wrap') ? 'address' : target.closest('.stage') ? 'page' : 'browser';
+    contextTarget = { kind, tab: currentTab, bookmark: savedBookmark, folder: bookmarkButton?.dataset.folder || null };
     const groups = {
       tab: [[['↻', 'Reload this tab', 'reload', !currentTab?.url]], [['＋', 'New tab', 'new-tab'], ['×', 'Close this tab', 'close-tab', tabs.length < 2]]],
-      bookmark: [[['↗', 'Open bookmark', 'open-bookmark'], ['−', 'Remove bookmark', 'remove-bookmark']], [['＋', 'New tab', 'new-tab']]],
+      bookmark: [[['↗', 'Open bookmark', 'open-bookmark'], ['✎', 'Rename…', 'rename-bookmark'], ['▤', 'Move to folder…', 'move-bookmark'], ['−', 'Remove bookmark', 'remove-bookmark']], [['＋', 'New tab', 'new-tab']]],
+      folder: [[['✎', 'Rename folder…', 'rename-folder'], ['−', 'Ungroup folder', 'delete-folder']]],
       address: [[['↳', 'Paste and go', 'paste-go'], ['▣', 'Select all', 'select-all']], [['☆', 'Bookmark current page', 'bookmark', !currentTab?.url]]],
       page: [[['↻', 'Reload preview', 'reload', !currentTab?.url], ['☆', bookmarks.some(item => item.url === currentTab?.url) ? 'Remove bookmark' : 'Bookmark this page', 'bookmark', !currentTab?.url]], [['＋', 'New tab', 'new-tab']]],
       browser: [[['↻', 'Reload preview', 'reload', !currentTab?.url]], [['＋', 'New tab', 'new-tab'], ['⛶', document.fullscreenElement ? 'Exit fullscreen' : 'Enter fullscreen', 'fullscreen'], ['◐', 'Switch appearance', 'theme']]]
@@ -1506,6 +1733,7 @@
     contextMenu.classList.add('open');
     const y = Math.min(event.clientY, window.innerHeight - contextMenu.offsetHeight - 8);
     contextMenu.style.top = `${Math.max(8, y)}px`;
+    contextMenu.querySelector('button:not(:disabled)')?.focus({ preventScroll:true });
   }
   document.querySelector('.browser').addEventListener('contextmenu', showContextMenu);
 
@@ -1513,12 +1741,43 @@
     if (!contextMenu.contains(event.target)) hideContextMenu();
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') { hideContextMenu(); if (!updateOverlay.hidden) closeUpdateDialog(); }
+    if (event.key === 'Tab' && !updateOverlay.hidden) {
+      const items = [...updateOverlay.querySelectorAll('button:not([hidden]):not(:disabled)')].filter(b => b.offsetParent !== null);
+      if (items.length) {
+        const first = items[0], last = items[items.length - 1];
+        if (!updateOverlay.contains(document.activeElement)) { event.preventDefault(); first.focus(); }
+        else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    }
+    if (contextMenu.classList.contains('open') && ['ArrowDown','ArrowUp'].includes(event.key)) {
+      const items = [...contextMenu.querySelectorAll('button:not(:disabled)')];
+      if (items.length) {
+        event.preventDefault();
+        const i = items.indexOf(document.activeElement);
+        items[(i + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+      }
+    }
+    if (event.key === 'Escape') { hideContextMenu(); closeFolderPop(); if (!updateOverlay.hidden) closeUpdateDialog(); }
+    if (event.altKey && !event.metaKey && !event.ctrlKey) {
+      if (event.code === 'KeyT') { event.preventDefault(); if (event.shiftKey) reopenClosedTab(); else makeTab('', !backgroundTabs); }
+      else if (event.code === 'KeyW') { event.preventDefault(); if (visibleTabs().length > 1) closeTab(activeId); }
+      else if (event.code === 'KeyK') { event.preventDefault(); openPalette(); }
+      else if (event.code === 'KeyS') { event.preventDefault(); toggleSplit(false); }
+      else if (event.code === 'KeyN') { event.preventDefault(); toggleNotes(); }
+      else if (event.code === 'KeyA' && event.shiftKey) { event.preventDefault(); toggleAppMode(); }
+      else if (['Equal', 'NumpadAdd'].includes(event.code)) { event.preventDefault(); zoomBy(.1); }
+      else if (['Minus', 'NumpadSubtract'].includes(event.code)) { event.preventDefault(); zoomBy(-.1); }
+      else if (['Digit0', 'Numpad0'].includes(event.code)) { event.preventDefault(); zoomBy(0, true); }
+      return;
+    }
     if (!(event.metaKey || event.ctrlKey)) return;
     const key = event.key.toLowerCase();
-    if (key === 't') { event.preventDefault(); makeTab('', !backgroundTabs); }
-    else if (key === 'w') { event.preventDefault(); if (tabs.length > 1) closeTab(activeId); }
-    else if (key === 'l') { event.preventDefault(); input.focus(); input.select(); }
+    if (key === 't' && event.shiftKey) { event.preventDefault(); reopenClosedTab(); }
+    else if (key === 't') { event.preventDefault(); makeTab('', !backgroundTabs); }
+    else if (key === 'w') { event.preventDefault(); if (visibleTabs().length > 1) closeTab(activeId); }
+    else if (key === 'k') { event.preventDefault(); openPalette(); }
+    else if (key === 'l') { event.preventDefault(); if (browserFrame.classList.contains('app-mode')) openPalette(); else { input.focus(); input.select(); } }
     else if (key === 'r') { event.preventDefault(); const tab = tabs.find(item => item.id === activeId); if (tab?.url) startLoad(tab, tab.url); }
     else if (key === 'd') { event.preventDefault(); toggleBookmark(tabs.find(item => item.id === activeId)); }
     else if (key === 'b' && event.shiftKey) { event.preventDefault(); bookmarkPlacement = bookmarkPlacement === 'hidden' ? 'bar' : 'hidden'; applyBookmarkPlacement(bookmarkPlacement, true); }
@@ -1531,12 +1790,28 @@
     if (action === 'reload' && tab?.url) startLoad(tab, tab.url);
     if (action === 'bookmark' && tab?.url) toggleBookmark(tab);
     if (action === 'new-tab') makeTab('', !backgroundTabs);
-    if (action === 'close-tab' && tab && tabs.length > 1) closeTab(tab.id);
+    if (action === 'close-tab' && tab && visibleTabs().length > 1) closeTab(tab.id);
     if (action === 'theme') themeToggle.click();
     if (action === 'fullscreen') toggleFullscreen();
     if (action === 'select-all') input.select();
     if (action === 'paste-go') navigator.clipboard?.readText().then(text => { if (text?.trim()) { input.value = text.trim(); form.requestSubmit(); } }).catch(() => {});
     if (action === 'open-bookmark' && contextTarget?.bookmark) { input.value = contextTarget.bookmark.url; form.requestSubmit(); }
+    if (action === 'rename-bookmark' && contextTarget?.bookmark) {
+      const entry = contextTarget.bookmark;
+      openPrompt('Rename bookmark', entry.title, value => { const clean = value.trim().slice(0, 60); if (!clean) return; entry.title = clean; saveBookmarks(); renderBookmarks(); tabs.forEach(renderHome); });
+    }
+    if (action === 'move-bookmark' && contextTarget?.bookmark) {
+      const entry = contextTarget.bookmark;
+      openPrompt('Folder name (leave empty for no folder)', entry.folder || '', value => { const clean = value.trim().slice(0, 30); if (clean) entry.folder = clean; else delete entry.folder; saveBookmarks(); renderBookmarks(); });
+    }
+    if (action === 'rename-folder' && contextTarget?.folder) {
+      const oldName = contextTarget.folder;
+      openPrompt('Rename folder', oldName, value => { const clean = value.trim().slice(0, 30); if (!clean) return; bookmarks.forEach(item => { if (item.folder === oldName) item.folder = clean; }); saveBookmarks(); renderBookmarks(); });
+    }
+    if (action === 'delete-folder' && contextTarget?.folder) {
+      bookmarks.forEach(item => { if (item.folder === contextTarget.folder) delete item.folder; });
+      saveBookmarks(); renderBookmarks();
+    }
     if (action === 'remove-bookmark' && contextTarget?.bookmark) {
       bookmarks = bookmarks.filter(item => item.url !== contextTarget.bookmark.url);
       saveBookmarks(); renderBookmarks(); tabs.forEach(renderHome); syncBookmarkToggle();
@@ -1544,6 +1819,15 @@
   });
   const bookmarkStorageKey = 'frame-bookmarks-v1';
   const tabs = [];
+  let workspaces = [{ id:'w1', name:'Main' }];
+  let activeWs = 'w1';
+  const closedStack = [];
+  const split = { on:false, vertical:false, slots:[] };
+  let shortcuts = [];
+  let saveTimer = null;
+  let draggingBookmark = null;
+  let folderPopEl = null;
+  let folderPopName = null;
   let bookmarks = [];
   let lastTabDragEndedAt = -Infinity;
   let recentPages = [];
@@ -1618,40 +1902,10 @@
       }
       image.remove();
     });
+    if (!siteIcons) return;
     try { image.src = `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(new URL(url).origin)}&sz=128`; }
     catch { return; }
     container.append(image);
-  }
-
-  function renderBookmarks() {
-    bookmarkItems.replaceChildren();
-    if (!bookmarks.length) {
-      const empty = document.createElement('span');
-      empty.className = 'bookmark-empty';
-      empty.textContent = 'Saved pages will appear here';
-      bookmarkItems.append(empty);
-      return;
-    }
-    bookmarks.forEach(item => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'bookmark-link';
-      button.title = item.url;
-      const glyph = document.createElement('span');
-      glyph.className = 'bookmark-glyph';
-      glyph.setAttribute('aria-hidden', 'true');
-      glyph.textContent = '◆';
-      addSiteFavicon(glyph, item.url);
-      const label = document.createElement('span');
-      label.className = 'bookmark-label';
-      label.textContent = item.title;
-      button.append(glyph, label);
-      button.addEventListener('click', () => {
-        input.value = item.url;
-        form.requestSubmit();
-      });
-      bookmarkItems.append(button);
-    });
   }
 
   function makeHomeCard(item, isJumpback = false) {
@@ -1686,12 +1940,14 @@
 
   function renderHome(tab) {
     if (!tab?.homeRecent) return;
+    renderTiles(tab);
     tab.homeJumpBack.replaceChildren();
     tab.homeRecent.replaceChildren();
     const jumpSection = tab.pane.querySelector('.jumpback-section');
     const section = tab.pane.querySelector('.recent-section');
     const title = tab.pane.querySelector('.home-kicker');
-    if (title && (jumpSection.previousElementSibling !== title || section.previousElementSibling !== jumpSection)) title.after(jumpSection, section);
+    const tilesSection = tab.pane.querySelector('.tiles-section');
+    if (title && tilesSection && (tilesSection.previousElementSibling !== title || jumpSection.previousElementSibling !== tilesSection || section.previousElementSibling !== jumpSection)) title.after(tilesSection, jumpSection, section);
     jumpSection.hidden = !showSessionRecents || !lastClosedPage;
     if (lastClosedPage) tab.homeJumpBack.append(makeHomeCard(lastClosedPage, true));
     const recent = recentPages.filter(item => !lastClosedPage || item.url !== lastClosedPage.url);
@@ -1709,7 +1965,7 @@
     if (!tab?.url) return;
     const index = bookmarks.findIndex(item => item.url === tab.url);
     if (index >= 0) bookmarks.splice(index, 1);
-    else bookmarks.push({ url: tab.url, title: tab.title });
+    else { bookmarks.push({ url: tab.url, title: tab.title }); bookmarkToggle.classList.remove('pop'); void bookmarkToggle.offsetWidth; bookmarkToggle.classList.add('pop'); }
     saveBookmarks();
     renderBookmarks();
     tabs.forEach(renderHome);
@@ -1729,12 +1985,13 @@
     const targetIndex = tabs.indexOf(target) + (after ? 1 : 0);
     tabs.splice(targetIndex, 0, dragged);
     strip.insertBefore(dragged.button, after ? target.button.nextSibling : target.button);
+    scheduleSave();
     tabs.forEach(item => {
       const before = positions.get(item.id);
       const afterRect = item.button.getBoundingClientRect();
       const dx = before.left - afterRect.left;
       const dy = before.top - afterRect.top;
-      if (dx || dy) item.button.animate([{ transform:`translate(${dx}px,${dy}px)` }, { transform:'translate(0,0)' }], { duration:190, easing:'cubic-bezier(.2,.75,.25,1)' });
+      if (dx || dy) item.button.animate([{ transform:`translate(${dx}px,${dy}px)` }, { transform:'translate(0,0)' }], { duration:200, easing:EASE_OUT });
     });
     updateTabSizing();
     syncTabIndicator();
@@ -1745,10 +2002,10 @@
     const styles = getComputedStyle(strip);
     const gap = parseFloat(styles.columnGap) || parseFloat(styles.gap) || 0;
     const padding = (parseFloat(styles.paddingLeft) || 0) + (parseFloat(styles.paddingRight) || 0);
-    const flexChildren = [...strip.children].filter(child => child !== tabIndicator);
+    const flexChildren = [...strip.children].filter(child => child !== tabIndicator && !child.hidden);
     const fixedWidth = flexChildren.filter(child => !child.classList.contains('tab'))
       .reduce((sum, child) => sum + child.getBoundingClientRect().width, 0);
-    const availablePerTab = (strip.clientWidth - padding - fixedWidth - gap * (flexChildren.length - 1)) / tabs.length;
+    const availablePerTab = (strip.clientWidth - padding - fixedWidth - gap * (flexChildren.length - 1)) / Math.max(1, visibleTabs().length);
     if (availablePerTab >= 144) {
       tabs.forEach(tab => { tab.button.classList.remove('compact'); tab.button.style.removeProperty('--tab-compact-width'); });
       return;
@@ -1762,7 +2019,7 @@
 
   function makeTab(url = '', selectNewTab = true) {
     const id = nextId++;
-    const tab = { id, url, title: url ? new URL(url).hostname.replace(/^www\./, '') : 'New tab', history:[], historyIndex:-1 };
+    const tab = { id, url, title: url ? new URL(url).hostname.replace(/^www\./, '') : 'New tab', history:[], historyIndex:-1, ws:activeWs, zoom:1, lastActive:Date.now(), asleep:false };
     tab.button = document.createElement('button');
     tab.button.type = 'button';
     tab.button.className = 'tab';
@@ -1815,18 +2072,19 @@
     });
     tab.button.addEventListener('click', event => {
       if (performance.now() - lastTabDragEndedAt < 350) { event.preventDefault(); event.stopPropagation(); return; }
-      if (event.target.closest('.tab-close')) { event.stopPropagation(); event.preventDefault(); tab.button.classList.add('closing'); const finishClose = animationEvent => { if (animationEvent.animationName === 'tab-close') { tab.button.removeEventListener('animationend', finishClose); closeTab(id); } }; tab.button.addEventListener('animationend', finishClose); }
+      if (event.target.closest('.tab-close')) { event.stopPropagation(); event.preventDefault(); tab.button.classList.add('closing'); setTimeout(() => closeTab(id), motionOk() ? 120 : 0); }
       else activate(id);
     });
     tab.pane = document.createElement('div');
     tab.pane.className = 'tab-pane';
-    tab.pane.innerHTML = '<div class="empty"><div class="home-content"><div class="home-intro"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M9 14l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="home-kicker"><span></span>PRIVATE SESSION</div></div><div class="home-sections"><section class="home-section jumpback-section" hidden><div class="home-grid home-jumpback"></div></section><section class="home-section recent-section" hidden><div class="home-section-head recent-heading" hidden>Recent <small class="recent-count"></small></div><div class="home-grid home-recent"></div><div class="home-empty-note recent-empty-note" hidden>No recent activity</div></section></div><p class="home-privacy-note">Session recents aren’t saved to browsing history and clear when you close Frame.</p></div></div><iframe title="Website preview" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-pointer-lock" allow="fullscreen; pointer-lock"></iframe><div class="embed-error" role="alert"><div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01" stroke-linecap="round"/></svg></div><h2>This page can’t be embedded</h2><p>The site may block iframe previews or have taken too long to respond.</p><button class="retry" type="button">Try again</button></div>';
+    tab.pane.innerHTML = '<div class="empty"><div class="home-content"><div class="home-intro"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M9 14l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="home-kicker"><span></span>PRIVATE SESSION</div></div><div class="home-sections"><section class="home-section tiles-section"><div class="tile-grid"></div></section><section class="home-section jumpback-section" hidden><div class="home-grid home-jumpback"></div></section><section class="home-section recent-section" hidden><div class="home-section-head recent-heading" hidden>Recent <small class="recent-count"></small></div><div class="home-grid home-recent"></div><div class="home-empty-note recent-empty-note" hidden>No recent activity</div></section></div><p class="home-privacy-note">Session recents aren’t saved to browsing history and clear when you close Frame.</p></div></div><iframe title="Website preview" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-pointer-lock" allow="fullscreen; pointer-lock"></iframe><div class="embed-error" role="alert"><div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01" stroke-linecap="round"/></svg></div><h2>This page can’t be embedded</h2><p>The site may block iframe previews or have taken too long to respond.</p><div class="error-actions"><button class="retry" type="button">Try again</button><button class="retry retry-alt" type="button">Open in new tab</button></div></div>';
     tab.homeRecent = tab.pane.querySelector('.home-recent');
     tab.homeJumpBack = tab.pane.querySelector('.home-jumpback');
         renderHome(tab);
     tab.frame = tab.pane.querySelector('iframe');
     tab.frame.addEventListener('error', () => showEmbedError(tab));
-    tab.pane.querySelector('.retry').addEventListener('click', () => { if (tab.url) startLoad(tab, tab.url); });
+    tab.pane.querySelector('.retry:not(.retry-alt)').addEventListener('click', () => { if (tab.url) startLoad(tab, tab.url); });
+    tab.pane.querySelector('.retry-alt').addEventListener('click', () => { if (tab.url) window.open(tab.url, '_blank', 'noopener,noreferrer'); });
     tab.frame.addEventListener('load', () => {
       if (!tab.loading) return;
       tab.loading = false;
@@ -1840,27 +2098,44 @@
     tabs.push(tab);
     strip.insertBefore(tab.button, strip.querySelector('.new-tab'));
     updateTabSizing();
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (motionOk()) {
       tab.button.animate(
-        [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }],
-        { duration: 220, easing: 'cubic-bezier(.22,.61,.36,1)' }
+        [{ opacity: 0, transform: 'translateY(5px) scale(.94)' }, { opacity: 1, transform: 'translateY(0) scale(1)' }],
+        { duration: 220, easing: EASE_OUT }
       );
     }
+    tab.pane.addEventListener('pointerdown', () => { if (split.on && activeId !== id && split.slots.includes(id)) activate(id); }, true);
     stage.append(tab.pane);
-    if (selectNewTab || tabs.length === 1) activate(id);
+    if (selectNewTab || visibleTabs().length === 1) activate(id);
+    scheduleSave();
     return tab;
   }
 
   function activate(id) {
     stopAddressReplay();
-    activeId = id;
     const tab = tabs.find(item => item.id === id);
+    if (!tab) return;
+    if (tab.ws !== activeWs) { if (split.on) exitSplit(); activeWs = tab.ws; applyWorkspaceVisibility(); }
+    const previous = tabs.find(item => item.id === activeId);
+    if (previous) previous.lastActive = Date.now();
+    if (split.on && !split.slots.includes(id)) split.slots[Math.max(0, split.slots.indexOf(activeId))] = id;
+    activeId = id;
+    tab.lastActive = Date.now();
+    if (tab.asleep) wakeTab(tab);
+    if (split.on) split.slots.forEach(slotId => { const other = tabs.find(item => item.id === slotId); if (other?.asleep) wakeTab(other); });
     tabs.forEach(item => {
       const selected = item.id === id;
+      const inSplit = split.on && split.slots.includes(item.id);
       item.button.classList.toggle('active', selected);
+      item.button.classList.toggle('in-split', inSplit && !selected);
       item.button.setAttribute('aria-selected', String(selected));
-      item.pane.classList.toggle('active', selected);
+      item.pane.classList.toggle('active', selected || inSplit);
+      item.pane.classList.toggle('focused', split.on && selected);
+      item.pane.classList.toggle('slot-0', inSplit && split.slots[0] === item.id);
+      item.pane.classList.toggle('slot-1', inSplit && split.slots[1] === item.id);
     });
+    stage.classList.toggle('split', split.on);
+    stage.classList.toggle('split-v', split.on && split.vertical);
     syncTabIndicator(tab);
     input.value = tab?.url || '';
     stage.classList.toggle('loading', Boolean(tab?.loading));
@@ -1869,6 +2144,9 @@
     syncBookmarkToggle();
     syncNavigationButtons(tab);
     syncFooterStatus(tab);
+    syncZoomChip(tab);
+    splitButton.classList.toggle('on', split.on);
+    scheduleSave();
   }
 
   function syncTabIndicator(tab = tabs.find(item => item.id === activeId)) {
@@ -1882,7 +2160,8 @@
 
   function syncFooterStatus(tab = tabs.find(item => item.id === activeId)) {
     const title = tab?.title || 'New tab';
-    const count = tabs.length + (tabs.length === 1 ? ' tab open' : ' tabs open');
+    const visibleCount = visibleTabs().length;
+    const count = visibleCount + (visibleCount === 1 ? ' tab open' : ' tabs open');
     if (activeTabStatus.textContent !== title) {
       activeTabStatus.textContent = title;
       activeTabStatus.classList.remove('status-change');
@@ -1936,17 +2215,22 @@
   function closeTab(id) {
     const index = tabs.findIndex(item => item.id === id);
     if (index < 0) return;
+    if (split.on && split.slots.includes(id)) exitSplit();
     const [tab] = tabs.splice(index, 1);
-    if (tab.url && !tab.isSettings) lastClosedPage = { url:tab.url, title:tab.title, closedAt:Date.now() };
+    if (tab.url && !tab.isSettings) {
+      lastClosedPage = { url:tab.url, title:tab.title, closedAt:Date.now() };
+      closedStack.unshift({ url:tab.url, history:tab.history.slice(-20), historyIndex:tab.historyIndex, zoom:tab.zoom });
+      closedStack.length = Math.min(closedStack.length, 15);
+    }
     tabs.forEach(renderHome);
     restoreSettingsPanel(tab);
     clearTimeout(tab.loadingTimer);
-    tab.button.remove();
-    tab.pane.remove();
-    updateTabSizing();
-    if (!tabs.length) makeTab();
-    else if (activeId === id) activate(tabs[Math.min(index, tabs.length - 1)].id);
+    flipStrip(() => { tab.button.remove(); tab.pane.remove(); updateTabSizing(); });
+    const remaining = visibleTabs();
+    if (!remaining.length) makeTab();
+    else if (activeId === id) activate((remaining.find(item => tabs.indexOf(item) >= index) || remaining[remaining.length - 1]).id);
     else { syncFooterStatus(); syncTabIndicator(); }
+    scheduleSave();
   }
 
   function normalize(value) {
@@ -1955,13 +2239,9 @@
     const explicitWebUrl = /^https?:\/\//i.test(text);
     const looksLikeHost = /^localhost(?::\d+)?(?:\/.*)?$/i.test(text)
       || /^(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?(?:\/.*)?$/.test(text)
-      || /^(?=.*\.)[^\s/]+(?:\/.*)?$/.test(text);
-    if (!explicitWebUrl && !looksLikeHost) {
-      const search = new URL('https://www.google.com/search?igu=1');
-      search.searchParams.set('q', text);
-      return search.href;
-    }
-    const address = explicitWebUrl ? text : 'https://' + text;
+      || /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}(?::\d+)?(?:[\/?#]\S*)?$/i.test(text);
+    if (!explicitWebUrl && !looksLikeHost) return searchUrl(text);
+    const address = explicitWebUrl ? text : (/^(?:localhost|(?:\d{1,3}\.){3}\d{1,3})(?::\d+)?(?:[\/?#]|$)/i.test(text) ? 'http://' : 'https://') + text;
     try {
       const parsed = new URL(address);
       if (!['http:', 'https:'].includes(parsed.protocol)) return '';
@@ -1982,11 +2262,15 @@
 
   function startLoad(tab, url) {
     tab.url = url;
+    tab.asleep = false;
+    tab.button.classList.remove('asleep');
+    scheduleSave();
     recentPages = [{ url, title: tab.title, visitedAt:Date.now() }, ...recentPages.filter(item => item.url !== url)].slice(0, 4);
     tabs.forEach(renderHome);
     tab.favicon.classList.remove('has-image');
     tab.faviconImage.dataset.siteFallback = '';
-    tab.faviconImage.src = `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(new URL(url).origin)}&sz=128`;
+    if (siteIcons) tab.faviconImage.src = `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(new URL(url).origin)}&sz=128`;
+    else tab.faviconImage.removeAttribute('src');
     syncBookmarkToggle();
     tab.loading = true;
     tab.pane.classList.remove('failed');
@@ -2040,10 +2324,864 @@
   tabIndicator.setAttribute('aria-hidden', 'true');
   strip.append(tabIndicator);
   strip.addEventListener('scroll', () => syncTabIndicator());
+  strip.addEventListener('keydown', event => {
+    const vt = visibleTabs();
+    const current = vt.findIndex(item => item.button === event.target.closest('.tab'));
+    if (current < 0) return;
+    const vertical = browserFrame.classList.contains('vertical-tabs');
+    const prev = vertical ? 'ArrowUp' : 'ArrowLeft', next = vertical ? 'ArrowDown' : 'ArrowRight';
+    let target = -1;
+    if (event.key === prev) target = (current - 1 + vt.length) % vt.length;
+    else if (event.key === next) target = (current + 1) % vt.length;
+    else if (event.key === 'Home') target = 0;
+    else if (event.key === 'End') target = vt.length - 1;
+    if (target < 0) return;
+    event.preventDefault();
+    activate(vt[target].id);
+    vt[target].button.focus();
+  });
   window.addEventListener('resize', () => { updateTabSizing(); syncTabIndicator(); });
+  /* ===== Motion helpers ===== */
+  const EASE_OUT = 'cubic-bezier(.22,1,.36,1)';
+  const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function motionOk() { return !root.classList.contains('reduce-motion') && !reduceQuery.matches; }
+  let themeTimer = null;
+  function pulseTheme() {
+    if (!motionOk()) return;
+    root.classList.add('theme-switching');
+    clearTimeout(themeTimer);
+    themeTimer = setTimeout(() => root.classList.remove('theme-switching'), 340);
+  }
+  new MutationObserver(pulseTheme).observe(root, { attributes:true, attributeFilter:['data-theme'] });
+  function showWithEnter(el) { clearTimeout(el._exitTimer); el.classList.remove('leaving'); el.hidden = false; }
+  function hideWithExit(el, ms) {
+    if (!motionOk()) { el.hidden = true; el.classList.remove('leaving'); return; }
+    el.classList.add('leaving');
+    clearTimeout(el._exitTimer);
+    el._exitTimer = setTimeout(() => { el.hidden = true; el.classList.remove('leaving'); }, ms);
+  }
+  function flipStrip(mutate) {
+    if (!motionOk()) { mutate(); return; }
+    const items = [...strip.children].filter(el => (el.classList.contains('tab') || el.classList.contains('new-tab')) && !el.hidden);
+    const before = new Map(items.map(el => [el, el.getBoundingClientRect()]));
+    mutate();
+    items.forEach(el => {
+      if (!el.isConnected) return;
+      const from = before.get(el), to = el.getBoundingClientRect();
+      const dx = from.left - to.left, dy = from.top - to.top;
+      if (Math.abs(dx) > .5 || Math.abs(dy) > .5) el.animate([{ transform:`translate(${dx}px,${dy}px)` }, { transform:'none' }], { duration:220, easing:EASE_OUT });
+    });
+  }
+
+  /* ===== Accent color (re-tints the stylesheet's red family) ===== */
+  const styleEl = document.querySelector('head style');
+  const baseCss = styleEl.textContent;
+  const ACCENTS = [['Rose','#ef3f61'],['Orange','#f2703a'],['Amber','#e5a02e'],['Green','#35b97a'],['Teal','#2cb5b0'],['Blue','#4f8ef7'],['Violet','#8b6cf0'],['Pink','#e456b6']];
+  const brandAccentEls = [...document.querySelectorAll('.window-brand [stroke="#ef3f61"], .window-brand [fill="#ef3f61"]')].map(el => ({ el, attrs:['stroke','fill'].filter(a => el.getAttribute(a) === '#ef3f61') }));
+  function hexToRgba(value) {
+    let h = value.replace('#', '');
+    if (h.length <= 4) h = [...h].map(c => c + c).join('');
+    const n = parseInt(h.slice(0, 6), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255, h.length === 8 ? h.slice(6, 8) : ''];
+  }
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min, l = (max + min) / 2;
+    let h = 0, s = 0;
+    if (d) {
+      s = l > .5 ? d / (2 - max - min) : d / (max + min);
+      h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      h *= 60;
+    }
+    return [h, s, l];
+  }
+  function hslToHex(h, s, l) {
+    h = ((h % 360) + 360) % 360;
+    const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2;
+    let rgb;
+    if (h < 60) rgb = [c, x, 0]; else if (h < 120) rgb = [x, c, 0]; else if (h < 180) rgb = [0, c, x];
+    else if (h < 240) rgb = [0, x, c]; else if (h < 300) rgb = [x, 0, c]; else rgb = [c, 0, x];
+    return '#' + rgb.map(v => Math.round((v + m) * 255).toString(16).padStart(2, '0')).join('');
+  }
+  let accentColor = '#ef3f61';
+  function applyAccent(value, persist = false) {
+    const hex = /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : '#ef3f61';
+    if (persist) pulseTheme();
+    accentColor = hex;
+    const [r, g, b] = hexToRgba(hex);
+    const [targetHue, targetSat] = rgbToHsl(r, g, b);
+    const delta = targetHue - 348;
+    const satScale = Math.max(.5, Math.min(1.1, targetSat / .85));
+    const shift = token => {
+      const raw = token.toLowerCase();
+      if (raw === '#f0786f') return token;
+      const [rr, gg, bb, alpha] = hexToRgba(raw);
+      const [h, s, l] = rgbToHsl(rr, gg, bb);
+      if (s < .2 || !(h >= 332 || h <= 14)) return token;
+      return hslToHex(h + delta, Math.min(1, s * satScale), l) + alpha;
+    };
+    styleEl.textContent = hex === '#ef3f61' ? baseCss : baseCss.replace(/#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![0-9a-z_-])/gi, shift);
+    const brand = hex === '#ef3f61' ? '#ef3f61' : shift('#ef3f61');
+    brandAccentEls.forEach(({ el, attrs }) => attrs.forEach(a => el.setAttribute(a, brand)));
+    document.querySelectorAll('.accent-swatch').forEach(sw => sw.setAttribute('aria-checked', String(sw.dataset.hex === hex)));
+    const custom = document.querySelector('#accentCustom');
+    if (custom) custom.value = hex;
+    if (persist) { try { localStorage.setItem('frame-accent', hex); } catch {} }
+  }
+  {
+    const swatchWrap = document.querySelector('#accentSwatches');
+    const customLabel = swatchWrap.querySelector('.accent-custom');
+    ACCENTS.forEach(([name, hex]) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'accent-swatch';
+      button.setAttribute('role', 'radio');
+      button.title = name;
+      button.setAttribute('aria-label', name);
+      button.dataset.hex = hex;
+      button.style.setProperty('--sw', hex);
+      button.addEventListener('click', () => applyAccent(hex, true));
+      swatchWrap.insertBefore(button, customLabel);
+    });
+    document.querySelector('#accentCustom').addEventListener('input', event => applyAccent(event.target.value, true));
+    let saved = null;
+    try { saved = localStorage.getItem('frame-accent'); } catch {}
+    applyAccent(saved || '#ef3f61');
+  }
+
+  /* ===== Browsing settings: search engine, session restore, tab sleep, backup ===== */
+  const SEARCH_ENGINES = {
+    google: { name:'Google', url:'https://www.google.com/search?igu=1&q=%s' },
+    duckduckgo: { name:'DuckDuckGo', url:'https://duckduckgo.com/?q=%s' },
+    bing: { name:'Bing', url:'https://www.bing.com/search?q=%s' },
+    brave: { name:'Brave Search', url:'https://search.brave.com/search?q=%s' },
+    startpage: { name:'Startpage', url:'https://www.startpage.com/do/search?q=%s' },
+    wikipedia: { name:'Wikipedia', url:'https://en.wikipedia.org/w/index.php?search=%s' },
+    custom: { name:'Custom…', url:'' }
+  };
+  let searchEngine = 'google', searchCustom = '', restoreSession = false, sleepMinutes = 0;
+  try {
+    const savedEngine = localStorage.getItem('frame-search-engine');
+    if (savedEngine && SEARCH_ENGINES[savedEngine]) searchEngine = savedEngine;
+    searchCustom = localStorage.getItem('frame-search-custom') || '';
+    restoreSession = localStorage.getItem('frame-restore') === 'true';
+    sleepMinutes = Number(localStorage.getItem('frame-sleep-minutes')) || 0;
+  } catch {}
+  {
+    const engineSelect = document.querySelector('#searchEngine');
+    const customRow = document.querySelector('#searchCustomRow');
+    const customInput = document.querySelector('#searchCustom');
+    const restoreToggle = document.querySelector('#restoreToggle');
+    const sleepSelect = document.querySelector('#sleepSelect');
+    Object.entries(SEARCH_ENGINES).forEach(([key, engine]) => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = engine.name;
+      engineSelect.append(option);
+    });
+    engineSelect.value = searchEngine;
+    customInput.value = searchCustom;
+    customRow.hidden = searchEngine !== 'custom';
+    restoreToggle.setAttribute('aria-checked', String(restoreSession));
+    sleepSelect.value = String(sleepMinutes);
+    engineSelect.addEventListener('change', () => {
+      searchEngine = engineSelect.value;
+      customRow.hidden = searchEngine !== 'custom';
+      try { localStorage.setItem('frame-search-engine', searchEngine); } catch {}
+    });
+    customInput.addEventListener('input', () => {
+      searchCustom = customInput.value.trim();
+      try { localStorage.setItem('frame-search-custom', searchCustom); } catch {}
+    });
+    restoreToggle.addEventListener('click', () => {
+      restoreSession = !restoreSession;
+      restoreToggle.setAttribute('aria-checked', String(restoreSession));
+      try {
+        localStorage.setItem('frame-restore', String(restoreSession));
+        if (!restoreSession) localStorage.removeItem('frame-session');
+      } catch {}
+      if (restoreSession) saveSession();
+    });
+    sleepSelect.addEventListener('change', () => {
+      sleepMinutes = Number(sleepSelect.value) || 0;
+      try { localStorage.setItem('frame-sleep-minutes', String(sleepMinutes)); } catch {}
+    });
+    document.querySelector('#exportBackup').addEventListener('click', exportBackup);
+    const importFile = document.querySelector('#importFile');
+    document.querySelector('#importBackup').addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', async () => {
+      const file = importFile.files?.[0];
+      importFile.value = '';
+      if (file) await importBackup(file);
+    });
+  }
+  function searchUrl(text) {
+    let template = searchEngine === 'custom' ? searchCustom : SEARCH_ENGINES[searchEngine]?.url;
+    if (!template || !template.includes('%s')) template = SEARCH_ENGINES.google.url;
+    try {
+      const url = new URL(template.replace('%s', encodeURIComponent(text)));
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error('bad protocol');
+      return url.href;
+    } catch { return SEARCH_ENGINES.google.url.replace('%s', encodeURIComponent(text)); }
+  }
+  function exportBackup() {
+    const data = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && /^frame-[a-z0-9-]+$/.test(key) && !['frame-session', 'frame-last-update-check'].includes(key)) data[key] = localStorage.getItem(key);
+      }
+    } catch {}
+    const blob = new Blob([JSON.stringify({ app:'frame', version:UPDATE_CONFIG.currentVersion, exportedAt:new Date().toISOString(), data }, null, 2)], { type:'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'frame-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+  }
+  async function importBackup(file) {
+    try {
+      if (file.size > 2_000_000) throw new Error('That file is too large to be a Frame backup.');
+      const parsed = JSON.parse(await file.text());
+      if (!parsed || parsed.app !== 'frame' || typeof parsed.data !== 'object' || !parsed.data) throw new Error('That file is not a Frame backup.');
+      const entries = Object.entries(parsed.data).filter(([key, value]) => /^frame-[a-z0-9-]+$/.test(key) && typeof value === 'string' && !['frame-session', 'frame-last-update-check'].includes(key));
+      if (!entries.length) throw new Error('The backup does not contain any settings.');
+      if (!confirm(`Replace your current bookmarks, workspaces and settings with this backup (${entries.length} items)? Frame will reload.`)) return;
+      const existing = [];
+      for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key && key.startsWith('frame-') && !['frame-session', 'frame-last-update-check'].includes(key)) existing.push(key); }
+      existing.forEach(key => localStorage.removeItem(key));
+      entries.forEach(([key, value]) => localStorage.setItem(key, value));
+      location.reload();
+    } catch (error) {
+      alert(error?.message || 'The backup could not be imported.');
+    }
+  }
+  /* ===== Workspaces, split view, zoom, sleep, session, launcher, palette, notes, app mode ===== */
+  const wsChip = document.querySelector('#wsChip');
+  const zoomChip = document.querySelector('#zoomChip');
+  const splitButton = document.querySelector('#splitButton');
+  const notesButton = document.querySelector('#notesButton');
+  const paletteButton = document.querySelector('#paletteButton');
+  const appPill = document.querySelector('#appPill');
+  const paletteOverlay = document.querySelector('#paletteOverlay');
+  const paletteInput = document.querySelector('#paletteInput');
+  const paletteList = document.querySelector('#paletteList');
+  const PALETTE_PLACEHOLDER = paletteInput.placeholder;
+
+  function visibleTabs() { return tabs.filter(item => item.ws === activeWs); }
+  function hostOf(url) { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url; } }
+  function wsName(id) { return workspaces.find(item => item.id === id)?.name || 'Main'; }
+  function saveWorkspaces() { try { localStorage.setItem('frame-workspaces', JSON.stringify({ list:workspaces, active:activeWs })); } catch {} }
+  function applyWorkspaceVisibility() {
+    tabs.forEach(item => {
+      const wasHidden = item.button.hidden;
+      item.button.hidden = item.ws !== activeWs;
+      if (wasHidden && !item.button.hidden && item.button.isConnected && motionOk()) item.button.animate([{ opacity:0, transform:'translateY(4px)' }, { opacity:1, transform:'none' }], { duration:180, easing:EASE_OUT, fill:'backwards' });
+    });
+    wsChip.textContent = wsName(activeWs);
+    updateTabSizing(); syncTabIndicator(); syncFooterStatus(); saveWorkspaces();
+  }
+  function switchWorkspace(id) {
+    if (id === activeWs || !workspaces.some(item => item.id === id)) return;
+    if (split.on) exitSplit();
+    activeWs = id;
+    applyWorkspaceVisibility();
+    const inside = visibleTabs();
+    if (!inside.length) makeTab();
+    else activate(inside.reduce((best, item) => item.lastActive > best.lastActive ? item : best).id);
+  }
+  function createWorkspace(name) {
+    const clean = name.trim().slice(0, 24);
+    if (!clean) return;
+    const id = 'w' + Date.now().toString(36);
+    workspaces.push({ id, name:clean });
+    switchWorkspace(id);
+  }
+  function deleteWorkspace() {
+    if (workspaces.length < 2) return;
+    if (split.on) exitSplit();
+    const index = workspaces.findIndex(item => item.id === activeWs);
+    const fallback = workspaces[index === 0 ? 1 : 0].id;
+    workspaces.splice(index, 1);
+    tabs.forEach(item => { if (item.ws === activeWs) item.ws = fallback; });
+    activeWs = fallback;
+    applyWorkspaceVisibility();
+    activate(visibleTabs().reduce((best, item) => item.lastActive > best.lastActive ? item : best).id);
+  }
+
+  /* closed tabs */
+  function reopenClosedTab() {
+    const entry = closedStack.shift();
+    if (!entry) return;
+    const tab = makeTab('', true);
+    tab.history = entry.history?.length ? entry.history : [entry.url];
+    tab.historyIndex = Math.min(Math.max(0, entry.historyIndex), tab.history.length - 1);
+    tab.zoom = entry.zoom || 1;
+    navigateTab(tab, entry.url, false);
+    input.value = entry.url;
+    applyZoom(tab);
+  }
+
+  /* split view */
+  function enterSplit(vertical) {
+    const current = tabs.find(item => item.id === activeId);
+    if (!current) return;
+    if (split.on) { split.vertical = vertical; activate(activeId); return; }
+    let other = visibleTabs().filter(item => item.id !== activeId).sort((a, b) => b.lastActive - a.lastActive)[0];
+    if (!other) other = makeTab('', false);
+    split.slots = [activeId, other.id];
+    split.vertical = vertical;
+    split.on = true;
+    activate(activeId);
+  }
+  function exitSplit() {
+    split.on = false;
+    split.slots = [];
+    if (tabs.some(item => item.id === activeId)) activate(activeId);
+  }
+  function toggleSplit(vertical = false) {
+    if (split.on && split.vertical === vertical) exitSplit();
+    else enterSplit(vertical);
+  }
+  window.addEventListener('blur', () => setTimeout(() => {
+    if (!split.on) return;
+    const el = document.activeElement;
+    if (el && el.tagName === 'IFRAME') {
+      const tab = tabs.find(item => item.frame === el);
+      if (tab && tab.id !== activeId && split.slots.includes(tab.id)) activate(tab.id);
+    }
+  }, 0));
+
+  /* zoom */
+  function applyZoom(tab) {
+    const z = tab.zoom || 1, f = tab.frame;
+    if (z === 1) ['transform', 'transform-origin', 'width', 'height', 'animation'].forEach(prop => f.style.removeProperty(prop));
+    else {
+      f.style.animation = 'none';
+      f.style.transformOrigin = '0 0';
+      f.style.transform = `scale(${z})`;
+      f.style.width = (100 / z) + '%';
+      f.style.height = (100 / z) + '%';
+    }
+    if (tab.id === activeId) syncZoomChip(tab);
+  }
+  function syncZoomChip(tab) {
+    const z = tab?.zoom || 1;
+    zoomChip.hidden = z === 1;
+    zoomChip.textContent = Math.round(z * 100) + '%';
+  }
+  function zoomBy(delta, reset = false) {
+    const tab = tabs.find(item => item.id === activeId);
+    if (!tab || tab.isSettings) return;
+    tab.zoom = reset ? 1 : Math.min(2, Math.max(.5, Math.round((tab.zoom + delta) * 10) / 10));
+    applyZoom(tab);
+    scheduleSave();
+  }
+  zoomChip.addEventListener('click', () => zoomBy(0, true));
+
+  /* sleeping tabs */
+  function sleepTab(tab) {
+    if (tab.asleep || !tab.url || tab.isSettings) return;
+    tab.asleep = true;
+    tab.button.classList.add('asleep');
+    clearTimeout(tab.loadingTimer);
+    tab.loading = false;
+    tab.frame.src = 'about:blank';
+  }
+  function wakeTab(tab) {
+    tab.asleep = false;
+    tab.button.classList.remove('asleep');
+    if (!tab.url) return;
+    tab.loading = true;
+    tab.pane.classList.remove('failed');
+    tab.pane.classList.add('loaded');
+    clearTimeout(tab.loadingTimer);
+    tab.loadingTimer = setTimeout(() => showEmbedError(tab), 15000);
+    tab.frame.src = tab.url;
+  }
+  function sleepInactive(minMs = 0) {
+    const now = Date.now();
+    tabs.forEach(tab => {
+      if (tab.id === activeId || (split.on && split.slots.includes(tab.id)) || tab.loading) return;
+      if (now - tab.lastActive >= minMs) sleepTab(tab);
+    });
+  }
+  setInterval(() => { if (sleepMinutes) sleepInactive(sleepMinutes * 60000); }, 30000);
+  function applyTabFavicon(tab) {
+    tab.favicon.classList.remove('has-image');
+    tab.faviconImage.dataset.siteFallback = '';
+    if (siteIcons && tab.url) { try { tab.faviconImage.src = `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(new URL(tab.url).origin)}&sz=128`; } catch {} }
+    else tab.faviconImage.removeAttribute('src');
+  }
+
+  /* session restore */
+  function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveSession, 300); }
+  function saveSession() {
+    if (!restoreSession) return;
+    try {
+      const list = tabs.filter(item => !item.isSettings && item.url).map(item => {
+        const history = item.history.slice(-30);
+        return { url:item.url, ws:item.ws, history, historyIndex:Math.max(0, item.historyIndex - (item.history.length - history.length)), zoom:item.zoom, active:item.id === activeId };
+      });
+      localStorage.setItem('frame-session', JSON.stringify({ tabs:list }));
+    } catch {}
+  }
+  window.addEventListener('pagehide', saveSession);
+  function restoreOrStart() {
+    let loadedAny = false;
+    if (restoreSession) {
+      try {
+        const data = JSON.parse(localStorage.getItem('frame-session') || 'null');
+        let chosen = null;
+        (Array.isArray(data?.tabs) ? data.tabs.slice(0, 60) : []).forEach(entry => {
+          let url;
+          try { const parsed = new URL(entry.url); if (!['http:', 'https:'].includes(parsed.protocol)) return; url = parsed.href; } catch { return; }
+          const tab = makeTab(url, false);
+          tab.ws = workspaces.some(item => item.id === entry.ws) ? entry.ws : workspaces[0].id;
+          tab.history = (Array.isArray(entry.history) ? entry.history.filter(item => typeof item === 'string') : []).slice(-30);
+          if (!tab.history.length) tab.history = [url];
+          tab.historyIndex = Math.min(Math.max(0, Number(entry.historyIndex) || 0), tab.history.length - 1);
+          tab.zoom = Math.min(2, Math.max(.5, Number(entry.zoom) || 1));
+          tab.asleep = true;
+          tab.button.classList.add('asleep');
+          applyTabFavicon(tab);
+          applyZoom(tab);
+          if (entry.active) chosen = tab;
+          loadedAny = true;
+        });
+        if (loadedAny) {
+          chosen = chosen || tabs.find(item => item.ws === activeWs) || tabs[0];
+          activeWs = chosen.ws;
+          applyWorkspaceVisibility();
+          activate(chosen.id);
+        }
+      } catch {}
+    }
+    if (!loadedAny) { applyWorkspaceVisibility(); makeTab(); }
+  }
+
+  /* launcher tiles */
+  function saveShortcuts() { try { localStorage.setItem('frame-shortcuts', JSON.stringify(shortcuts)); } catch {} }
+  function addShortcut(url, name) {
+    if (!url || shortcuts.some(item => item.url === url)) return;
+    shortcuts.push({ url, name:(name || hostOf(url)).slice(0, 40) });
+    saveShortcuts();
+    tabs.forEach(renderHome);
+  }
+  function renderTiles(tab) {
+    const grid = tab.pane.querySelector('.tile-grid');
+    if (!grid) return;
+    grid.replaceChildren();
+    shortcuts.forEach((item, index) => {
+      const cell = document.createElement('div');
+      cell.className = 'tile-cell';
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'tile';
+      tile.title = item.url;
+      const icon = document.createElement('span');
+      icon.className = 'tile-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = (item.name || hostOf(item.url)).slice(0, 1);
+      addSiteFavicon(icon, item.url);
+      const label = document.createElement('span');
+      label.className = 'tile-name';
+      label.textContent = item.name;
+      tile.append(icon, label);
+      tile.addEventListener('click', () => { input.value = item.url; form.requestSubmit(); });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'tile-remove';
+      remove.setAttribute('aria-label', 'Remove ' + item.name);
+      remove.textContent = '×';
+      remove.addEventListener('click', () => { shortcuts.splice(index, 1); saveShortcuts(); tabs.forEach(renderHome); });
+      cell.append(tile, remove);
+      grid.append(cell);
+    });
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'tile add';
+    add.innerHTML = '<span class="tile-icon" aria-hidden="true">+</span><span class="tile-name">Add site</span>';
+    add.addEventListener('click', () => openPrompt('Website to pin, e.g. wikipedia.org', '', value => {
+      const text = value.trim();
+      const url = normalize(text);
+      if (!url || url === searchUrl(text)) { alert('Enter a website address such as wikipedia.org'); return; }
+      addShortcut(url);
+    }));
+    grid.append(add);
+  }
+
+  /* bookmarks: folders, rename, reorder */
+  function makeBookmarkButton(item) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'bookmark-link';
+    button.title = item.url;
+    const glyph = document.createElement('span');
+    glyph.className = 'bookmark-glyph';
+    glyph.setAttribute('aria-hidden', 'true');
+    glyph.textContent = '◆';
+    addSiteFavicon(glyph, item.url);
+    const label = document.createElement('span');
+    label.className = 'bookmark-label';
+    label.textContent = item.title;
+    button.append(glyph, label);
+    button.addEventListener('click', () => { closeFolderPop(); input.value = item.url; form.requestSubmit(); });
+    button.draggable = true;
+    button.addEventListener('dragstart', event => {
+      draggingBookmark = item;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('application/x-frame-bookmark', '1');
+      button.classList.add('dragging');
+    });
+    button.addEventListener('dragend', () => { draggingBookmark = null; document.querySelectorAll('.bookmark-link').forEach(el => el.classList.remove('dragging', 'drop-before', 'drop-after')); });
+    button.addEventListener('dragover', event => {
+      if (!draggingBookmark || draggingBookmark === item) return;
+      event.preventDefault();
+      const rect = button.getBoundingClientRect();
+      const stacked = browserFrame.classList.contains('bookmark-sidebar-right') || button.closest('.folder-pop');
+      const after = stacked ? event.clientY > rect.top + rect.height / 2 : event.clientX > rect.left + rect.width / 2;
+      button.classList.toggle('drop-after', after);
+      button.classList.toggle('drop-before', !after);
+    });
+    button.addEventListener('dragleave', () => button.classList.remove('drop-before', 'drop-after'));
+    button.addEventListener('drop', event => {
+      if (!draggingBookmark || draggingBookmark === item) return;
+      event.preventDefault();
+      moveBookmark(draggingBookmark, item, button.classList.contains('drop-after'));
+    });
+    return button;
+  }
+  function moveBookmark(dragged, target, after) {
+    bookmarks.splice(bookmarks.indexOf(dragged), 1);
+    bookmarks.splice(bookmarks.indexOf(target) + (after ? 1 : 0), 0, dragged);
+    if (target.folder) dragged.folder = target.folder; else delete dragged.folder;
+    saveBookmarks(); renderBookmarks();
+  }
+  function makeFolderButton(name) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'bookmark-link folder-btn';
+    button.dataset.folder = name;
+    button.title = name;
+    button.setAttribute('aria-haspopup', 'true');
+    button.setAttribute('aria-expanded', 'false');
+    const glyph = document.createElement('span');
+    glyph.className = 'bookmark-glyph';
+    glyph.setAttribute('aria-hidden', 'true');
+    glyph.textContent = '▤';
+    const label = document.createElement('span');
+    label.className = 'bookmark-label';
+    label.textContent = name + ' · ' + bookmarks.filter(item => item.folder === name).length;
+    button.append(glyph, label);
+    button.addEventListener('click', () => toggleFolderPop(button, name));
+    button.addEventListener('dragover', event => { if (draggingBookmark) { event.preventDefault(); button.classList.add('drop-after'); } });
+    button.addEventListener('dragleave', () => button.classList.remove('drop-after'));
+    button.addEventListener('drop', event => {
+      if (!draggingBookmark) return;
+      event.preventDefault();
+      draggingBookmark.folder = name;
+      saveBookmarks(); renderBookmarks();
+    });
+    return button;
+  }
+  function getFolderPop() {
+    if (!folderPopEl) {
+      folderPopEl = document.createElement('div');
+      folderPopEl.className = 'folder-pop';
+      folderPopEl.hidden = true;
+      browserFrame.append(folderPopEl);
+    }
+    return folderPopEl;
+  }
+  function closeFolderPop() {
+    if (!folderPopEl) return;
+    folderPopEl.hidden = true;
+    folderPopName = null;
+    document.querySelectorAll('.folder-btn[aria-expanded="true"]').forEach(el => el.setAttribute('aria-expanded', 'false'));
+  }
+  function toggleFolderPop(button, name) {
+    const wasOpen = folderPopName === name;
+    closeFolderPop();
+    if (wasOpen) return;
+    const pop = getFolderPop();
+    pop.replaceChildren(...bookmarks.filter(item => item.folder === name).map(makeBookmarkButton));
+    pop.hidden = false;
+    folderPopName = name;
+    button.setAttribute('aria-expanded', 'true');
+    const rect = button.getBoundingClientRect();
+    const sidebar = browserFrame.classList.contains('bookmark-sidebar-right');
+    pop.style.top = Math.max(8, Math.min(rect.bottom + (sidebar ? -rect.height : 4), window.innerHeight - pop.offsetHeight - 8)) + 'px';
+    if (sidebar) { pop.style.left = 'auto'; pop.style.right = (window.innerWidth - rect.left + 6) + 'px'; }
+    else { pop.style.right = 'auto'; pop.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - pop.offsetWidth - 8)) + 'px'; }
+  }
+  document.addEventListener('pointerdown', event => {
+    if (folderPopEl && !folderPopEl.hidden && !folderPopEl.contains(event.target) && !event.target.closest('.folder-btn')) closeFolderPop();
+  });
+  bookmarkItems.addEventListener('dragover', event => { if (draggingBookmark && event.target === bookmarkItems) event.preventDefault(); });
+  bookmarkItems.addEventListener('drop', event => {
+    if (!draggingBookmark || event.target !== bookmarkItems) return;
+    event.preventDefault();
+    const dragged = draggingBookmark;
+    bookmarks.splice(bookmarks.indexOf(dragged), 1);
+    bookmarks.push(dragged);
+    delete dragged.folder;
+    saveBookmarks(); renderBookmarks();
+  });
+  function renderBookmarks() {
+    closeFolderPop();
+    bookmarkItems.replaceChildren();
+    bookmarksBar.classList.toggle('no-items', !bookmarks.length);
+    if (!bookmarks.length) {
+      const empty = document.createElement('span');
+      empty.className = 'bookmark-empty';
+      empty.textContent = 'Saved pages will appear here';
+      bookmarkItems.append(empty);
+      return;
+    }
+    const seen = new Set();
+    bookmarks.forEach(item => {
+      if (item.folder) {
+        if (seen.has(item.folder)) return;
+        seen.add(item.folder);
+        bookmarkItems.append(makeFolderButton(item.folder));
+      } else bookmarkItems.append(makeBookmarkButton(item));
+    });
+  }
+
+  /* scratchpad */
+  const notesPanel = document.createElement('section');
+  notesPanel.className = 'notes-panel';
+  notesPanel.hidden = true;
+  notesPanel.setAttribute('aria-label', 'Scratchpad');
+  notesPanel.innerHTML = '<div class="notes-head"><strong>Scratchpad</strong><span class="notes-count"></span><button type="button" data-notes="copy">Copy</button><button type="button" data-notes="clear">Clear</button><button type="button" class="notes-close" data-notes="close" aria-label="Close scratchpad">×</button></div><textarea class="notes-text" spellcheck="false" placeholder="Jot something down. Saved on this device only." aria-label="Scratchpad"></textarea>';
+  stage.append(notesPanel);
+  const notesText = notesPanel.querySelector('.notes-text');
+  const notesCount = notesPanel.querySelector('.notes-count');
+  try { notesText.value = localStorage.getItem('frame-notes') || ''; } catch {}
+  function syncNotesCount() { notesCount.textContent = notesText.value.length ? notesText.value.length + ' chars' : ''; }
+  syncNotesCount();
+  let notesTimer = null;
+  notesText.addEventListener('input', () => {
+    syncNotesCount();
+    clearTimeout(notesTimer);
+    notesTimer = setTimeout(() => { try { localStorage.setItem('frame-notes', notesText.value); } catch {} }, 250);
+  });
+  notesText.addEventListener('keydown', event => { if (event.key === 'Escape') { event.stopPropagation(); toggleNotes(false); } });
+  notesPanel.addEventListener('click', event => {
+    const act = event.target.closest('[data-notes]')?.dataset.notes;
+    if (act === 'close') toggleNotes(false);
+    else if (act === 'copy') navigator.clipboard?.writeText(notesText.value).catch(() => {});
+    else if (act === 'clear' && notesText.value && confirm('Clear the scratchpad?')) {
+      notesText.value = ''; syncNotesCount();
+      try { localStorage.setItem('frame-notes', ''); } catch {}
+    }
+  });
+  function toggleNotes(force) {
+    const show = force ?? (notesPanel.hidden || notesPanel.classList.contains('leaving'));
+    if (show) showWithEnter(notesPanel); else hideWithExit(notesPanel, 140);
+    notesButton.classList.toggle('on', show);
+    if (show) notesText.focus();
+  }
+
+  /* app mode */
+  function toggleAppMode(force) {
+    const on = force ?? !browserFrame.classList.contains('app-mode');
+    browserFrame.classList.toggle('app-mode', on);
+    appPill.hidden = !on;
+    closeFolderPop();
+    if (motionOk()) { browserFrame.classList.add('mode-switching'); setTimeout(() => browserFrame.classList.remove('mode-switching'), 280); }
+    if (!on) { updateTabSizing(); syncTabIndicator(); }
+  }
+  appPill.addEventListener('click', event => {
+    const act = event.target.closest('[data-pill]')?.dataset.pill;
+    if (act === 'back') stepNavigation(-1);
+    else if (act === 'forward') stepNavigation(1);
+    else if (act === 'reload') document.querySelector('#reload').click();
+    else if (act === 'palette') openPalette();
+    else if (act === 'exit') toggleAppMode(false);
+  });
+
+  /* command palette */
+  let paletteItems = [], paletteIndex = 0, paletteMode = null, paletteReturnFocus = null;
+  function openPalette(prefill = '') {
+    paletteReturnFocus = document.activeElement;
+    paletteMode = null;
+    showWithEnter(paletteOverlay);
+    paletteInput.placeholder = PALETTE_PLACEHOLDER;
+    paletteInput.value = prefill;
+    paletteIndex = 0;
+    renderPalette();
+    paletteInput.focus();
+  }
+  function openPrompt(placeholder, value, onSubmit) {
+    if (paletteOverlay.hidden) paletteReturnFocus = document.activeElement;
+    paletteMode = { onSubmit };
+    showWithEnter(paletteOverlay);
+    paletteInput.placeholder = placeholder;
+    paletteInput.value = value || '';
+    renderPalette();
+    paletteInput.focus();
+    paletteInput.select();
+  }
+  function closePalette() {
+    hideWithExit(paletteOverlay, 120);
+    paletteMode = null;
+    try { paletteReturnFocus?.focus?.(); } catch {}
+  }
+  function getCommands() {
+    const tab = tabs.find(item => item.id === activeId);
+    const saved = Boolean(tab?.url && bookmarks.some(item => item.url === tab.url));
+    const canZoom = Boolean(tab && !tab.isSettings);
+    const cmds = [
+      { icon:'＋', label:'New tab', keys:'Alt T', run:() => makeTab('', !backgroundTabs) },
+      { icon:'×', label:'Close tab', keys:'Alt W', show:visibleTabs().length > 1, run:() => closeTab(activeId) },
+      { icon:'↺', label:'Reopen closed tab', keys:'Alt ⇧ T', show:closedStack.length > 0, run:reopenClosedTab },
+      { icon:'↻', label:'Reload page', show:Boolean(tab?.url), run:() => startLoad(tab, tab.url) },
+      { icon:'‹', label:'Go back', show:!backButton.disabled, run:() => stepNavigation(-1) },
+      { icon:'›', label:'Go forward', show:!forwardButton.disabled, run:() => stepNavigation(1) },
+      { icon:'☆', label:saved ? 'Remove bookmark' : 'Bookmark this page', keys:'⌘ D', show:Boolean(tab?.url), run:() => toggleBookmark(tab) },
+      { icon:'◆', label:'Pin this page to the home screen', show:Boolean(tab?.url), run:() => addShortcut(tab.url, tab.title) },
+      { icon:'◫', label:split.on && !split.vertical ? 'Close split view' : 'Split view: side by side', keys:'Alt S', run:() => toggleSplit(false) },
+      { icon:'⬒', label:split.on && split.vertical ? 'Close split view' : 'Split view: stacked', run:() => toggleSplit(true) },
+      { icon:'✎', label:'Toggle scratchpad', keys:'Alt N', run:() => toggleNotes() },
+      { icon:'▭', label:browserFrame.classList.contains('app-mode') ? 'Exit app mode' : 'Enter app mode', keys:'Alt ⇧ A', run:() => toggleAppMode() },
+      { icon:'＋', label:'Zoom in', keys:'Alt +', show:canZoom, run:() => zoomBy(.1) },
+      { icon:'－', label:'Zoom out', keys:'Alt −', show:canZoom, run:() => zoomBy(-.1) },
+      { icon:'◎', label:'Reset zoom', keys:'Alt 0', show:canZoom && tab.zoom !== 1, run:() => zoomBy(0, true) },
+      { icon:'☾', label:'Sleep inactive tabs now', run:() => sleepInactive(0) },
+      { icon:'◐', label:'Switch theme', run:() => themeToggle.click() },
+      { icon:'▥', label:'Toggle vertical tabs', run:() => verticalTabsToggle.click() },
+      { icon:'▤', label:'Toggle bookmarks bar', keys:'⌘ ⇧ B', run:() => { bookmarkPlacement = bookmarkPlacement === 'hidden' ? 'bar' : 'hidden'; applyBookmarkPlacement(bookmarkPlacement, true); } },
+      { icon:'⛶', label:'Toggle fullscreen', run:toggleFullscreen },
+      { icon:'⚙', label:'Open settings', run:openSettingsTab },
+      { icon:'⇩', label:'Export backup', run:exportBackup },
+      { icon:'⇧', label:'Import backup…', run:() => settingsPanel.querySelector('#importFile')?.click() },
+      { icon:'⟳', label:'Check for updates', run:() => checkForUpdates(true) }
+    ];
+    const workspaceCmds = [
+      ...workspaces.map(item => ({ group:'Workspaces', icon:item.id === activeWs ? '●' : '○', label:'Workspace: ' + item.name, hint:item.id === activeWs ? 'current' : '', run:() => switchWorkspace(item.id) })),
+      { group:'Workspaces', icon:'＋', label:'New workspace…', run:() => openPrompt('Name the new workspace', '', createWorkspace) },
+      { group:'Workspaces', icon:'✎', label:'Rename this workspace…', run:() => openPrompt('Rename workspace', wsName(activeWs), value => { const clean = value.trim().slice(0, 24); if (!clean) return; workspaces.find(item => item.id === activeWs).name = clean; applyWorkspaceVisibility(); }) },
+      { group:'Workspaces', icon:'−', label:'Delete this workspace', hint:'tabs move to another workspace', show:workspaces.length > 1, run:deleteWorkspace }
+    ];
+    return [...cmds.filter(item => item.show !== false).map(item => ({ group:'Commands', hint:item.keys || '', ...item })), ...workspaceCmds.filter(item => item.show !== false)];
+  }
+  function buildPaletteItems(query) {
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const matches = item => terms.every(term => (item.label + ' ' + (item.hint || '') + ' ' + (item.extra || '')).toLowerCase().includes(term));
+    const rank = item => { const label = item.label.toLowerCase(); return !terms.length ? 0 : label.startsWith(terms[0]) ? 0 : label.includes(terms[0]) ? 1 : 2; };
+    const pick = (list, limit) => list.filter(matches).sort((a, b) => rank(a) - rank(b)).slice(0, limit);
+    const out = [];
+    let goItem = null, goIsSearch = false;
+    if (query) {
+      const url = normalize(query);
+      if (url) {
+        const isSearch = url === searchUrl(query);
+        const engine = searchEngine === 'custom' ? 'your search engine' : SEARCH_ENGINES[searchEngine].name;
+        goItem = { group:'Go', icon:isSearch ? '⌕' : '↗', label:isSearch ? `Search ${engine} for “${query}”` : 'Go to ' + hostOf(url), hint:isSearch ? '' : url.replace(/^https?:\/\//, ''), run:() => { input.value = query; form.requestSubmit(); } };
+        goIsSearch = isSearch;
+      }
+    }
+    const go = url => () => { input.value = url; form.requestSubmit(); };
+    out.push(...pick(tabs.map(tab => ({ group:'Tabs', icon:'▢', label:tab.title + (tab.asleep ? ' (asleep)' : ''), hint:(tab.ws !== activeWs ? wsName(tab.ws) + ' · ' : '') + (tab.url ? tab.url.replace(/^https?:\/\//, '') : ''), run:() => activate(tab.id) })), 8));
+    const all = getCommands();
+    out.push(...pick(all.filter(item => item.group === 'Commands'), terms.length ? 8 : 7));
+    out.push(...pick(all.filter(item => item.group === 'Workspaces'), terms.length ? 8 : 3));
+    out.push(...pick(bookmarks.map(item => ({ group:'Bookmarks', icon:'★', label:item.title, hint:(item.folder ? item.folder + ' · ' : '') + hostOf(item.url), extra:item.url, run:go(item.url) })), 5));
+    out.push(...pick(shortcuts.map(item => ({ group:'Pinned', icon:'◆', label:item.name, hint:hostOf(item.url), extra:item.url, run:go(item.url) })), 5));
+    const recentStart = out.length;
+    out.push(...pick(recentPages.map(item => ({ group:'Recent', icon:'↺', label:item.title, hint:hostOf(item.url), extra:item.url, run:go(item.url) })), 4));
+    if (goItem) { if (goIsSearch) out.push(goItem); else out.unshift(goItem); }
+    return out;
+  }
+  function renderPalette() {
+    paletteList.replaceChildren();
+    const note = text => { const el = document.createElement('div'); el.className = 'palette-empty'; el.textContent = text; paletteList.append(el); };
+    if (paletteMode) { paletteItems = []; note('Press Enter to confirm · Esc to cancel'); return; }
+    paletteItems = buildPaletteItems(paletteInput.value.trim());
+    if (!paletteItems.length) { note('No matches'); return; }
+    paletteIndex = Math.min(paletteIndex, paletteItems.length - 1);
+    let lastGroup = null;
+    paletteItems.forEach((item, index) => {
+      if (item.group !== lastGroup) {
+        lastGroup = item.group;
+        const heading = document.createElement('div');
+        heading.className = 'palette-group';
+        heading.textContent = item.group;
+        paletteList.append(heading);
+      }
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'palette-item';
+      row.setAttribute('role', 'option');
+      row.dataset.index = String(index);
+      row.tabIndex = -1;
+      const icon = document.createElement('span'); icon.className = 'palette-icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = item.icon || '•';
+      const label = document.createElement('span'); label.className = 'palette-label'; label.textContent = item.label;
+      row.append(icon, label);
+      if (item.hint) { const hint = document.createElement('span'); hint.className = 'palette-hint'; hint.textContent = item.hint; row.append(hint); }
+      row.addEventListener('mousemove', () => { if (paletteIndex !== index) { paletteIndex = index; highlightPalette(false); } });
+      row.addEventListener('click', () => runPaletteItem(item));
+      paletteList.append(row);
+    });
+    highlightPalette(true);
+  }
+  function highlightPalette(scroll) {
+    paletteList.querySelectorAll('.palette-item').forEach(row => {
+      const selected = Number(row.dataset.index) === paletteIndex;
+      row.classList.toggle('selected', selected);
+      row.setAttribute('aria-selected', String(selected));
+      if (selected && scroll) row.scrollIntoView({ block:'nearest' });
+    });
+  }
+  function runPaletteItem(item) {
+    if (!item) return;
+    closePalette();
+    item.run();
+  }
+  paletteInput.addEventListener('input', () => { if (paletteMode) return; paletteIndex = 0; renderPalette(); });
+  paletteInput.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closePalette(); }
+    else if (event.key === 'Tab') event.preventDefault();
+    else if (event.key === 'Enter') {
+      event.preventDefault();
+      if (paletteMode) { const submit = paletteMode.onSubmit, value = paletteInput.value; closePalette(); submit(value); }
+      else runPaletteItem(paletteItems[paletteIndex]);
+    } else if (!paletteMode && (event.key === 'ArrowDown' || event.key === 'ArrowUp') && paletteItems.length) {
+      event.preventDefault();
+      paletteIndex = (paletteIndex + (event.key === 'ArrowDown' ? 1 : -1) + paletteItems.length) % paletteItems.length;
+      highlightPalette(true);
+    }
+  });
+  paletteOverlay.addEventListener('pointerdown', event => { if (event.target === paletteOverlay) closePalette(); });
+  paletteButton.addEventListener('click', () => openPalette());
+  splitButton.addEventListener('click', () => toggleSplit(false));
+  notesButton.addEventListener('click', () => toggleNotes());
+  wsChip.addEventListener('click', () => openPalette('workspace'));
+
+  /* load persisted workspaces + launcher before first tab */
+  try {
+    const stored = JSON.parse(localStorage.getItem('frame-workspaces') || 'null');
+    const list = Array.isArray(stored?.list) ? stored.list.filter(item => item && typeof item.id === 'string' && typeof item.name === 'string').slice(0, 12) : [];
+    if (list.length) { workspaces = list; activeWs = list.some(item => item.id === stored.active) ? stored.active : list[0].id; }
+  } catch {}
+  try {
+    const storedTiles = JSON.parse(localStorage.getItem('frame-shortcuts') || '[]');
+    if (Array.isArray(storedTiles)) shortcuts = storedTiles.filter(item => item && typeof item.url === 'string' && /^https?:\/\//i.test(item.url)).map(item => ({ url:item.url, name:String(item.name || hostOf(item.url)).slice(0, 40) })).slice(0, 24);
+  } catch {}
+  wsChip.textContent = wsName(activeWs);
+
   renderBookmarks();
-  makeTab();
-  setTimeout(() => checkForUpdates(false), 350);
+  restoreOrStart();
+  setTimeout(() => {
+    let last = 0;
+    try { last = Number(localStorage.getItem('frame-last-update-check')) || 0; localStorage.setItem('frame-last-update-check', String(Date.now())); } catch {}
+    if (Date.now() - last > 86_400_000) checkForUpdates(false);
+    else updateSettingsStatus.textContent = 'Checked recently · v' + UPDATE_CONFIG.currentVersion;
+  }, 350);
 })();
 </script>
 </body>
