@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#08090b">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; frame-src https: http:; connect-src https://api.github.com https://github.com https://raw.githubusercontent.com https://release-assets.githubusercontent.com https://objects.githubusercontent.com; base-uri 'none'; form-action 'none'">
-<meta name="app-version" content="1.1.1">
+<meta name="app-version" content="1.1.2">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame — Web Preview</title>
 <style>
@@ -1498,7 +1498,7 @@
       if (!release.tag_name || !parseSemver(release.tag_name)) throw new Error('The release does not contain a valid semantic version.');
       downloadedVersion = release.html.match(/<meta\s+name=["']app-version["']\s+content=["']([^"']+)["']/i)?.[1];
       if (!/^<!doctype html>/i.test(release.html.trim()) || !downloadedVersion) throw new Error('The downloaded package is not a valid app HTML file.');
-      if (downloadedVersion !== release.tag_name.replace(/^v/,'')) throw new Error('The package version does not match the release tag.');
+      if (downloadedVersion !== release.tag_name.replace(/^v/,'')) throw new Error(`The package version does not match the release tag. The file says ${downloadedVersion} but the release is tagged ${release.tag_name}.`);
       if (compareSemver(downloadedVersion, UPDATE_CONFIG.currentVersion) < 0) throw new Error('This release is older than the installed app and was rejected.');
       await verifyChecksum(release);
     } catch (error) {
@@ -1538,7 +1538,7 @@
     const version = readAppVersion(release.html || '');
     if (!release.tag_name || !parseSemver(release.tag_name)) throw new Error('The release does not contain a valid semantic version.');
     if (!/^<!doctype html>/i.test((release.html || '').trim()) || !version) throw new Error('The downloaded package is not a valid app HTML file.');
-    if (version !== release.tag_name.replace(/^v/,'')) throw new Error('The package version does not match the release tag.');
+    if (version !== release.tag_name.replace(/^v/,'')) throw new Error(`The package version does not match the release tag. The file says ${version} but the release is tagged ${release.tag_name}.`);
     if (compareSemver(version, UPDATE_CONFIG.currentVersion) < 0) throw new Error('This release is older than the installed app and was rejected.');
     return version;
   }
