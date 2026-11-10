@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0a0c">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; frame-src https: http:; connect-src https://api.github.com https://github.com https://raw.githubusercontent.com https://release-assets.githubusercontent.com https://objects.githubusercontent.com; base-uri 'none'; form-action 'none'">
-<meta name="app-version" content="1.2.0">
+<meta name="app-version" content="1.2.1">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame</title>
 <style>
@@ -244,8 +244,10 @@ button.sb-label:hover { color: var(--text); }
 
 .sb-foot { display: flex; align-items: center; gap: 2px; padding-top: 8px; border-top: 1px solid var(--line); }
 .sb-foot .spacer { flex: 1; }
-.settings-button { position: relative; }
-.settings-badge { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--s1); }
+.settings-button, .menu-btn { position: relative; }
+.menu-btn.has-update::after { content: ""; position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg); }
+.settings-badge { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--s1); }
+.settings-badge::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; }
 .settings-update-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
 /* collapsed rail (desktop) */
@@ -375,17 +377,65 @@ button.sb-label:hover { color: var(--text); }
 }
 .home-card:hover { border-color: var(--line2); background: var(--s3); transform: translateY(-1px); }
 .home-card:active { transform: scale(.985); }
-.jumpback-card { border-color: var(--accent-mid); background: linear-gradient(135deg, var(--accent-soft), transparent 70%), var(--s1); }
 .home-card-mark { position: relative; width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 9px; background: var(--s3); color: var(--text2); font-weight: 650; text-transform: uppercase; }
 .home-card-mark img { position: absolute; inset: 0; margin: auto; width: 22px; height: 22px; border-radius: 5px; object-fit: contain; }
 .home-card-mark.has-image { font-size: 0; }
 .home-card-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .home-card-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
-.jumpback-card .home-card-title { color: var(--accent-text); font-size: 12px; }
 .home-card-url { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text3); font-size: 12px; }
 .home-card-time { flex: none; color: var(--text3); font-size: 11.5px; }
 .home-empty-note { padding: 14px; border: 1px dashed var(--line2); border-radius: 12px; color: var(--text3); text-align: center; }
 .home-privacy-note { margin: 34px 0 0; color: var(--text3); font-size: 12px; text-align: center; text-wrap: balance; }
+
+/* home: recents + jump back in */
+.home-section-head { align-items: center; }
+.home-section-head small { padding: 1px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--s2); }
+.home-recent { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.home-card { gap: 12px; padding: 10px 12px 10px 10px; border-radius: 14px; }
+.home-card:hover { box-shadow: var(--shadow-sm); }
+.home-card-mark { width: 38px; height: 38px; border-radius: 11px; background: hsl(var(--hue, 255) 60% 56% / .17); color: hsl(var(--hue, 255) 72% 76%); font-size: 15px; }
+:root[data-theme="light"] .home-card-mark { background: hsl(var(--hue, 255) 70% 50% / .13); color: hsl(var(--hue, 255) 58% 34%); }
+.home-card-mark.has-image { background: var(--s3); }
+.home-card-title { font-size: 13.5px; }
+.home-card-time { padding: 2px 8px; border-radius: 999px; background: var(--s2); }
+.home-jumpback { grid-template-columns: 1fr; }
+.jumpback-section { margin-top: 24px; }
+.home-card.jumpback-card, .home-card.jumpback-card:hover {
+  position: relative; overflow: hidden; gap: 14px; padding: 12px 14px 12px 12px; border-radius: 16px; border-color: var(--accent-mid);
+  background: radial-gradient(120% 150% at 0% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 60%), var(--s1);
+  box-shadow: 0 8px 22px -16px var(--accent);
+}
+.home-card.jumpback-card:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 10px 26px -16px var(--accent); }
+.jumpback-card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; box-shadow: inset 0 0 0 1px var(--accent), inset 0 0 26px -14px var(--accent); }
+.jumpback-card .home-card-mark { width: 46px; height: 46px; border-radius: 13px; background: var(--accent-soft); color: var(--accent-text); font-size: 18px; box-shadow: inset 0 0 0 1px var(--accent-mid); }
+.jumpback-card .home-card-mark img { width: 26px; height: 26px; border-radius: 6px; }
+.jumpback-card .home-card-copy { gap: 3px; }
+.jb-eyebrow { display: inline-flex; align-items: center; gap: 7px; color: var(--accent-text); font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+.jb-when { color: var(--text3); font-weight: 600; letter-spacing: 0; text-transform: none; }
+.jb-pulse { position: relative; width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--accent); }
+.jb-pulse::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; }
+.jumpback-card .jb-title { color: var(--text); font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+.jumpback-card .home-card-url { font-size: 12px; }
+.jb-cta { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px 0 14px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 650; }
+.jb-cta svg { width: 14px; height: 14px; transition: transform .2s var(--ease-out); }
+.jumpback-card:hover .jb-cta svg { transform: translateX(3px); }
+@media (max-width: 560px) {
+  .home-card.jumpback-card { gap: 12px; padding: 12px; }
+  .jumpback-card .home-card-mark { width: 40px; height: 40px; }
+  .jb-cta { padding: 0 11px; }
+  .jb-cta > span { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root:not(.reduce-motion) .home-card.enter { animation: card-in .34s var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 45ms + 90ms); }
+  :root:not(.reduce-motion) .home-card.jumpback-card.enter { animation: jb-in .55s var(--ease-out) backwards; animation-delay: 0s; }
+  :root:not(.reduce-motion) .jumpback-card::before { animation: jb-glow 3.4s ease-in-out 1s infinite; }
+  :root:not(.reduce-motion) .jb-pulse::after { animation: jb-ping 2.2s ease-out infinite; }
+  :root:not(.reduce-motion) .settings-badge::after { animation: jb-ping 2.2s ease-out infinite; }
+}
+@keyframes card-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes jb-in { from { opacity: 0; transform: translateY(12px) scale(.985); } }
+@keyframes jb-glow { 0%, 100% { opacity: 0; } 50% { opacity: .38; } }
+@keyframes jb-ping { 0% { transform: scale(.6); opacity: .9; } 80%, 100% { transform: scale(2.2); opacity: 0; } }
 
 .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
 .tile-cell { position: relative; display: flex; }
@@ -505,7 +555,8 @@ button.sb-label:hover { color: var(--text); }
 .clear-recents, .check-updates-button { height: 34px; padding: 0 14px; border: 1px solid var(--line2); border-radius: 9px; color: var(--text); background: var(--s3); font-weight: 550; transition: background-color .14s linear, transform .14s var(--ease-out); }
 .clear-recents:hover, .check-updates-button:hover { background: var(--s4); }
 .clear-recents:active, .check-updates-button:active { transform: scale(.97); }
-.backup-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.backup-actions { flex: none; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.backup-btn { white-space: nowrap; }
 .update-settings-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; }
 .update-settings-head > div { display: grid; gap: 2px; }
 .update-settings-head small { color: var(--text2); }
@@ -617,6 +668,9 @@ button.sb-label:hover { color: var(--text); }
   .settings-search { max-width: none; }
   .settings-content { padding: 4px 16px 24px; }
   .settings-row { flex-wrap: wrap; }
+  .backup-actions { width: 100%; }
+  .dd { width: 100%; }
+  .dd-trigger { width: 100%; max-width: none; }
   .home-grid { grid-template-columns: 1fr; }
   .palette-overlay { padding-top: 8vh; }
 }
@@ -708,6 +762,22 @@ button.sb-label:hover { color: var(--text); }
 .ws-menu-item .wm-check svg { width: 14px; height: 14px; }
 .ws-menu-item .wm-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ws-menu-item .wm-count { font: 500 11px var(--font); color: var(--text3); font-variant-numeric: tabular-nums; }
+.dd { flex: none; display: inline-flex; }
+.dd-native { display: none !important; }
+.dd-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; height: 34px; min-width: 150px; max-width: 250px; padding: 0 10px 0 12px; border: 1px solid var(--line2); border-radius: 9px; color: var(--text); background: var(--s3); text-align: left; transition: border-color .14s var(--ease-out), box-shadow .14s var(--ease-out), background-color .14s linear; }
+.dd-trigger:hover { background: var(--s4); }
+.dd-trigger:focus-visible, .dd-trigger[aria-expanded="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
+.dd-value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-chevron { width: 14px; height: 14px; flex: none; color: var(--text3); transition: transform .18s var(--ease-out); }
+.dd-trigger[aria-expanded="true"] .dd-chevron { transform: rotate(180deg); }
+.dd-menu { position: fixed; z-index: 95; overflow-y: auto; padding: 5px; border: 1px solid var(--line2); border-radius: 12px; background: var(--s2); box-shadow: var(--shadow-pop); animation: ws-menu-in .14s var(--ease-out); }
+.dd-option { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 34px; padding: 0 12px 0 8px; border-radius: 8px; color: var(--text2); font-weight: 550; text-align: left; transition: background-color .12s linear, color .12s linear; }
+.dd-option:hover, .dd-option:focus-visible { background: var(--s3); color: var(--text); outline: none; }
+.dd-option[aria-selected="true"] { color: var(--text); }
+.dd-option:disabled { opacity: .45; pointer-events: none; }
+.dd-check { width: 16px; height: 16px; flex: none; display: grid; place-items: center; color: var(--accent-text); visibility: hidden; }
+.dd-option[aria-selected="true"] .dd-check { visibility: visible; }
+.dd-check svg { width: 14px; height: 14px; }
 .ws-menu-sep { height: 1px; margin: 5px 4px; background: var(--line); }
 .tt-sep { width: 1px; height: 18px; margin: 0 6px; background: var(--line); }
 .tab-tools .icon-btn { width: 32px; height: 32px; }
@@ -1210,11 +1280,30 @@ button.sb-label:hover { color: var(--text); }
   }
   function setUpdateBadge(available) {
     settingsBadge.hidden = !available;
+    document.querySelector('#menuButton')?.classList.toggle('has-update', available);
     settingsButton.classList.toggle('has-update', available);
     settingsUpdateLabel.hidden = !available;
     settingsUpdatesBadge.hidden = !available;
     settingsButton.setAttribute('aria-label', available ? 'Open settings, update available' : 'Open settings');
     settingsButton.title = available ? 'Settings · update available' : 'Settings';
+  }
+  const UPDATE_SEEN_KEY = 'frame-update-available', UPDATE_CHECK_KEY = 'frame-last-update-check', UPDATE_TRY_KEY = 'frame-last-update-attempt';
+  const readStored = key => { try { return localStorage.getItem(key); } catch { return null; } };
+  const writeStored = (key, value) => { try { value == null ? localStorage.removeItem(key) : localStorage.setItem(key, String(value)); } catch {} };
+  /* a successful check restarts the 24 h timer and remembers whether an update is waiting, so the badge survives restarts */
+  function recordUpdateResult(newVersion) {
+    writeStored(UPDATE_CHECK_KEY, Date.now());
+    writeStored(UPDATE_SEEN_KEY, newVersion || null);
+    setUpdateBadge(Boolean(newVersion));
+  }
+  let autoCheckRunning = false;
+  function maybeAutoCheck() {
+    if (autoCheckRunning || updateState === 'installing' || !updateOverlay.hidden || navigator.onLine === false) return false;
+    const now = Date.now();
+    if (now - (Number(readStored(UPDATE_CHECK_KEY)) || 0) < 86_400_000 || now - (Number(readStored(UPDATE_TRY_KEY)) || 0) < 3_600_000) return false;
+    autoCheckRunning = true;
+    checkForUpdates(false).finally(() => { autoCheckRunning = false; });
+    return true;
   }
   function updateVersionDetails(release) {
     const version = release.tag_name.replace(/^v/,'');
@@ -1237,7 +1326,7 @@ button.sb-label:hover { color: var(--text); }
   }
   async function checkForUpdates(showDialog=false) {
     if (showDialog) openUpdateDialog();
-    setUpdateBadge(false);
+    writeStored(UPDATE_TRY_KEY, Date.now());
     updateState = 'checking';
     updateSettingsStatus.textContent = 'Checking for updates…';
     if (showDialog) {
@@ -1263,6 +1352,7 @@ button.sb-label:hover { color: var(--text); }
       await verifyChecksum(release);
     } catch (error) {
       if (error.older) {
+        recordUpdateResult(null);
         updateSettingsStatus.textContent = 'You’re on a newer build · v' + UPDATE_CONFIG.currentVersion;
         if (showDialog) {
           updateState = 'newer';
@@ -1279,6 +1369,7 @@ button.sb-label:hover { color: var(--text); }
     }
     checkedRelease = release;
     if (compareSemver(downloadedVersion, UPDATE_CONFIG.currentVersion) <= 0) {
+      recordUpdateResult(null);
       updateSettingsStatus.textContent = 'You’re up to date · v' + UPDATE_CONFIG.currentVersion;
       if (showDialog) {
         updateState = 'current';
@@ -1292,7 +1383,7 @@ button.sb-label:hover { color: var(--text); }
       return;
     }
     updateSettingsStatus.textContent = 'Update available · v' + downloadedVersion;
-    setUpdateBadge(true);
+    recordUpdateResult(downloadedVersion);
     if (showDialog) {
       updateState = 'available';
       updateTitle.textContent = 'Update available';
@@ -1682,29 +1773,72 @@ button.sb-label:hover { color: var(--text); }
     container.append(image);
   }
 
-  function makeHomeCard(item, isJumpback = false) {
+  function relativeTime(timestamp) {
+    const age = Math.max(0, Date.now() - timestamp);
+    if (age < 60_000) return 'just now';
+    if (age < 3_600_000) return `${Math.floor(age / 60_000)}m ago`;
+    if (age < 86_400_000) return `${Math.floor(age / 3_600_000)}h ago`;
+    return `${Math.floor(age / 86_400_000)}d ago`;
+  }
+  function makeHomeCard(item, isJumpback = false, index = 0, enter = false) {
+    const parsed = new URL(item.url);
+    const host = parsed.hostname.replace(/^www\./, '');
+    const label = item.title && item.title !== item.url ? item.title : host;
+    const path = (parsed.pathname + parsed.search).replace(/\/$/, '');
+    const secondary = label === host ? (path || 'Home page') : host;
+    const when = relativeTime(item.visitedAt || item.closedAt || Date.now());
     const card = document.createElement('button');
     card.type = 'button';
     card.className = isJumpback ? 'home-card jumpback-card' : 'home-card';
+    if (enter) { card.classList.add('enter'); card.style.setProperty('--i', String(index)); }
     card.title = item.url;
     const mark = document.createElement('span');
     mark.className = 'home-card-mark';
-    mark.textContent = new URL(item.url).hostname.replace(/^www\./, '').slice(0, 1);
+    mark.textContent = host.slice(0, 1);
+    if (!isJumpback) {
+      let hue = 0;
+      for (const ch of host) hue = (hue * 31 + ch.charCodeAt(0)) % 360;
+      mark.style.setProperty('--hue', String(hue));
+    }
     addSiteFavicon(mark, item.url);
     const copy = document.createElement('span');
     copy.className = 'home-card-copy';
     const title = document.createElement('span');
     title.className = 'home-card-title';
-    title.textContent = isJumpback ? 'Jump back in' : item.title;
+    title.textContent = label;
     const url = document.createElement('span');
     url.className = 'home-card-url';
-    url.textContent = new URL(item.url).hostname.replace(/^www\./, '');
-    const time = document.createElement('span');
-    time.className = 'home-card-time';
-    const age = Math.max(0, Date.now() - (item.visitedAt || item.closedAt || Date.now()));
-    time.textContent = age < 60_000 ? 'just now' : age < 3_600_000 ? `${Math.floor(age / 60_000)}m ago` : `${Math.floor(age / 3_600_000)}h ago`;
-    copy.append(title, url);
-    card.append(mark, copy, time);
+    url.textContent = secondary;
+    if (isJumpback) {
+      card.setAttribute('aria-label', `Jump back in: ${label}, ${host}, ${when}`);
+      const eyebrow = document.createElement('span');
+      eyebrow.className = 'jb-eyebrow';
+      const pulse = document.createElement('i');
+      pulse.className = 'jb-pulse';
+      pulse.setAttribute('aria-hidden', 'true');
+      const kicker = document.createElement('span');
+      kicker.textContent = 'Jump back in';
+      const whenEl = document.createElement('span');
+      whenEl.className = 'jb-when';
+      whenEl.textContent = '· ' + when;
+      eyebrow.append(pulse, kicker, whenEl);
+      title.classList.add('jb-title');
+      copy.append(eyebrow, title, url);
+      const cta = document.createElement('span');
+      cta.className = 'jb-cta';
+      cta.setAttribute('aria-hidden', 'true');
+      const ctaText = document.createElement('span');
+      ctaText.textContent = 'Resume';
+      cta.append(ctaText);
+      cta.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>');
+      card.append(mark, copy, cta);
+    } else {
+      const time = document.createElement('span');
+      time.className = 'home-card-time';
+      time.textContent = when;
+      copy.append(title, url);
+      card.append(mark, copy, time);
+    }
     card.addEventListener('click', () => {
       input.value = item.url;
       form.requestSubmit();
@@ -1721,9 +1855,13 @@ button.sb-label:hover { color: var(--text); }
     const section = tab.pane.querySelector('.recent-section');
     const title = tab.pane.querySelector('.home-kicker');
     const tilesSection = tab.pane.querySelector('.tiles-section');
-    if (title && tilesSection && (tilesSection.previousElementSibling !== title || jumpSection.previousElementSibling !== tilesSection || section.previousElementSibling !== jumpSection)) title.after(tilesSection, jumpSection, section);
+    if (title && tilesSection && (jumpSection.previousElementSibling !== title || tilesSection.previousElementSibling !== jumpSection || section.previousElementSibling !== tilesSection)) title.after(jumpSection, tilesSection, section);
     jumpSection.hidden = !showSessionRecents || !lastClosedPage;
-    if (lastClosedPage) tab.homeJumpBack.append(makeHomeCard(lastClosedPage, true));
+    if (lastClosedPage) {
+      const jumpKey = lastClosedPage.url + ':' + (lastClosedPage.closedAt || '');
+      tab.homeJumpBack.append(makeHomeCard(lastClosedPage, true, 0, tab.jumpKey !== jumpKey));
+      tab.jumpKey = jumpKey;
+    }
     const recent = recentPages.filter(item => !lastClosedPage || item.url !== lastClosedPage.url);
     section.hidden = !showSessionRecents;
     const recentHeading = section.querySelector('.recent-heading');
@@ -1732,7 +1870,10 @@ button.sb-label:hover { color: var(--text); }
     const emptyRecent = section.querySelector('.recent-empty-note');
     if (emptyRecent) emptyRecent.hidden = totalRecent > 0;
     section.querySelector('.recent-count').textContent = String(totalRecent);
-    recent.forEach(item => tab.homeRecent.append(makeHomeCard(item)));
+    const recentKey = recent.map(item => item.url).join('|');
+    const animateRecent = tab.recentKey !== recentKey;
+    tab.recentKey = recentKey;
+    recent.forEach((item, index) => tab.homeRecent.append(makeHomeCard(item, false, index, animateRecent)));
   }
 
   function toggleBookmark(tab) {
@@ -1834,7 +1975,7 @@ button.sb-label:hover { color: var(--text); }
     });
     tab.pane = document.createElement('div');
     tab.pane.className = 'tab-pane';
-    tab.pane.innerHTML = `<div class="empty"><div class="home"><div class="home-hero"><span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="logo-bg" width="64" height="64" rx="18"/><rect class="logo-frame" x="13" y="15" width="38" height="34" rx="7"/><path class="logo-bar" d="M14.5 25h35"/><circle class="logo-dot" cx="20" cy="20" r="1.7"/><circle class="logo-dot" cx="25.5" cy="20" r="1.7" opacity=".72"/><path class="logo-bar" d="m24 36 5.5 5.5L41 30"/></svg></span><h1 class="home-title">Where to?</h1><label class="home-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input class="home-input" type="text" placeholder="Search or enter a website" aria-label="Search or enter a website" autocomplete="off" spellcheck="false"><kbd>Ctrl K</kbd></label></div><section class="home-section tiles-section" aria-label="Pinned sites"><div class="home-section-head">Pinned</div><div class="tile-grid"></div></section><section class="home-section jumpback-section" hidden><div class="home-grid home-jumpback"></div></section><section class="home-section recent-section" hidden><div class="home-section-head recent-heading" hidden>Recent <small class="recent-count"></small></div><div class="home-grid home-recent"></div></section><p class="home-privacy-note">Recents stay in this session and clear when you close Frame.</p></div></div><iframe title="Website preview" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-pointer-lock" allow="fullscreen; pointer-lock"></iframe><div class="embed-error" role="alert"><div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01" stroke-linecap="round"/></svg></div><h2>This page can’t be shown here</h2><p>The site may block embedding, or it took too long to respond.</p><div class="error-actions"><button class="retry" type="button">Try again</button><button class="retry retry-alt" type="button">Open in new tab</button></div></div>`;
+    tab.pane.innerHTML = `<div class="empty"><div class="home"><div class="home-hero"><span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="logo-bg" width="64" height="64" rx="18"/><rect class="logo-frame" x="13" y="15" width="38" height="34" rx="7"/><path class="logo-bar" d="M14.5 25h35"/><circle class="logo-dot" cx="20" cy="20" r="1.7"/><circle class="logo-dot" cx="25.5" cy="20" r="1.7" opacity=".72"/><path class="logo-bar" d="m24 36 5.5 5.5L41 30"/></svg></span><h1 class="home-title">Where to?</h1><label class="home-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input class="home-input" type="text" placeholder="Search or enter a website" aria-label="Search or enter a website" autocomplete="off" spellcheck="false"><kbd>Ctrl K</kbd></label></div><section class="home-section jumpback-section" hidden><div class="home-grid home-jumpback"></div></section><section class="home-section tiles-section" aria-label="Pinned sites"><div class="home-section-head">Pinned</div><div class="tile-grid"></div></section><section class="home-section recent-section" hidden><div class="home-section-head recent-heading" hidden>Recent <small class="recent-count"></small></div><div class="home-grid home-recent"></div></section><p class="home-privacy-note">Recents stay in this session and clear when you close Frame.</p></div></div><iframe title="Website preview" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-pointer-lock" allow="fullscreen; pointer-lock"></iframe><div class="embed-error" role="alert"><div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01" stroke-linecap="round"/></svg></div><h2>This page can’t be shown here</h2><p>The site may block embedding, or it took too long to respond.</p><div class="error-actions"><button class="retry" type="button">Try again</button><button class="retry retry-alt" type="button">Open in new tab</button></div></div>`;
     tab.homeRecent = tab.pane.querySelector('.home-recent');
     tab.homeJumpBack = tab.pane.querySelector('.home-jumpback');
         renderHome(tab);
@@ -2995,6 +3136,121 @@ button.sb-label:hover { color: var(--text); }
     mirror();
   }
 
+  /* custom dropdowns for every settings <select>; the native select stays hidden as the source of truth */
+  {
+    const valueProp = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+    const chevronSvg = '<svg class="dd-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+    const checkSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+    const menu = document.createElement('div');
+    menu.className = 'dd-menu';
+    menu.setAttribute('role', 'listbox');
+    menu.hidden = true;
+    document.body.append(menu);
+    let current = null;
+    function closeMenu(refocus) {
+      if (!current) return;
+      const { trigger } = current;
+      current = null;
+      menu.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+      if (refocus) trigger.focus();
+    }
+    function openMenu(select, trigger) {
+      closeMenu();
+      current = { select, trigger };
+      menu.setAttribute('aria-label', select.getAttribute('aria-label') || '');
+      menu.replaceChildren(...[...select.options].map(option => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'dd-option';
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', String(option.selected));
+        item.dataset.value = option.value;
+        item.disabled = option.disabled;
+        const mark = document.createElement('span'); mark.className = 'dd-check'; mark.innerHTML = checkSvg;
+        const text = document.createElement('span'); text.textContent = option.textContent;
+        item.append(mark, text);
+        return item;
+      }));
+      menu.hidden = false;
+      const rect = trigger.getBoundingClientRect();
+      menu.style.minWidth = rect.width + 'px';
+      menu.style.maxHeight = '';
+      const below = window.innerHeight - rect.bottom - 14, above = rect.top - 14;
+      const placeAbove = menu.offsetHeight > below && above > below;
+      menu.style.maxHeight = Math.max(140, placeAbove ? above : below) + 'px';
+      const width = menu.offsetWidth, height = menu.offsetHeight;
+      menu.style.left = Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8) + 'px';
+      menu.style.top = (placeAbove ? rect.top - height - 6 : rect.bottom + 6) + 'px';
+      trigger.setAttribute('aria-expanded', 'true');
+      (menu.querySelector('[aria-selected="true"]:not(:disabled)') || menu.querySelector('.dd-option:not(:disabled)'))?.focus();
+    }
+    function enhance(select) {
+      const wrap = document.createElement('span');
+      wrap.className = 'dd';
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'dd-trigger';
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.setAttribute('aria-label', select.getAttribute('aria-label') || '');
+      const label = document.createElement('span');
+      label.className = 'dd-value';
+      trigger.append(label);
+      trigger.insertAdjacentHTML('beforeend', chevronSvg);
+      wrap.append(trigger);
+      select.after(wrap);
+      select.classList.add('dd-native');
+      select.tabIndex = -1;
+      select.setAttribute('aria-hidden', 'true');
+      const refresh = () => { label.textContent = select.selectedOptions[0]?.textContent || ''; };
+      /* keep the label in step when other code assigns select.value or rebuilds the options */
+      Object.defineProperty(select, 'value', { configurable: true, get() { return valueProp.get.call(this); }, set(value) { valueProp.set.call(this, value); refresh(); } });
+      new MutationObserver(refresh).observe(select, { childList: true, subtree: true, characterData: true });
+      select.addEventListener('change', refresh);
+      trigger.addEventListener('click', () => { if (current?.trigger === trigger) closeMenu(true); else openMenu(select, trigger); });
+      trigger.addEventListener('keydown', event => { if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); openMenu(select, trigger); } });
+      refresh();
+    }
+    menu.addEventListener('click', event => {
+      const item = event.target.closest('.dd-option');
+      if (!item || !current) return;
+      const { select } = current;
+      closeMenu(true);
+      if (select.value !== item.dataset.value) {
+        select.value = item.dataset.value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    menu.addEventListener('keydown', event => {
+      const items = [...menu.querySelectorAll('.dd-option:not(:disabled)')];
+      const index = items.indexOf(document.activeElement);
+      let next = -1;
+      if (event.key === 'ArrowDown') next = (index + 1) % items.length;
+      else if (event.key === 'ArrowUp') next = (index - 1 + items.length) % items.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = items.length - 1;
+      else if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeMenu(true); return; }
+      else if (event.key === 'Tab') { event.preventDefault(); event.stopPropagation(); closeMenu(true); return; }
+      else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        const letter = event.key.toLowerCase();
+        const ordered = [...items.slice(index + 1), ...items.slice(0, index + 1)];
+        next = items.indexOf(ordered.find(item => item.textContent.trim().toLowerCase().startsWith(letter)));
+        if (next < 0) return;
+      } else return;
+      event.preventDefault();
+      items[next]?.focus();
+    });
+    document.addEventListener('pointerdown', event => {
+      if (!current || menu.contains(event.target) || current.trigger.contains(event.target)) return;
+      closeMenu();
+    }, true);
+    document.addEventListener('scroll', event => { if (current && !menu.contains(event.target)) closeMenu(); }, true);
+    window.addEventListener('resize', () => closeMenu());
+    new MutationObserver(() => { if (settingsOverlay.hidden) closeMenu(); }).observe(settingsOverlay, { attributes: true, attributeFilter: ['hidden', 'class'] });
+    document.querySelectorAll('select.settings-select').forEach(enhance);
+  }
+
   /* load persisted workspaces + launcher before first tab */
   try {
     const stored = JSON.parse(localStorage.getItem('frame-workspaces') || 'null');
@@ -3099,11 +3355,15 @@ button.sb-label:hover { color: var(--text); }
   renderBookmarks();
   restoreOrStart();
   setTimeout(() => {
-    let last = 0;
-    try { last = Number(localStorage.getItem('frame-last-update-check')) || 0; localStorage.setItem('frame-last-update-check', String(Date.now())); } catch {}
-    if (Date.now() - last > 86_400_000) checkForUpdates(false);
-    else updateSettingsStatus.textContent = 'Checked recently · v' + UPDATE_CONFIG.currentVersion;
+    /* restore the badge from the last check, then check again at most once a day (and retry hourly after a failed attempt) */
+    const seen = readStored(UPDATE_SEEN_KEY);
+    const seenIsNewer = Boolean(seen && parseSemver(seen) && compareSemver(seen, UPDATE_CONFIG.currentVersion) > 0);
+    if (seenIsNewer) { setUpdateBadge(true); updateSettingsStatus.textContent = 'Update available · v' + seen; }
+    else if (seen) writeStored(UPDATE_SEEN_KEY, null);
+    if (!maybeAutoCheck() && !seenIsNewer) updateSettingsStatus.textContent = 'Checked recently · v' + UPDATE_CONFIG.currentVersion;
   }, 350);
+  setInterval(maybeAutoCheck, 30 * 60_000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) maybeAutoCheck(); });
 })();
 </script>
 </body>
