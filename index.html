@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0a0c">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; frame-src https: http:; connect-src https://api.github.com https://github.com https://raw.githubusercontent.com https://release-assets.githubusercontent.com https://objects.githubusercontent.com; base-uri 'none'; form-action 'none'">
-<meta name="app-version" content="1.2.1">
+<meta name="app-version" content="1.2.2">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<title>Frame</title>
+<title>Frame Bench</title>
 <style>
 
 /* ==========================================================================
-   Frame 2 — design system
+   Frame Bench 2 — design system
    One accent, a four-step surface scale, one UI font. Everything below reads
    from these tokens, so theming is a variable swap, not a stylesheet rewrite.
    ========================================================================== */
@@ -557,11 +557,7 @@ button.sb-label:hover { color: var(--text); }
 .clear-recents:active, .check-updates-button:active { transform: scale(.97); }
 .backup-actions { flex: none; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
 .backup-btn { white-space: nowrap; }
-.update-settings-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; }
-.update-settings-head > div { display: grid; gap: 2px; }
-.update-settings-head small { color: var(--text2); }
 .test-mode-badge { padding: 3px 8px; border-radius: 6px; color: var(--text3); background: var(--s3); font: 700 10px var(--font); letter-spacing: .06em; }
-.check-updates-button { margin: 0 16px 16px; }
 .settings-shortcuts { padding: 4px 16px; }
 .settings-shortcuts > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; }
 .settings-shortcuts > div + div { border-top: 1px solid var(--line); }
@@ -569,33 +565,92 @@ button.sb-label:hover { color: var(--text); }
 .settings-empty { padding: 40px 12px; color: var(--text3); text-align: center; }
 
 /* update dialog */
-.update-dialog { position: relative; width: min(440px, 100%); padding: 26px; border: 1px solid var(--line2); border-radius: 20px; background: var(--s1); box-shadow: var(--shadow-pop); animation: pop-in .24s var(--ease-out) both; }
+/* software update: shared state icon */
+.state-icon { position: relative; flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 15px; color: var(--text2); background: var(--s3); box-shadow: inset 0 0 0 1px var(--line2); }
+.state-icon .ui { display: none; width: 23px; height: 23px; }
+:is(.update-hero, .update-dialog)[data-state="idle"] .ui-refresh,
+:is(.update-hero, .update-dialog)[data-state="checking"] .ui-spin, :is(.update-hero, .update-dialog)[data-state="installing"] .ui-spin,
+:is(.update-hero, .update-dialog)[data-state="available"] .ui-down,
+:is(.update-hero, .update-dialog)[data-state="current"] .ui-check, :is(.update-hero, .update-dialog)[data-state="newer"] .ui-check, :is(.update-hero, .update-dialog)[data-state="installed"] .ui-check,
+:is(.update-hero, .update-dialog)[data-state="error"] .ui-alert, :is(.update-hero, .update-dialog)[data-state="invalid"] .ui-alert, :is(.update-hero, .update-dialog)[data-state="rejected"] .ui-alert { display: block; }
+:is(.update-hero, .update-dialog)[data-state="checking"] .state-icon, :is(.update-hero, .update-dialog)[data-state="installing"] .state-icon { color: var(--accent-text); }
+:is(.update-hero, .update-dialog)[data-state="available"] .state-icon { color: var(--accent-ink); background: var(--accent); box-shadow: 0 8px 20px -10px var(--accent); }
+:is(.update-hero, .update-dialog)[data-state="current"] .state-icon, :is(.update-hero, .update-dialog)[data-state="newer"] .state-icon, :is(.update-hero, .update-dialog)[data-state="installed"] .state-icon { color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 35%, transparent); }
+:is(.update-hero, .update-dialog)[data-state="error"] .state-icon, :is(.update-hero, .update-dialog)[data-state="invalid"] .state-icon, :is(.update-hero, .update-dialog)[data-state="rejected"] .state-icon { color: var(--danger); background: color-mix(in srgb, var(--danger) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 35%, transparent); }
+
+/* software update: settings pane */
+.update-hero { position: relative; overflow: hidden; margin-bottom: 14px; }
+.update-hero::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(90% 150% at 0% 0%, var(--uh-tint, transparent), transparent 62%); }
+.update-hero[data-state="available"] { --uh-tint: color-mix(in srgb, var(--accent) 16%, transparent); border-color: var(--accent-mid); }
+.update-hero[data-state="current"], .update-hero[data-state="newer"] { --uh-tint: color-mix(in srgb, var(--ok) 12%, transparent); }
+.update-hero[data-state="error"], .update-hero[data-state="rejected"] { --uh-tint: color-mix(in srgb, var(--danger) 12%, transparent); }
+.update-settings-head { position: relative; display: flex; align-items: center; gap: 14px; padding: 18px; }
+.uh-copy { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.uh-copy strong { font-size: 16px; font-weight: 650; letter-spacing: -.015em; }
+.uh-copy small { color: var(--text2); }
+.update-hero .check-updates-button { flex: none; margin: 0; white-space: nowrap; }
+.update-hero .check-updates-button.primary { color: var(--accent-ink); border-color: transparent; background: var(--accent); }
+.update-hero .check-updates-button.primary:hover { background: color-mix(in srgb, var(--accent) 88%, #fff); }
+.uh-facts { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
+.uh-facts > div { display: grid; gap: 4px; padding: 12px 18px 14px; }
+.uh-facts > div + div { border-left: 1px solid var(--line); }
+.uh-facts span { color: var(--text3); font: 700 10px var(--font); letter-spacing: .07em; text-transform: uppercase; }
+.uh-facts b { font: 600 13px var(--mono); color: var(--text); }
+.uh-value { color: var(--text2); font: 12.5px var(--mono); white-space: nowrap; }
+.uh-chip { padding: 3px 9px; border-radius: 999px; color: var(--accent-text); background: var(--accent-soft); font: 700 11px var(--font); }
+
+/* software update: dialog */
+.update-dialog { position: relative; overflow: hidden; display: grid; grid-template-columns: auto 1fr; column-gap: 16px; align-items: center; width: min(460px, 100%); padding: 26px; border: 1px solid var(--line2); border-radius: 22px; background: var(--s1); box-shadow: var(--shadow-pop); animation: pop-in .24s var(--ease-out) both; }
+.update-dialog::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 150px; pointer-events: none; background: radial-gradient(80% 100% at 0% 0%, var(--ud-tint, transparent), transparent 70%); }
+.update-dialog[data-state="available"] { --ud-tint: color-mix(in srgb, var(--accent) 18%, transparent); }
+.update-dialog[data-state="current"], .update-dialog[data-state="newer"], .update-dialog[data-state="installed"] { --ud-tint: color-mix(in srgb, var(--ok) 14%, transparent); }
+.update-dialog[data-state="error"], .update-dialog[data-state="invalid"], .update-dialog[data-state="rejected"] { --ud-tint: color-mix(in srgb, var(--danger) 13%, transparent); }
+.update-dialog > * { position: relative; grid-column: 1 / -1; }
+.update-dialog > .update-close { position: absolute; }
+.update-dialog > .update-app-icon { grid-column: 1; grid-row: 1 / span 3; width: 56px; height: 56px; border-radius: 17px; }
+.update-dialog > .update-app-icon .ui { width: 26px; height: 26px; }
+.update-dialog > .update-kicker, .update-dialog > h2, .update-dialog > .update-summary { grid-column: 2; }
 .update-close { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; color: var(--text3); font-size: 20px; line-height: 1; }
 .update-close:hover { color: var(--text); background: var(--s3); }
-.update-app-icon { width: 46px; height: 46px; display: grid; place-items: center; margin-bottom: 14px; border-radius: 14px; color: var(--accent-text); background: var(--accent-soft); }
-.update-app-icon svg { width: 24px; height: 24px; }
-.update-kicker { margin-bottom: 4px; color: var(--text3); font: 600 11px var(--font); letter-spacing: .04em; }
-.update-kicker span { display: none; }
-.update-dialog h2 { margin: 0 0 6px; font-size: 20px; font-weight: 650; letter-spacing: -.025em; }
-.update-summary { margin: 0 0 14px; color: var(--text2); }
-.update-version-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 12px; border-radius: 10px; background: var(--s2); font: 12.5px var(--mono); }
-.version-arrow { color: var(--text3); }
-.release-notes { margin-bottom: 14px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--s2); }
-.release-notes-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
-.release-notes-head span { color: var(--text3); }
-.release-notes p { margin: 0; max-height: 140px; overflow: auto; color: var(--text2); white-space: pre-wrap; }
+.update-kicker { margin: 0 0 2px; padding-right: 28px; color: var(--text3); font: 700 10.5px var(--font); letter-spacing: .08em; }
+.update-dialog h2 { margin: 0 0 2px; font-size: 21px; font-weight: 650; letter-spacing: -.025em; }
+.update-summary { margin: 0 0 18px; color: var(--text2); }
+.update-version-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; margin-bottom: 14px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--s2); font: 600 15px var(--mono); }
+#updateCurrentVersion, #updateNewVersion { display: grid; gap: 3px; }
+#updateCurrentVersion::before, #updateNewVersion::before { font: 700 10px var(--font); letter-spacing: .08em; }
+#updateCurrentVersion::before { content: "INSTALLED"; color: var(--text3); }
+#updateNewVersion { justify-items: end; color: var(--accent-text); }
+#updateNewVersion::before { content: "AVAILABLE"; color: var(--accent-text); opacity: .8; }
+.version-arrow { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--text2); background: var(--s4); font: 14px var(--font); }
+.release-notes { margin-bottom: 14px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--s2); }
+.release-notes-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.release-notes-head span { padding: 2px 8px; border-radius: 999px; color: var(--text3); background: var(--s3); font-size: 11.5px; }
+.release-notes p { margin: 0; max-height: 150px; overflow: auto; color: var(--text2); font-size: 13px; line-height: 1.55; white-space: pre-wrap; scrollbar-width: thin; }
 .update-progress-wrap { margin-bottom: 14px; }
-.update-progress-label { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--text2); }
-.update-progress-track { height: 6px; overflow: hidden; border-radius: 3px; background: var(--s4); }
-.update-progress-track span { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--accent); transition: width .3s var(--ease-out); }
-.update-error { margin-bottom: 14px; padding: 12px; border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent); border-radius: 12px; color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); }
-.update-actions { display: flex; justify-content: flex-end; gap: 8px; }
-.update-later, .update-now { height: 36px; padding: 0 16px; border-radius: 10px; font-weight: 600; transition: background-color .14s linear, transform .14s var(--ease-out); }
-.update-later { border: 1px solid var(--line2); background: var(--s3); }
-.update-later:hover { background: var(--s4); }
-.update-now { color: var(--accent-ink); background: var(--accent); }
+.update-progress-label { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--text2); }
+#updateProgressPercent { color: var(--text); font: 600 12.5px var(--mono); }
+.update-progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: var(--s4); }
+.update-progress-track span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 65%, #fff), var(--accent)); background-size: 200% 100%; transition: width .3s var(--ease-out); }
+.update-error { margin-bottom: 14px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--danger) 38%, transparent); border-radius: 14px; color: var(--text); background: color-mix(in srgb, var(--danger) 10%, transparent); font-size: 13px; line-height: 1.5; }
+.update-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.update-later, .update-now { height: 38px; padding: 0 18px; border-radius: 11px; font-weight: 600; transition: background-color .14s linear, transform .14s var(--ease-out); }
+.update-later { border: 1px solid var(--line2); background: transparent; color: var(--text2); }
+.update-later:hover { color: var(--text); background: var(--s3); }
+.update-now { color: var(--accent-ink); background: var(--accent); box-shadow: 0 8px 20px -12px var(--accent); }
 .update-now:hover { background: color-mix(in srgb, var(--accent) 88%, #fff); }
 .update-later:active, .update-now:active { transform: scale(.97); }
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+@keyframes ui-shimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  :root:not(.reduce-motion) :is(.update-hero, .update-dialog)[data-state="checking"] .ui-spin, :root:not(.reduce-motion) :is(.update-hero, .update-dialog)[data-state="installing"] .ui-spin { animation: ui-spin .9s linear infinite; }
+  :root:not(.reduce-motion) .update-dialog[data-state="installing"] .update-progress-track span { animation: ui-shimmer 1.6s linear infinite; }
+}
+@media (max-width: 669px) {
+  .update-settings-head { flex-wrap: wrap; }
+  .uh-copy { flex-basis: calc(100% - 70px); }
+  .update-hero .check-updates-button { width: 100%; }
+  .uh-facts > div { padding: 10px 12px 12px; }
+}
 
 /* context menu */
 .context-menu { position: fixed; z-index: 90; width: 214px; padding: 5px; border: 1px solid var(--line2); border-radius: 12px; background: color-mix(in srgb, var(--s1) 96%, transparent); box-shadow: var(--shadow-pop); backdrop-filter: blur(12px); opacity: 0; transform: translateY(-4px) scale(.98); transform-origin: top left; pointer-events: none; transition: opacity .12s var(--ease-out), transform .14s var(--ease-out); }
@@ -620,11 +675,16 @@ button.sb-label:hover { color: var(--text); }
 .notes-text { flex: 1; width: 100%; padding: 14px; resize: none; border: 0; outline: 0; color: var(--text); background: transparent; font: 14px/1.6 var(--font); }
 .notes-text::placeholder { color: var(--text3); }
 
-.app-pill { position: fixed; z-index: 30; right: 16px; bottom: 16px; display: flex; gap: 2px; padding: 4px; border: 1px solid var(--line2); border-radius: 999px; background: color-mix(in srgb, var(--s1) 92%, transparent); box-shadow: var(--shadow-pop); backdrop-filter: blur(14px); opacity: .34; transition: opacity .2s linear; animation: pill-in .28s var(--ease-out) backwards; }
-.app-pill:hover, .app-pill:focus-within { opacity: 1; }
-.app-pill button { min-width: 32px; height: 32px; padding: 0 9px; border-radius: 999px; color: var(--text2); font-size: 15px; line-height: 1; transition: background-color .14s linear, color .14s linear; }
-.app-pill button[data-pill="palette"] { font: 11px var(--mono); }
+.app-pill { position: fixed; z-index: 30; right: 14px; bottom: 14px; display: flex; align-items: center; padding: 3px; border: 1px solid var(--line2); border-radius: 999px; background: color-mix(in srgb, var(--s1) 90%, transparent); box-shadow: var(--shadow-pop); backdrop-filter: blur(14px); opacity: .6; transition: opacity .2s linear; animation: pill-in .28s var(--ease-out) backwards; }
+.app-pill:focus-within, .app-pill.open { opacity: 1; }
+.pill-actions { min-width: 0; overflow: hidden; display: grid; grid-template-columns: 0fr; transition: grid-template-columns .24s var(--ease-out); }
+.app-pill:focus-within .pill-actions, .app-pill.open .pill-actions { grid-template-columns: 1fr; }
+.pill-actions-inner { min-width: 0; display: flex; align-items: center; gap: 2px; overflow: hidden; }
+.app-pill button { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 999px; color: var(--text2); transition: background-color .14s linear, color .14s linear; }
+.app-pill button svg { width: 16px; height: 16px; }
 .app-pill button:hover { color: var(--text); background: var(--s3); }
+.pill-handle { color: var(--text3); }
+.pill-sep { flex: none; width: 1px; height: 16px; margin: 0 4px; background: var(--line2); }
 .browser.app-mode { display: block; }
 .browser.app-mode .sidebar, .browser.app-mode .topbar, .browser.app-mode .mobile-bar { display: none !important; }
 .browser.app-mode .main { height: 100%; display: block; }
@@ -781,7 +841,7 @@ button.sb-label:hover { color: var(--text); }
 .ws-menu-sep { height: 1px; margin: 5px 4px; background: var(--line); }
 .tt-sep { width: 1px; height: 18px; margin: 0 6px; background: var(--line); }
 .tab-tools .icon-btn { width: 32px; height: 32px; }
-.browser.app-mode .htabs .tab-tools { display: none; }
+.browser.app-mode .htabs { display: none !important; }
 .tab-indicator { position: absolute; z-index: 3; left: 0; bottom: 0; width: 0; height: 2px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 9px var(--accent-mid); opacity: 0; pointer-events: none; transition: transform .3s var(--ease-out), width .3s var(--ease-out), opacity .14s var(--ease-out); }
 .tab-indicator.visible { opacity: 1; }
 .browser.vertical-tabs .tab-indicator { display: none; }
@@ -789,10 +849,10 @@ button.sb-label:hover { color: var(--text); }
 </style>
 </head>
 <body>
-<div class="browser" aria-label="Frame">
+<div class="browser" aria-label="Frame Bench">
   <aside class="sidebar" id="sidebar" aria-label="Sidebar">
     <div class="sb-head">
-      <div class="brand"><span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="logo-bg" width="64" height="64" rx="18"/><rect class="logo-frame" x="13" y="15" width="38" height="34" rx="7"/><path class="logo-bar" d="M14.5 25h35"/><circle class="logo-dot" cx="20" cy="20" r="1.7"/><circle class="logo-dot" cx="25.5" cy="20" r="1.7" opacity=".72"/><path class="logo-bar" d="m24 36 5.5 5.5L41 30"/></svg></span><span class="brand-name">Frame</span></div>
+      <div class="brand"><span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="logo-bg" width="64" height="64" rx="18"/><rect class="logo-frame" x="13" y="15" width="38" height="34" rx="7"/><path class="logo-bar" d="M14.5 25h35"/><circle class="logo-dot" cx="20" cy="20" r="1.7"/><circle class="logo-dot" cx="25.5" cy="20" r="1.7" opacity=".72"/><path class="logo-bar" d="m24 36 5.5 5.5L41 30"/></svg></span><span class="brand-name">Frame Bench</span></div>
       <button class="icon-btn sb-collapse" id="sidebarToggle" type="button" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar (Alt B)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg></button>
     </div>
     <button class="ws-switch" id="wsChip" type="button" aria-label="Switch workspace" title="Workspaces"><span class="ws-dot" aria-hidden="true"></span><span class="ws-name">Main</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -846,7 +906,7 @@ button.sb-label:hover { color: var(--text); }
     <button class="icon-btn" type="button" data-mb="palette" aria-label="Command palette"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button>
     <button class="icon-btn" type="button" data-mb="new" aria-label="New tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
   </nav>
-  <div class="app-pill" id="appPill" hidden role="toolbar" aria-label="App mode controls"><button type="button" data-pill="back" title="Back" aria-label="Back">‹</button><button type="button" data-pill="forward" title="Forward" aria-label="Forward">›</button><button type="button" data-pill="reload" title="Reload" aria-label="Reload">↻</button><button type="button" data-pill="palette" title="Commands" aria-label="Commands">⌘K</button><button type="button" data-pill="exit" title="Exit app mode (Alt Shift A)" aria-label="Exit app mode">✕</button></div>
+  <div class="app-pill" id="appPill" hidden role="toolbar" aria-label="App mode controls"><div class="pill-actions"><div class="pill-actions-inner"><button type="button" data-pill="back" title="Back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg></button><button type="button" data-pill="forward" title="Forward" aria-label="Forward"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></button><button type="button" data-pill="reload" title="Reload" aria-label="Reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.4-5.5"/><path d="M19.5 4.5v4h-4"/></svg></button><button type="button" data-pill="palette" title="Search and commands (Ctrl K)" aria-label="Search and commands"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m15.5 15.5 4 4"/></svg></button><span class="pill-sep" aria-hidden="true"></span><button type="button" data-pill="exit" title="Exit app mode (Alt Shift A)" aria-label="Exit app mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div><button type="button" class="pill-handle" data-pill="more" title="App mode controls" aria-label="Show app mode controls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="12" r="1.1"/><circle cx="12" cy="12" r="1.1"/><circle cx="18" cy="12" r="1.1"/></svg></button></div>
 </div>
 <div class="palette-overlay" id="paletteOverlay" hidden>
   <section class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
@@ -869,17 +929,16 @@ button.sb-label:hover { color: var(--text); }
           </nav>
           <div class="settings-content"><div class="settings-empty" id="settingsEmpty" hidden>No settings match your search.</div>
             <section class="settings-category active" id="settingsPaneAppearance" role="tabpanel" aria-labelledby="settingsTabAppearance" data-settings-pane="appearance">
-              <div class="settings-category-heading"><span class="settings-eyebrow">PERSONALIZE</span><h3>Appearance</h3><p>Adjust how Frame looks and what stays within reach.</p></div>
+              <div class="settings-category-heading"><span class="settings-eyebrow">PERSONALIZE</span><h3>Appearance</h3><p>Adjust how Frame Bench looks and what stays within reach.</p></div>
               <div class="settings-card"><div class="settings-row"><div><strong>Color theme</strong><small>Choose dark or light appearance</small></div><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode" title="Switch to light mode"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" stroke-linecap="round"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.5 15.3A8.5 8.5 0 0 1 8.7 3.5 8.5 8.5 0 1 0 20.5 15.3Z" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-              <div class="settings-row"><div><strong>Show bookmarks</strong><small>Keep your saved pages in the sidebar</small></div><button class="setting-switch" id="bookmarksToggle" type="button" role="switch" aria-checked="true"><span></span></button></div><div class="settings-row"><div><strong>Vertical tabs</strong><small>Show tabs in the sidebar instead of across the top</small></div><button class="setting-switch" id="verticalTabsToggle" type="button" role="switch" aria-checked="false"><span></span></button></div>
-              <div class="settings-row"><div><strong>Vertical tabs</strong><small>Show tabs in a sidebar like Chrome</small></div><button class="setting-switch" id="verticalTabsToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row accent-row"><div class="accent-head"><strong>Accent color</strong><small>Tints highlights, icons and active states</small></div><div class="accent-swatches" id="accentSwatches" role="radiogroup" aria-label="Accent color"><label class="accent-custom" title="Custom color"><input type="color" id="accentCustom" value="#ef3f61" aria-label="Custom accent color"></label></div></div></div>
+              <div class="settings-row"><div><strong>Show bookmarks</strong><small>Keep your saved pages in the sidebar</small></div><button class="setting-switch" id="bookmarksToggle" type="button" role="switch" aria-checked="true"><span></span></button></div><div class="settings-row"><div><strong>Vertical tabs</strong><small>Show tabs in the sidebar instead of across the top</small></div><button class="setting-switch" id="verticalTabsToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row accent-row"><div class="accent-head"><strong>Accent color</strong><small>Tints highlights, icons and active states</small></div><div class="accent-swatches" id="accentSwatches" role="radiogroup" aria-label="Accent color"><label class="accent-custom" title="Custom color"><input type="color" id="accentCustom" value="#ef3f61" aria-label="Custom accent color"></label></div></div></div>
             </section>
             <section class="settings-category" id="settingsPaneBrowsing" role="tabpanel" aria-labelledby="settingsTabBrowsing" data-settings-pane="browsing" hidden>
               <div class="settings-category-heading"><span class="settings-eyebrow">BROWSER BEHAVIOR</span><h3>Browsing</h3><p>Choose how tabs and new tab pages behave.</p></div>
-              <div class="settings-card"><div class="settings-row"><div><strong>Open new tabs in background</strong><small>Keep your current page selected when creating a tab</small></div><button class="setting-switch" id="backgroundTabsToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row"><div><strong>Show session recents</strong><small>Show Jump Back In and recent pages on new tabs</small></div><button class="setting-switch" id="showRecentsToggle" type="button" role="switch" aria-checked="true"><span></span></button></div><div class="settings-row"><div><strong>Continue where I left off</strong><small>Reopen your tabs and workspaces next time. Saved on this device only</small></div><button class="setting-switch" id="restoreToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row"><div><strong>Put inactive tabs to sleep</strong><small>Unloads background tabs to save memory. Media stops and unsaved forms are lost</small></div><select class="test-scenario settings-select" id="sleepSelect" aria-label="Tab sleep delay"><option value="0">Never</option><option value="5">After 5 min</option><option value="15">After 15 min</option><option value="30">After 30 min</option><option value="60">After 1 hour</option></select></div><div class="settings-row"><div><strong>Search engine</strong><small>Used when you type words instead of a website. Some engines refuse to load inside Frame</small></div><select class="test-scenario settings-select" id="searchEngine" aria-label="Search engine"></select></div><div class="settings-row" id="searchCustomRow" hidden><div><strong>Custom search address</strong><small>Put %s where the search words should go</small></div><input class="test-scenario settings-select" id="searchCustom" type="text" placeholder="https://example.com/?q=%s" spellcheck="false" aria-label="Custom search address"></div></div>
+              <div class="settings-card"><div class="settings-row"><div><strong>Open new tabs in background</strong><small>Keep your current page selected when creating a tab</small></div><button class="setting-switch" id="backgroundTabsToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row"><div><strong>Show session recents</strong><small>Show Jump Back In and recent pages on new tabs</small></div><button class="setting-switch" id="showRecentsToggle" type="button" role="switch" aria-checked="true"><span></span></button></div><div class="settings-row"><div><strong>Continue where I left off</strong><small>Reopen your tabs and workspaces next time. Saved on this device only</small></div><button class="setting-switch" id="restoreToggle" type="button" role="switch" aria-checked="false"><span></span></button></div><div class="settings-row"><div><strong>Put inactive tabs to sleep</strong><small>Unloads background tabs to save memory. Media stops and unsaved forms are lost</small></div><select class="test-scenario settings-select" id="sleepSelect" aria-label="Tab sleep delay"><option value="0">Never</option><option value="5">After 5 min</option><option value="15">After 15 min</option><option value="30">After 30 min</option><option value="60">After 1 hour</option></select></div><div class="settings-row"><div><strong>Search engine</strong><small>Used when you type words instead of a website. Some engines refuse to load inside Frame Bench</small></div><select class="test-scenario settings-select" id="searchEngine" aria-label="Search engine"></select></div><div class="settings-row" id="searchCustomRow" hidden><div><strong>Custom search address</strong><small>Put %s where the search words should go</small></div><input class="test-scenario settings-select" id="searchCustom" type="text" placeholder="https://example.com/?q=%s" spellcheck="false" aria-label="Custom search address"></div></div>
             </section>
             <section class="settings-category" id="settingsPanePrivacy" role="tabpanel" aria-labelledby="settingsTabPrivacy" data-settings-pane="privacy" hidden>
-              <div class="settings-category-heading"><span class="settings-eyebrow">PRIVATE BY DEFAULT</span><h3>Privacy & session</h3><p>Your browsing history stays in this session and is cleared when you close Frame. Websites may still store their own cookies.</p></div>
+              <div class="settings-category-heading"><span class="settings-eyebrow">PRIVATE BY DEFAULT</span><h3>Privacy & session</h3><p>Your browsing history stays in this session and is cleared when you close Frame Bench. Websites may still store their own cookies.</p></div>
               <div class="settings-card"><div class="settings-row"><div><strong>Recently visited pages</strong><small>Only available during this session</small></div><button class="clear-recents" id="clearRecents" type="button">Clear recent pages</button></div><div class="settings-row"><div><strong>Backup &amp; restore</strong><small>Bookmarks, shortcuts, workspaces, scratchpad and settings as a JSON file</small></div><div class="backup-actions"><button class="clear-recents backup-btn" id="exportBackup" type="button">Export backup</button><button class="clear-recents backup-btn" id="importBackup" type="button">Import backup…</button><input type="file" id="importFile" accept="application/json,.json" hidden></div></div><div class="settings-row"><div><strong>Load site icons</strong><small>Fetches icons from Google’s favicon service, which sees the domains you visit</small></div><button class="setting-switch" id="siteIconsToggle" type="button" role="switch" aria-checked="true"><span></span></button></div></div>
             </section>
             <section class="settings-category" id="settingsPaneAccessibility" role="tabpanel" aria-labelledby="settingsTabAccessibility" data-settings-pane="accessibility" hidden>
@@ -888,12 +947,14 @@ button.sb-label:hover { color: var(--text); }
             </section>
             <section class="settings-category" id="settingsPaneUpdates" role="tabpanel" aria-labelledby="settingsTabUpdates" data-settings-pane="updates" hidden>
               <div class="settings-category-heading"><span class="settings-eyebrow" id="updateAppVersion">FRAME VERSION</span><h3>Software update</h3><p>Check whether a newer version is available.</p></div>
-              <div class="settings-card"><div class="update-settings-head"><div><strong>Update status</strong><small id="updateSettingsStatus">Checking for updates…</small></div><span class="test-mode-badge">GITHUB</span></div>
-                <button class="check-updates-button" id="checkUpdates" type="button">Check for updates</button>
+              <div class="settings-card update-hero" id="updateHero" data-state="idle">
+                <div class="update-settings-head uh-top"><span class="state-icon uh-icon" aria-hidden="true"><svg class="ui ui-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5"/></svg><svg class="ui ui-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5.5 20h13"/></svg><svg class="ui ui-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 12.5 4.2 4.2L18.5 8"/></svg><svg class="ui ui-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.6v.01"/><path d="M10.4 4.5 3 17.6A1.9 1.9 0 0 0 4.7 20.5h14.6a1.9 1.9 0 0 0 1.7-2.9L13.6 4.5a1.9 1.9 0 0 0-3.2 0Z"/></svg><svg class="ui ui-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.3-5.4"/><path d="M19.5 4.5v4h-4"/></svg></span><div class="uh-copy"><strong id="updateHeroTitle">Software update</strong><small id="updateSettingsStatus" aria-live="polite">Checking for updates…</small></div><button class="check-updates-button" id="checkUpdates" type="button">Check for updates</button></div>
+                <div class="uh-facts"><div><span>Installed</span><b id="updInstalled">—</b></div><div><span>Latest</span><b id="updLatest">—</b></div><div><span>Last checked</span><b id="updChecked">—</b></div></div>
               </div>
+              <div class="settings-card"><div class="settings-row"><div><strong>Update source</strong><small>Releases come from GitHub and are verified before they are installed</small></div><span class="uh-value" id="updSource">GitHub</span></div><div class="settings-row"><div><strong>Automatic checks</strong><small>Looks for a new version once a day while the app is open</small></div><span class="uh-chip">Daily</span></div></div>
             </section>
             <section class="settings-category" id="settingsPaneShortcuts" role="tabpanel" aria-labelledby="settingsTabShortcuts" data-settings-pane="shortcuts" hidden>
-              <div class="settings-category-heading"><span class="settings-eyebrow">QUICK ACTIONS</span><h3>Keyboard shortcuts</h3><p>Use these shortcuts to move around Frame faster.</p></div>
+              <div class="settings-category-heading"><span class="settings-eyebrow">QUICK ACTIONS</span><h3>Keyboard shortcuts</h3><p>Use these shortcuts to move around Frame Bench faster.</p></div>
               <div class="settings-card settings-shortcuts"><div><span>New tab</span><kbd>⌘ / Ctrl / Alt&nbsp; T</kbd></div><div><span>Close tab</span><kbd>⌘ / Ctrl / Alt&nbsp; W</kbd></div><div><span>Address bar</span><kbd>⌘ / Ctrl&nbsp; L</kbd></div><div><span>Bookmark page</span><kbd>⌘ / Ctrl&nbsp; D</kbd></div><div><span>Show or hide bookmarks</span><kbd>⌘ / Ctrl&nbsp; ⇧ B</kbd></div><div><span>Command palette</span><kbd>⌘ / Ctrl / Alt&nbsp; K</kbd></div><div><span>Reopen closed tab</span><kbd>⌘ / Ctrl / Alt&nbsp; ⇧ T</kbd></div><div><span>Split view</span><kbd>Alt&nbsp; S</kbd></div><div><span>Toggle sidebar</span><kbd>Alt&nbsp; B</kbd></div><div><span>Settings</span><kbd>⌘ / Ctrl&nbsp; ,</kbd></div><div><span>Scratchpad</span><kbd>Alt&nbsp; N</kbd></div><div><span>Zoom in / out / reset</span><kbd>Alt&nbsp; + / − / 0</kbd></div><div><span>App mode</span><kbd>Alt&nbsp; ⇧ A</kbd></div></div>
             </section>
           </div>
@@ -901,10 +962,10 @@ button.sb-label:hover { color: var(--text); }
   </section>
 </div>
 <div class="update-overlay" id="updateOverlay" hidden>
-  <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
+  <section class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="updateTitle" data-state="checking">
     <button class="update-close" id="updateClose" type="button" aria-label="Close update window">×</button>
-    <div class="update-app-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.01,20.5q-1.77,0-3.32-0.67T6,18.01t-1.82-2.7T3.51,12T4.18,8.68T6,5.99t2.7-1.82T12.01,3.5q1.89,0 3.58,0.79t2.92,2.23V4.9q0-0.32 0.22-0.53t0.53-0.22t0.53,0.22T20.01,4.9V8.33q0,0.39-0.26,0.65T19.11,9.23H15.68q-0.32,0-0.53-0.22T14.93,8.48t0.22-0.53t0.53-0.22h1.87q-1.03-1.27-2.47-2T12.01,5Q9.08,5 7.05,7.04T5.01,12t2.04,4.96T12.01,19q2.42,0 4.31-1.49t2.46-3.8q0.1-0.31 0.34-0.47t0.55-.12Q20,13.15 20.18,13.4t.1.55q-.65,2.87-2.95,4.71T12.01,20.5Zm0.75-8.8l2.75,2.75q0.21.21.21.52T15.51,15.5t-.53.22T14.46,15.5l-2.93-2.93q-.14-.14-.21-.3t-.07-.34V7.75q0-.32.22-.53T12.01,7t.53.22t.22.53V11.7Z"/></svg></div>
-    <div class="update-kicker">FRAME SOFTWARE UPDATE <span>RELEASE CHECK</span></div>
+    <span class="state-icon update-app-icon" aria-hidden="true"><svg class="ui ui-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5"/></svg><svg class="ui ui-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 11l4.5 4.5 4.5-4.5M5.5 20h13"/></svg><svg class="ui ui-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m5.5 12.5 4.2 4.2L18.5 8"/></svg><svg class="ui ui-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.6v.01"/><path d="M10.4 4.5 3 17.6A1.9 1.9 0 0 0 4.7 20.5h14.6a1.9 1.9 0 0 0 1.7-2.9L13.6 4.5a1.9 1.9 0 0 0-3.2 0Z"/></svg><svg class="ui ui-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.3-5.4"/><path d="M19.5 4.5v4h-4"/></svg></span>
+    <div class="update-kicker">FRAME BENCH · SOFTWARE UPDATE</div>
     <h2 id="updateTitle">Checking for updates</h2>
     <p class="update-summary" id="updateSummary">Looking for a newer version…</p>
     <div class="update-version-row" id="updateVersionRow" hidden><span id="updateCurrentVersion"></span><span class="version-arrow">→</span><strong id="updateNewVersion"></strong></div>
@@ -919,7 +980,7 @@ button.sb-label:hover { color: var(--text); }
 (() => {
   // Trusted GitHub repository/tag source. The tagged root index.html version must match its release tag.
   const UPDATE_CONFIG = Object.freeze({ owner:'botowner123', repo:'framebench', currentVersion:document.querySelector('meta[name="app-version"]').content });
-  document.querySelector('#updateAppVersion').textContent = 'Frame v' + UPDATE_CONFIG.currentVersion;
+  document.querySelector('#updateAppVersion').textContent = 'Frame Bench v' + UPDATE_CONFIG.currentVersion;
   const form = document.querySelector('#loadForm');
   const input = document.querySelector('#url');
   const strip = document.querySelector('#tabstrip');
@@ -1012,6 +1073,9 @@ button.sb-label:hover { color: var(--text); }
   const clearRecentsButton = document.querySelector('#clearRecents');
   const checkUpdatesButton = document.querySelector('#checkUpdates');
   const updateSettingsStatus = document.querySelector('#updateSettingsStatus');
+  const updateHero = document.querySelector('#updateHero'), updateHeroTitle = document.querySelector('#updateHeroTitle');
+  const updInstalled = document.querySelector('#updInstalled'), updLatest = document.querySelector('#updLatest'), updChecked = document.querySelector('#updChecked');
+  const updateDialogEl = document.querySelector('.update-dialog');
   const updateOverlay = document.querySelector('#updateOverlay');
   const updateClose = document.querySelector('#updateClose');
   const updateLater = document.querySelector('#updateLater');
@@ -1030,6 +1094,7 @@ button.sb-label:hover { color: var(--text); }
   const updateProgressBar = document.querySelector('#updateProgressBar');
   const updateError = document.querySelector('#updateError');
   let updateState = 'idle';
+  function setUpdateState(value) { updateState = value; updateDialogEl.dataset.state = value; }
   let updateTimer = null;
   let checkedRelease = null;
   function syncFullscreenToggle() {
@@ -1278,6 +1343,25 @@ button.sb-label:hover { color: var(--text); }
     updateOverlay.hidden = true;
     try { updateReturnFocus?.focus(); } catch {}
   }
+  let paneState = { kind: 'idle', latest: null };
+  function setUpdatePane(kind, text, latest) {
+    paneState = { kind, latest: latest === undefined ? paneState.latest : latest };
+    updateSettingsStatus.textContent = text;
+    renderUpdatePane();
+  }
+  function renderUpdatePane() {
+    const titles = { idle:'Software update', checking:'Checking for updates', current:'You’re up to date', newer:'Newer than the latest release', available:'Update available', error:'Couldn’t check for updates', rejected:'Update rejected' };
+    updateHero.dataset.state = paneState.kind;
+    updateHeroTitle.textContent = titles[paneState.kind] || titles.idle;
+    updInstalled.textContent = 'v' + UPDATE_CONFIG.currentVersion;
+    updLatest.textContent = paneState.latest ? 'v' + paneState.latest : '—';
+    const last = Number(readStored(UPDATE_CHECK_KEY)) || 0;
+    updChecked.textContent = last ? relativeTime(last) : 'Never';
+    checkUpdatesButton.textContent = paneState.kind === 'available' ? 'View update' : paneState.kind === 'checking' ? 'Checking…' : 'Check for updates';
+    checkUpdatesButton.classList.toggle('primary', paneState.kind === 'available');
+    document.querySelector('#updSource').textContent = UPDATE_CONFIG.owner + '/' + UPDATE_CONFIG.repo;
+  }
+  setInterval(renderUpdatePane, 30_000);
   function setUpdateBadge(available) {
     settingsBadge.hidden = !available;
     document.querySelector('#menuButton')?.classList.toggle('has-update', available);
@@ -1295,6 +1379,7 @@ button.sb-label:hover { color: var(--text); }
     writeStored(UPDATE_CHECK_KEY, Date.now());
     writeStored(UPDATE_SEEN_KEY, newVersion || null);
     setUpdateBadge(Boolean(newVersion));
+    renderUpdatePane();
   }
   let autoCheckRunning = false;
   function maybeAutoCheck() {
@@ -1315,7 +1400,7 @@ button.sb-label:hover { color: var(--text); }
     releaseBody.textContent = release.body;
   }
   function setUpdateError(title, message, kind='error') {
-    updateState = kind;
+    setUpdateState(kind);
     updateTitle.textContent = title;
     updateSummary.textContent = 'The original app file has not been changed.';
     updateError.textContent = message;
@@ -1327,18 +1412,18 @@ button.sb-label:hover { color: var(--text); }
   async function checkForUpdates(showDialog=false) {
     if (showDialog) openUpdateDialog();
     writeStored(UPDATE_TRY_KEY, Date.now());
-    updateState = 'checking';
-    updateSettingsStatus.textContent = 'Checking for updates…';
+    setUpdateState('checking');
+    setUpdatePane('checking', 'Looking for a newer version…');
     if (showDialog) {
       resetUpdateDialog();
       updateTitle.textContent = 'Checking for updates';
-      updateSummary.textContent = 'Checking the latest published Frame release…';
+      updateSummary.textContent = 'Checking the latest published Frame Bench release…';
     }
     let release;
     try {
       release = await fetchLatestGitHubRelease();
     } catch (error) {
-      updateSettingsStatus.textContent = 'Could not check for updates';
+      setUpdatePane('error', 'Check your connection and try again');
       if (showDialog) setUpdateError('Can’t check right now', error.message || 'Check your connection and try again.');
       return;
     }
@@ -1353,9 +1438,9 @@ button.sb-label:hover { color: var(--text); }
     } catch (error) {
       if (error.older) {
         recordUpdateResult(null);
-        updateSettingsStatus.textContent = 'You’re on a newer build · v' + UPDATE_CONFIG.currentVersion;
+        setUpdatePane('newer', 'This build is ahead of the published release');
         if (showDialog) {
-          updateState = 'newer';
+          setUpdateState('newer');
           updateTitle.textContent = 'You’re ahead of the latest release';
           updateSummary.textContent = 'This file (v' + UPDATE_CONFIG.currentVersion + ') is newer than the latest published release (v' + error.latest + '). There is nothing to update.';
           updateNow.hidden = true;
@@ -1363,18 +1448,18 @@ button.sb-label:hover { color: var(--text); }
         }
         return;
       }
-      updateSettingsStatus.textContent = 'Package rejected';
+      setUpdatePane('rejected', 'The downloaded package failed verification');
       if (showDialog) setUpdateError('Update could not be verified',error.message,'invalid');
       return;
     }
     checkedRelease = release;
     if (compareSemver(downloadedVersion, UPDATE_CONFIG.currentVersion) <= 0) {
       recordUpdateResult(null);
-      updateSettingsStatus.textContent = 'You’re up to date · v' + UPDATE_CONFIG.currentVersion;
+      setUpdatePane('current', 'You’re running the latest version', UPDATE_CONFIG.currentVersion);
       if (showDialog) {
-        updateState = 'current';
+        setUpdateState('current');
         updateTitle.textContent = 'You’re up to date';
-        updateSummary.textContent = 'Frame v' + UPDATE_CONFIG.currentVersion + ' is the latest release. You can reinstall it to refresh this file. Package source: ' + release.source + '.';
+        updateSummary.textContent = 'Frame Bench v' + UPDATE_CONFIG.currentVersion + ' is the latest release. You can reinstall it to refresh this file. Package source: ' + release.source + '.';
         updateVersionDetails(release);
         updateNow.hidden = false;
         updateNow.textContent = 'Reinstall latest';
@@ -1382,10 +1467,10 @@ button.sb-label:hover { color: var(--text); }
       }
       return;
     }
-    updateSettingsStatus.textContent = 'Update available · v' + downloadedVersion;
+    setUpdatePane('available', 'Version ' + downloadedVersion + ' is ready to install', downloadedVersion);
     recordUpdateResult(downloadedVersion);
     if (showDialog) {
-      updateState = 'available';
+      setUpdateState('available');
       updateTitle.textContent = 'Update available';
       updateSummary.textContent = 'Review the release notes, then choose Update now to select this app file. Package source: ' + release.source + '.';
       updateVersionDetails(release);
@@ -1473,9 +1558,9 @@ button.sb-label:hover { color: var(--text); }
       updateLater.textContent = 'Done';
       return;
     }
-    updateState = 'installing';
+    setUpdateState('installing');
     updateTitle.textContent = 'Preparing your update';
-    updateSummary.textContent = savedUpdateFileHandle ? 'Checking saved access to your Frame file…' : 'Choose the existing index.html file you opened to launch Frame.';
+    updateSummary.textContent = savedUpdateFileHandle ? 'Checking saved access to your Frame Bench file…' : 'Choose the existing index.html file you opened to launch Frame Bench.';
     updateProgressWrap.hidden = true;
     updateError.hidden = true;
     updateNow.hidden = true;
@@ -1495,17 +1580,17 @@ button.sb-label:hover { color: var(--text); }
         } catch { await forgetUpdateFileHandle(); handle = null; }
       }
       if (!handle) {
-        updateTitle.textContent = 'Choose your Frame file';
-        updateSummary.textContent = 'Select the existing index.html file you opened to launch Frame.';
+        updateTitle.textContent = 'Choose your Frame Bench file';
+        updateSummary.textContent = 'Select the existing index.html file you opened to launch Frame Bench.';
         handle = typeof window.showOpenFilePicker === 'function'
-          ? (await window.showOpenFilePicker({ multiple:false, types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }] }))[0]
-          : await window.showSaveFilePicker({ suggestedName:'index.html', types:[{ description:'Frame HTML file', accept:{ 'text/html':['.html'] } }], excludeAcceptAllOption:true });
+          ? (await window.showOpenFilePicker({ multiple:false, types:[{ description:'Frame Bench HTML file', accept:{ 'text/html':['.html'] } }] }))[0]
+          : await window.showSaveFilePicker({ suggestedName:'index.html', types:[{ description:'Frame Bench HTML file', accept:{ 'text/html':['.html'] } }], excludeAcceptAllOption:true });
       }
       setInstallProgress(20, 'Confirming selected app file…');
       const selectedFile = await handle.getFile();
       const selectedSource = await selectedFile.text();
       if (!/^<!doctype html>/i.test(selectedSource.trim()) || readAppVersion(selectedSource) !== UPDATE_CONFIG.currentVersion) {
-        throw new Error('That file does not appear to be this installed version of Frame. Your file was not changed.');
+        throw new Error('That file does not appear to be this installed version of Frame Bench. Your file was not changed.');
       }
       const writePermission = await handle.requestPermission({ mode:'readwrite' });
       if (writePermission !== 'granted') throw new Error('Write access was not granted. Your file was not changed.');
@@ -1522,19 +1607,19 @@ button.sb-label:hover { color: var(--text); }
       setInstallProgress(90, 'Saving update…');
       await writable.close();
       writable = null;
-      updateState = 'installed';
+      setUpdateState('installed');
       setInstallProgress(100, 'Installed successfully');
       updateTitle.textContent = 'Update installed';
-      updateSummary.textContent = `Frame v${version} from ${release.source} is ready. Reload to open the updated app.`;
+      updateSummary.textContent = `Frame Bench v${version} from ${release.source} is ready. Reload to open the updated app.`;
       updateNow.hidden = true;
       updateLater.disabled = false;
-      updateLater.textContent = 'Reload Frame';
+      updateLater.textContent = 'Reload Frame Bench';
       setUpdateBadge(false);
     } catch (error) {
       if (writable) { try { await writable.abort(); } catch {} }
       updateLater.disabled = false;
       if (error?.name === 'AbortError') {
-        updateState = reinstall ? 'current' : 'available';
+        setUpdateState(reinstall ? 'current' : 'available');
         updateTitle.textContent = 'Update paused';
         updateSummary.textContent = 'No file was selected, so nothing was changed.';
         updateProgressWrap.hidden = true;
@@ -1975,7 +2060,7 @@ button.sb-label:hover { color: var(--text); }
     });
     tab.pane = document.createElement('div');
     tab.pane.className = 'tab-pane';
-    tab.pane.innerHTML = `<div class="empty"><div class="home"><div class="home-hero"><span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="logo-bg" width="64" height="64" rx="18"/><rect class="logo-frame" x="13" y="15" width="38" height="34" rx="7"/><path class="logo-bar" d="M14.5 25h35"/><circle class="logo-dot" cx="20" cy="20" r="1.7"/><circle class="logo-dot" cx="25.5" cy="20" r="1.7" opacity=".72"/><path class="logo-bar" d="m24 36 5.5 5.5L41 30"/></svg></span><h1 class="home-title">Where to?</h1><label class="home-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input class="home-input" type="text" placeholder="Search or enter a website" aria-label="Search or enter a website" autocomplete="off" spellcheck="false"><kbd>Ctrl K</kbd></label></div><section class="home-section jumpback-section" hidden><div class="home-grid home-jumpback"></div></section><section class="home-section tiles-section" aria-label="Pinned sites"><div class="home-section-head">Pinned</div><div class="tile-grid"></div></section><section class="home-section recent-section" hidden><div class="home-section-head recent-heading" hidden>Recent <small class="recent-count"></small></div><div class="home-grid home-recent"></div></section><p class="home-privacy-note">Recents stay in this session and clear when you close Frame.</p></div></div><iframe title="Website preview" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-pointer-lock" allow="fullscreen; pointer-lock"></iframe><div class="embed-error" role="alert"><div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01" stroke-linecap="round"/></svg></div><h2>This page can’t be shown here</h2><p>The site may block embedding, or it took too long to respond.</p><div class="error-actions"><button class="retry" type="button">Try again</button><button class="retry retry-alt" type="button">Open in new tab</button></div></div>`;
+    tab.pane.innerHTML = `<div class="empty"><div class="home"><div class="home-hero"><span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="logo-bg" width="64" height="64" rx="18"/><rect class="logo-frame" x="13" y="15" width="38" height="34" rx="7"/><path class="logo-bar" d="M14.5 25h35"/><circle class="logo-dot" cx="20" cy="20" r="1.7"/><circle class="logo-dot" cx="25.5" cy="20" r="1.7" opacity=".72"/><path class="logo-bar" d="m24 36 5.5 5.5L41 30"/></svg></span><h1 class="home-title">Where to?</h1><label class="home-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input class="home-input" type="text" placeholder="Search or enter a website" aria-label="Search or enter a website" autocomplete="off" spellcheck="false"><kbd>Ctrl K</kbd></label></div><section class="home-section jumpback-section" hidden><div class="home-grid home-jumpback"></div></section><section class="home-section tiles-section" aria-label="Pinned sites"><div class="home-section-head">Pinned</div><div class="tile-grid"></div></section><section class="home-section recent-section" hidden><div class="home-section-head recent-heading" hidden>Recent <small class="recent-count"></small></div><div class="home-grid home-recent"></div></section><p class="home-privacy-note">Recents stay in this session and clear when you close Frame Bench.</p></div></div><iframe title="Website preview" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-pointer-lock" allow="fullscreen; pointer-lock"></iframe><div class="embed-error" role="alert"><div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01" stroke-linecap="round"/></svg></div><h2>This page can’t be shown here</h2><p>The site may block embedding, or it took too long to respond.</p><div class="error-actions"><button class="retry" type="button">Try again</button><button class="retry retry-alt" type="button">Open in new tab</button></div></div>`;
     tab.homeRecent = tab.pane.querySelector('.home-recent');
     tab.homeJumpBack = tab.pane.querySelector('.home-jumpback');
         renderHome(tab);
@@ -2069,7 +2154,7 @@ button.sb-label:hover { color: var(--text); }
     const count = visibleTabs().length;
     tabCountStatus.textContent = String(count);
     mbBadge.textContent = String(count);
-    document.title = tab?.title && tab.title !== 'New tab' ? tab.title + ' — Frame' : 'Frame';
+    document.title = tab?.title && tab.title !== 'New tab' ? tab.title + ' — Frame Bench' : 'Frame Bench';
   }
 
   function syncNavigationButtons(tab = tabs.find(item => item.id === activeId)) {
@@ -2389,13 +2474,13 @@ button.sb-label:hover { color: var(--text); }
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && /^frame-[a-z0-9-]+$/.test(key) && !['frame-session', 'frame-last-update-check'].includes(key)) data[key] = localStorage.getItem(key);
+        if (key && /^frame-[a-z0-9-]+$/.test(key) && !['frame-session', 'frame-last-update-check', 'frame-last-update-attempt', 'frame-update-available'].includes(key)) data[key] = localStorage.getItem(key);
       }
     } catch {}
     const blob = new Blob([JSON.stringify({ app:'frame', version:UPDATE_CONFIG.currentVersion, exportedAt:new Date().toISOString(), data }, null, 2)], { type:'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'frame-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    link.download = 'frame-bench-backup-' + new Date().toISOString().slice(0, 10) + '.json';
     document.body.append(link);
     link.click();
     link.remove();
@@ -2403,14 +2488,14 @@ button.sb-label:hover { color: var(--text); }
   }
   async function importBackup(file) {
     try {
-      if (file.size > 2_000_000) throw new Error('That file is too large to be a Frame backup.');
+      if (file.size > 2_000_000) throw new Error('That file is too large to be a Frame Bench backup.');
       const parsed = JSON.parse(await file.text());
-      if (!parsed || parsed.app !== 'frame' || typeof parsed.data !== 'object' || !parsed.data) throw new Error('That file is not a Frame backup.');
-      const entries = Object.entries(parsed.data).filter(([key, value]) => /^frame-[a-z0-9-]+$/.test(key) && typeof value === 'string' && !['frame-session', 'frame-last-update-check'].includes(key));
+      if (!parsed || parsed.app !== 'frame' || typeof parsed.data !== 'object' || !parsed.data) throw new Error('That file is not a Frame Bench backup.');
+      const entries = Object.entries(parsed.data).filter(([key, value]) => /^frame-[a-z0-9-]+$/.test(key) && typeof value === 'string' && !['frame-session', 'frame-last-update-check', 'frame-last-update-attempt', 'frame-update-available'].includes(key));
       if (!entries.length) throw new Error('The backup does not contain any settings.');
-      if (!confirm(`Replace your current bookmarks, workspaces and settings with this backup (${entries.length} items)? Frame will reload.`)) return;
+      if (!confirm(`Replace your current bookmarks, workspaces and settings with this backup (${entries.length} items)? Frame Bench will reload.`)) return;
       const existing = [];
-      for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key && key.startsWith('frame-') && !['frame-session', 'frame-last-update-check'].includes(key)) existing.push(key); }
+      for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key && key.startsWith('frame-') && !['frame-session', 'frame-last-update-check', 'frame-last-update-attempt', 'frame-update-available'].includes(key)) existing.push(key); }
       existing.forEach(key => localStorage.removeItem(key));
       entries.forEach(([key, value]) => localStorage.setItem(key, value));
       location.reload();
@@ -2864,12 +2949,25 @@ button.sb-label:hover { color: var(--text); }
     const on = force ?? !browserFrame.classList.contains('app-mode');
     browserFrame.classList.toggle('app-mode', on);
     appPill.hidden = !on;
+    appPill.classList.remove('open');
     closeFolderPop();
     if (motionOk()) { browserFrame.classList.add('mode-switching'); setTimeout(() => browserFrame.classList.remove('mode-switching'), 280); }
     if (!on) { updateTabSizing(); syncTabIndicator(); }
   }
+  /* the pill expands on pointer activity and folds away when idle (hover alone can stick once the pointer enters a loaded page) */
+  let pillTimer = null;
+  function pillRest(delay) {
+    clearTimeout(pillTimer);
+    pillTimer = setTimeout(() => { if (!appPill.matches(':focus-within')) appPill.classList.remove('open'); }, delay);
+  }
+  appPill.addEventListener('pointerenter', () => { appPill.classList.add('open'); pillRest(1800); });
+  appPill.addEventListener('pointermove', () => { if (!appPill.classList.contains('open')) appPill.classList.add('open'); pillRest(1800); });
+  appPill.addEventListener('pointerleave', () => pillRest(450));
   appPill.addEventListener('click', event => {
-    const act = event.target.closest('[data-pill]')?.dataset.pill;
+    const button = event.target.closest('[data-pill]');
+    const act = button?.dataset.pill;
+    if (act === 'more') { appPill.classList.add('open'); pillRest(4000); return; }
+    if (act && event.detail > 0) { button.blur(); appPill.classList.remove('open'); }
     if (act === 'back') stepNavigation(-1);
     else if (act === 'forward') stepNavigation(1);
     else if (act === 'reload') document.querySelector('#reload').click();
@@ -3358,9 +3456,9 @@ button.sb-label:hover { color: var(--text); }
     /* restore the badge from the last check, then check again at most once a day (and retry hourly after a failed attempt) */
     const seen = readStored(UPDATE_SEEN_KEY);
     const seenIsNewer = Boolean(seen && parseSemver(seen) && compareSemver(seen, UPDATE_CONFIG.currentVersion) > 0);
-    if (seenIsNewer) { setUpdateBadge(true); updateSettingsStatus.textContent = 'Update available · v' + seen; }
+    if (seenIsNewer) { setUpdateBadge(true); setUpdatePane('available', 'Version ' + seen.replace(/^v/, '') + ' is ready to install', seen.replace(/^v/, '')); }
     else if (seen) writeStored(UPDATE_SEEN_KEY, null);
-    if (!maybeAutoCheck() && !seenIsNewer) updateSettingsStatus.textContent = 'Checked recently · v' + UPDATE_CONFIG.currentVersion;
+    if (!maybeAutoCheck() && !seenIsNewer) { if (readStored(UPDATE_CHECK_KEY)) setUpdatePane('current', 'You’re running the latest version', UPDATE_CONFIG.currentVersion); else setUpdatePane('idle', 'Not checked yet'); }
   }, 350);
   setInterval(maybeAutoCheck, 30 * 60_000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) maybeAutoCheck(); });
