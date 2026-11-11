@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0a0c">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; frame-src https: http:; connect-src https://api.github.com https://github.com https://raw.githubusercontent.com https://release-assets.githubusercontent.com https://objects.githubusercontent.com; base-uri 'none'; form-action 'none'">
-<meta name="app-version" content="1.2.2">
+<meta name="app-version" content="1.2.3">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame Bench</title>
 <style>
@@ -154,7 +154,7 @@ input:focus-visible, textarea:focus-visible { outline: none; }
 .pin:hover { background: var(--s3); border-color: var(--line2); transform: translateY(-1px); }
 .pin:active { transform: scale(.94); }
 .pin img { display: none; width: 20px; height: 20px; border-radius: 5px; object-fit: contain; }
-.pin.has-image { font-size: 0; }
+.pin.has-image { display: flex; align-items: center; justify-content: center; font-size: 0; }
 .pin.has-image img { display: block; }
 .pin.add { border-style: dashed; background: transparent; color: var(--text3); }
 .pin.add svg { width: 16px; height: 16px; }
@@ -352,8 +352,8 @@ button.sb-label:hover { color: var(--text); }
 
 /* ---- launcher home -------------------------------------------------------- */
 .empty { position: absolute; inset: 0; overflow: auto; padding: clamp(28px, 9vh, 96px) 24px 32px; background: radial-gradient(ellipse 80% 55% at 50% 0%, var(--accent-soft), transparent 70%), var(--s2); }
-.home { width: min(100%, 720px); margin: 0 auto; }
-.home-hero { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 30px; text-align: center; }
+.home { display: flex; flex-direction: column; width: min(100%, 720px); min-height: 100%; margin: 0 auto; }
+.home-hero { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 4px; text-align: center; }
 .home-hero .brand-mark { width: 44px; height: 44px; }
 .home-title { margin: 0; font-size: clamp(24px, 3vw, 32px); font-weight: 650; letter-spacing: -.035em; line-height: 1.1; }
 .home-search {
@@ -385,21 +385,28 @@ button.sb-label:hover { color: var(--text); }
 .home-card-url { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text3); font-size: 12px; }
 .home-card-time { flex: none; color: var(--text3); font-size: 11.5px; }
 .home-empty-note { padding: 14px; border: 1px dashed var(--line2); border-radius: 12px; color: var(--text3); text-align: center; }
-.home-privacy-note { margin: 34px 0 0; color: var(--text3); font-size: 12px; text-align: center; text-wrap: balance; }
+.home-privacy-note { margin: auto 0 0; padding-top: 34px; color: var(--text3); font-size: 12px; text-align: center; text-wrap: balance; }
 
 /* home: recents + jump back in */
 .home-section-head { align-items: center; }
 .home-section-head small { padding: 1px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--s2); }
-.home-recent { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-.home-card { gap: 12px; padding: 10px 12px 10px 10px; border-radius: 14px; }
+.home-recent { grid-template-columns: 1fr; gap: 0; }
+.home-recent .home-card { gap: 12px; padding: 6px 10px 6px 6px; border-color: transparent; background: transparent; box-shadow: none; }
+.home-recent .home-card-mark { width: 34px; height: 34px; border-radius: 10px; font-size: 14px; }
+.home-recent .home-card-mark img { width: 20px; height: 20px; border-radius: 5px; }
+.home-recent .home-card-copy { gap: 0; }
+.home-recent .home-card-title { font-size: 14px; }
+.home-recent .home-card-url, .home-recent .home-card-time { font-size: 11.5px; }
+.home-recent .home-card:hover { border-color: transparent; background: var(--s3); box-shadow: none; transform: none; }
+.home-card { gap: 14px; padding: 12px 14px 12px 12px; border-radius: 16px; }
 .home-card:hover { box-shadow: var(--shadow-sm); }
-.home-card-mark { width: 38px; height: 38px; border-radius: 11px; background: hsl(var(--hue, 255) 60% 56% / .17); color: hsl(var(--hue, 255) 72% 76%); font-size: 15px; }
-:root[data-theme="light"] .home-card-mark { background: hsl(var(--hue, 255) 70% 50% / .13); color: hsl(var(--hue, 255) 58% 34%); }
+.home-card-mark { width: 46px; height: 46px; border-radius: 13px; background: var(--s3); color: var(--text2); box-shadow: inset 0 0 0 1px var(--line2); font-size: 18px; }
+.home-card-mark img { width: 26px; height: 26px; border-radius: 6px; }
 .home-card-mark.has-image { background: var(--s3); }
-.home-card-title { font-size: 13.5px; }
-.home-card-time { padding: 2px 8px; border-radius: 999px; background: var(--s2); }
+.home-card-title { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+.home-card-url { font-size: 12px; }
+.home-card-time { font-size: 12px; color: var(--text3); }
 .home-jumpback { grid-template-columns: 1fr; }
-.jumpback-section { margin-top: 24px; }
 .home-card.jumpback-card, .home-card.jumpback-card:hover {
   position: relative; overflow: hidden; gap: 14px; padding: 12px 14px 12px 12px; border-radius: 16px; border-color: var(--accent-mid);
   background: radial-gradient(120% 150% at 0% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 60%), var(--s1);
@@ -437,7 +444,8 @@ button.sb-label:hover { color: var(--text); }
 @keyframes jb-glow { 0%, 100% { opacity: 0; } 50% { opacity: .38; } }
 @keyframes jb-ping { 0% { transform: scale(.6); opacity: .9; } 80%, 100% { transform: scale(2.2); opacity: 0; } }
 
-.tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.tile-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.tile-grid > .tile-cell, .tile-grid > .tile.add { flex: none; width: 100px; }
 .tile-cell { position: relative; display: flex; }
 .tile {
   flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 15px 6px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--s1);
@@ -447,7 +455,7 @@ button.sb-label:hover { color: var(--text); }
 .tile:active { transform: scale(.97); transition-duration: .08s; }
 .tile-icon { position: relative; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: var(--s3); color: var(--accent-text); font-size: 15px; font-weight: 700; text-transform: uppercase; }
 .tile-icon img { display: none; width: 24px; height: 24px; border-radius: 6px; object-fit: contain; }
-.tile-icon.has-image { font-size: 0; }
+.tile-icon.has-image { display: flex; align-items: center; justify-content: center; font-size: 0; }
 .tile-icon.has-image img { display: block; }
 .tile-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }
 .tile.add { width: 100%; border-style: dashed; background: transparent; color: var(--text3); }
@@ -1880,11 +1888,6 @@ button.sb-label:hover { color: var(--text); }
     const mark = document.createElement('span');
     mark.className = 'home-card-mark';
     mark.textContent = host.slice(0, 1);
-    if (!isJumpback) {
-      let hue = 0;
-      for (const ch of host) hue = (hue * 31 + ch.charCodeAt(0)) % 360;
-      mark.style.setProperty('--hue', String(hue));
-    }
     addSiteFavicon(mark, item.url);
     const copy = document.createElement('span');
     copy.className = 'home-card-copy';
@@ -1940,7 +1943,7 @@ button.sb-label:hover { color: var(--text); }
     const section = tab.pane.querySelector('.recent-section');
     const title = tab.pane.querySelector('.home-kicker');
     const tilesSection = tab.pane.querySelector('.tiles-section');
-    if (title && tilesSection && (jumpSection.previousElementSibling !== title || tilesSection.previousElementSibling !== jumpSection || section.previousElementSibling !== tilesSection)) title.after(jumpSection, tilesSection, section);
+    if (title && tilesSection && (jumpSection.previousElementSibling !== title || section.previousElementSibling !== jumpSection || tilesSection.previousElementSibling !== section)) title.after(jumpSection, section, tilesSection);
     jumpSection.hidden = !showSessionRecents || !lastClosedPage;
     if (lastClosedPage) {
       const jumpKey = lastClosedPage.url + ':' + (lastClosedPage.closedAt || '');
@@ -2060,7 +2063,7 @@ button.sb-label:hover { color: var(--text); }
     });
     tab.pane = document.createElement('div');
     tab.pane.className = 'tab-pane';
-    tab.pane.innerHTML = `<div class="empty"><div class="home"><div class="home-hero"><span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="logo-bg" width="64" height="64" rx="18"/><rect class="logo-frame" x="13" y="15" width="38" height="34" rx="7"/><path class="logo-bar" d="M14.5 25h35"/><circle class="logo-dot" cx="20" cy="20" r="1.7"/><circle class="logo-dot" cx="25.5" cy="20" r="1.7" opacity=".72"/><path class="logo-bar" d="m24 36 5.5 5.5L41 30"/></svg></span><h1 class="home-title">Where to?</h1><label class="home-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input class="home-input" type="text" placeholder="Search or enter a website" aria-label="Search or enter a website" autocomplete="off" spellcheck="false"><kbd>Ctrl K</kbd></label></div><section class="home-section jumpback-section" hidden><div class="home-grid home-jumpback"></div></section><section class="home-section tiles-section" aria-label="Pinned sites"><div class="home-section-head">Pinned</div><div class="tile-grid"></div></section><section class="home-section recent-section" hidden><div class="home-section-head recent-heading" hidden>Recent <small class="recent-count"></small></div><div class="home-grid home-recent"></div></section><p class="home-privacy-note">Recents stay in this session and clear when you close Frame Bench.</p></div></div><iframe title="Website preview" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-pointer-lock" allow="fullscreen; pointer-lock"></iframe><div class="embed-error" role="alert"><div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01" stroke-linecap="round"/></svg></div><h2>This page can’t be shown here</h2><p>The site may block embedding, or it took too long to respond.</p><div class="error-actions"><button class="retry" type="button">Try again</button><button class="retry retry-alt" type="button">Open in new tab</button></div></div>`;
+    tab.pane.innerHTML = `<div class="empty"><div class="home"><div class="home-hero"><span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect class="logo-bg" width="64" height="64" rx="18"/><rect class="logo-frame" x="13" y="15" width="38" height="34" rx="7"/><path class="logo-bar" d="M14.5 25h35"/><circle class="logo-dot" cx="20" cy="20" r="1.7"/><circle class="logo-dot" cx="25.5" cy="20" r="1.7" opacity=".72"/><path class="logo-bar" d="m24 36 5.5 5.5L41 30"/></svg></span><h1 class="home-title">Where to?</h1><label class="home-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input class="home-input" type="text" placeholder="Search or enter a website" aria-label="Search or enter a website" autocomplete="off" spellcheck="false"><kbd>Ctrl K</kbd></label></div><section class="home-section jumpback-section" hidden><div class="home-grid home-jumpback"></div></section><section class="home-section recent-section" hidden><div class="home-section-head recent-heading" hidden>Recent <small class="recent-count"></small></div><div class="home-grid home-recent"></div></section><section class="home-section tiles-section" aria-label="Pinned sites"><div class="tile-grid"></div></section><p class="home-privacy-note">Recents stay in this session and clear when you close Frame Bench.</p></div></div><iframe title="Website preview" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-pointer-lock" allow="fullscreen; pointer-lock"></iframe><div class="embed-error" role="alert"><div class="error-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01" stroke-linecap="round"/></svg></div><h2>This page can’t be shown here</h2><p>The site may block embedding, or it took too long to respond.</p><div class="error-actions"><button class="retry" type="button">Try again</button><button class="retry retry-alt" type="button">Open in new tab</button></div></div>`;
     tab.homeRecent = tab.pane.querySelector('.home-recent');
     tab.homeJumpBack = tab.pane.querySelector('.home-jumpback');
         renderHome(tab);
