@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0a0c">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; frame-src https: http:; connect-src https://api.github.com https://github.com https://raw.githubusercontent.com https://release-assets.githubusercontent.com https://objects.githubusercontent.com; base-uri 'none'; form-action 'none'">
-<meta name="app-version" content="1.2.4">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; frame-src https: http:; connect-src https://*.workers.dev https://api.github.com https://github.com https://raw.githubusercontent.com https://release-assets.githubusercontent.com https://objects.githubusercontent.com; base-uri 'none'; form-action 'none'">
+<meta name="app-version" content="1.3.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame Bench</title>
 <style>
@@ -512,7 +512,8 @@ button.sb-label:hover { color: var(--text); }
 .palette-item.selected { background: var(--s3); }
 .palette-item.selected .palette-icon { color: var(--accent-text); }
 .palette-item:active { transform: scale(.99); }
-.palette-icon { width: 20px; flex: none; color: var(--text3); text-align: center; font-size: 14px; }
+.palette-icon { width: 20px; height: 20px; flex: none; display: grid; place-items: center; color: var(--text3); text-align: center; font-size: 14px; transition: color .1s linear; }
+.palette-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .palette-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .palette-hint { flex: none; max-width: 44%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text3); font: 11px var(--mono); }
 .palette-empty { padding: 28px 12px; color: var(--text3); text-align: center; }
@@ -701,8 +702,8 @@ button.sb-label:hover { color: var(--text); }
 /* ==========================================================================
    Panels on the page: scratchpad, app-mode pill
    ========================================================================== */
-.notes-panel { position: absolute; z-index: 8; top: 10px; right: 10px; bottom: 10px; width: min(340px, calc(100% - 20px)); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line2); border-radius: 14px; background: color-mix(in srgb, var(--s1) 94%, transparent); box-shadow: var(--shadow-pop); backdrop-filter: blur(14px); animation: panel-in .22s var(--ease-out) both; }
-.notes-panel.leaving { pointer-events: none; animation: panel-out .14s var(--ease-in) both; }
+.notes-panel, .chat-panel { position: absolute; z-index: 8; top: 10px; right: 10px; bottom: 10px; width: min(340px, calc(100% - 20px)); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line2); border-radius: 14px; background: color-mix(in srgb, var(--s1) 94%, transparent); box-shadow: var(--shadow-pop); backdrop-filter: blur(14px); animation: panel-in .22s var(--ease-out) both; }
+.notes-panel.leaving, .chat-panel.leaving { pointer-events: none; animation: panel-out .14s var(--ease-in) both; }
 .notes-head { display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 14px; border-bottom: 1px solid var(--line); }
 .notes-head strong { flex: 1; font-weight: 600; }
 .notes-count { color: var(--text3); font: 11px var(--mono); }
@@ -884,6 +885,133 @@ button.sb-label:hover { color: var(--text); }
 .tab-indicator.visible { opacity: 1; }
 .browser.vertical-tabs .tab-indicator { display: none; }
 
+/* horizontal tabs: same inset accent line as the vertical list, turned to the left/right edge */
+.browser .htabs .tab.drop-before { box-shadow: inset 2px 0 var(--accent); }
+.browser .htabs .tab.drop-after { box-shadow: inset -2px 0 var(--accent); }
+.browser .htabs .tab.active.drop-before { box-shadow: inset 2px 0 var(--accent), 0 2px 9px rgba(0, 0, 0, .22); }
+.browser .htabs .tab.active.drop-after { box-shadow: inset -2px 0 var(--accent), 0 2px 9px rgba(0, 0, 0, .22); }
+
+/* ==========================================================================
+   App mode: tab overview, a grid of tab cards like Safari on iOS, sized for desktop
+   ========================================================================== */
+.tab-overview { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: color-mix(in srgb, var(--bg) 78%, transparent); -webkit-backdrop-filter: blur(24px) saturate(1.15); backdrop-filter: blur(24px) saturate(1.15); animation: to-in .26s var(--ease-out) both; }
+.tab-overview.leaving { pointer-events: none; animation: to-out .16s var(--ease-in) both; }
+@keyframes to-in { from { opacity: 0; transform: scale(1.025); } }
+@keyframes to-out { to { opacity: 0; transform: scale(1.02); } }
+.to-head { flex: none; display: flex; justify-content: center; padding: 22px 24px 8px; }
+.to-search { position: relative; width: min(420px, 100%); display: flex; align-items: center; }
+.to-search svg { position: absolute; left: 12px; width: 16px; height: 16px; color: var(--text3); pointer-events: none; }
+.to-search input { width: 100%; height: 36px; padding: 0 12px 0 36px; border: 1px solid var(--line2); border-radius: 999px; outline: none; color: var(--text); background: color-mix(in srgb, var(--s2) 88%, transparent); transition: border-color .14s linear, box-shadow .14s linear; }
+.to-search input:focus { border-color: var(--accent-mid); box-shadow: 0 0 0 3px var(--accent-soft); }
+.to-search input::placeholder { color: var(--text3); }
+.to-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 32px 112px; }
+.to-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 22px 20px; max-width: 1280px; margin: 0 auto; }
+.to-empty { margin: 60px 0 0; text-align: center; color: var(--text3); }
+.to-card { position: relative; overflow: hidden; border: 1px solid var(--line2); border-radius: 16px; background: var(--s2); box-shadow: 0 10px 28px rgba(0, 0, 0, .28); transition: transform .18s var(--ease-out), opacity .18s linear, box-shadow .18s var(--ease-out); animation: to-card-in .3s var(--ease-out) both; animation-delay: min(calc(var(--i, 0) * 18ms), 240ms); }
+@keyframes to-card-in { from { opacity: 0; transform: translateY(10px) scale(.94); } }
+.to-card:hover { transform: translateY(-2px); }
+.to-card.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 10px 28px rgba(0, 0, 0, .28); }
+.to-card.dragging { opacity: .4; }
+.to-card.removing { opacity: 0; transform: scale(.9); pointer-events: none; }
+.to-card.drop-before::after, .to-card.drop-after::after { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; pointer-events: none; }
+.to-card.drop-before::after { box-shadow: inset 2px 0 var(--accent); }
+.to-card.drop-after::after { box-shadow: inset -2px 0 var(--accent); }
+.to-open { display: block; width: 100%; text-align: left; border-radius: inherit; }
+.to-top { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 44px 0 12px; border-bottom: 1px solid var(--line); background: var(--s2); }
+.to-fav { width: 16px; height: 16px; flex: none; border-radius: 4px; object-fit: contain; }
+.to-fav.blank { border: 1.5px solid var(--text3); border-radius: 50%; opacity: .6; }
+.to-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 550; }
+.to-view { aspect-ratio: 4 / 3; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 12px; background: linear-gradient(160deg, hsl(var(--h) 38% 30%), hsl(var(--h) 34% 15%)); }
+:root[data-theme="light"] .to-view { background: linear-gradient(160deg, hsl(var(--h) 60% 92%), hsl(var(--h) 45% 82%)); }
+.to-tile { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 18px; color: #fff; background: rgba(255, 255, 255, .1); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); font: 600 28px var(--font); }
+:root[data-theme="light"] .to-tile { color: var(--text); background: rgba(255, 255, 255, .7); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .06); }
+.to-tile img { width: 34px; height: 34px; border-radius: 8px; object-fit: contain; }
+.to-tile svg { width: 40px; height: 40px; }
+.to-url { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgba(255, 255, 255, .78); font-weight: 500; font-size: 12px; }
+:root[data-theme="light"] .to-url { color: var(--text2); }
+.to-card.asleep .to-view { filter: saturate(.45); }
+.to-close { position: absolute; top: 8px; right: 8px; z-index: 3; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: var(--text2); background: var(--s3); transition: background-color .14s linear, color .14s linear; }
+.to-close:hover { color: var(--text); background: var(--s4); }
+.to-close svg { width: 11px; height: 11px; }
+.to-bar { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 38px 24px 18px; pointer-events: none; background: linear-gradient(to top, color-mix(in srgb, var(--bg) 92%, transparent) 40%, transparent); }
+.to-bar-l, .to-bar-r, .to-groups { pointer-events: auto; }
+.to-bar-l { justify-self: start; }
+.to-bar-r { justify-self: end; }
+.to-btn { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line2); border-radius: 50%; color: var(--text); background: color-mix(in srgb, var(--s3) 90%, transparent); transition: background-color .14s linear, transform .14s var(--ease-out); }
+.to-btn:hover { background: var(--s4); }
+.to-btn:active { transform: scale(.94); }
+.to-btn svg { width: 18px; height: 18px; }
+.to-groups { display: flex; align-items: center; gap: 2px; max-width: min(520px, 60vw); padding: 3px; overflow-x: auto; scrollbar-width: none; border: 1px solid var(--line2); border-radius: 999px; background: color-mix(in srgb, var(--s2) 88%, transparent); }
+.to-group { flex: none; height: 30px; padding: 0 14px; border-radius: 999px; color: var(--text2); white-space: nowrap; font-weight: 550; transition: background-color .14s linear, color .14s linear; }
+.to-group:hover { color: var(--text); }
+.to-group[aria-selected="true"] { color: var(--accent-ink); background: var(--accent); }
+.to-group small { margin-left: 6px; opacity: .75; font: 500 11px var(--font); font-variant-numeric: tabular-nums; }
+.to-group.to-add { padding: 0 11px; font-size: 16px; line-height: 1; }
+.to-done { height: 38px; padding: 0 18px; border-radius: 999px; color: var(--accent-ink); background: var(--accent); font-weight: 600; transition: transform .14s var(--ease-out), filter .14s linear; }
+.to-done:hover { filter: brightness(1.08); }
+.to-done:active { transform: scale(.96); }
+.app-pill.to-suppressed { display: none; }
+.pill-tabs { position: relative; }
+.pill-badge { position: absolute; top: 1px; right: -1px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 999px; color: var(--accent-ink); background: var(--accent); font: 600 9.5px/15px var(--font); text-align: center; pointer-events: none; }
+@media (max-width: 560px) {
+  .to-scroll { padding: 12px 16px 112px; }
+  .to-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px 12px; }
+  .to-bar { padding: 38px 12px 14px; }
+}
+
+/* ==========================================================================
+   Assistant: chat panel (shares the scratchpad's frame) + settings fields
+   ========================================================================== */
+.chat-panel { width: min(400px, calc(100% - 20px)); }
+.browser.app-mode .chat-panel { bottom: 64px; }
+.notes-head .chat-model { flex: none; max-width: 130px; height: 24px; padding: 0 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: 999px; color: var(--text3); font: 11px var(--mono); }
+.chat-log { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 14px; }
+.chat-msg { max-width: 94%; font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat-msg.user { align-self: flex-end; padding: 8px 12px; border: 1px solid var(--accent-mid); border-radius: 14px 14px 4px 14px; background: var(--accent-soft); }
+.chat-msg.assistant { align-self: flex-start; }
+.chat-msg.error { align-self: stretch; max-width: none; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); border-radius: 12px; color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.chat-msg.error button { display: block; margin-top: 8px; color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+.chat-msg code { padding: 1px 5px; border-radius: 5px; background: var(--s3); font: 12.5px var(--mono); }
+.chat-msg pre { margin: 8px 0 4px; padding: 10px 12px; overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--s2); white-space: pre; }
+.chat-msg pre code { padding: 0; background: none; }
+.chat-msg a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
+.chat-msg.streaming:empty::after, .chat-msg.streaming > :last-child::after { content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 4px; border-radius: 50%; background: var(--accent); vertical-align: middle; animation: chat-pulse 1s ease-in-out infinite; }
+.chat-msg.streaming > pre:last-child::after { display: none; }
+@keyframes chat-pulse { 50% { opacity: .25; } }
+.chat-copy { display: block; margin-top: 4px; padding: 2px 0; color: var(--text3); font-size: 11.5px; opacity: 0; transition: opacity .14s linear, color .14s linear; }
+.chat-msg.assistant:hover .chat-copy, .chat-copy:focus-visible { opacity: 1; }
+.chat-copy:hover { color: var(--text); }
+.chat-empty { margin: auto; display: grid; justify-items: center; gap: 6px; max-width: 280px; padding: 20px; text-align: center; color: var(--text2); }
+.chat-empty svg { width: 30px; height: 30px; margin-bottom: 6px; color: var(--accent-text); }
+.chat-empty strong { color: var(--text); font-size: 15px; font-weight: 650; }
+.chat-empty p { margin: 0; font-size: 12.5px; line-height: 1.5; }
+.chat-empty button { margin-top: 10px; height: 32px; padding: 0 14px; border-radius: 999px; color: var(--accent-ink); background: var(--accent); font-weight: 600; }
+.chat-form { flex: none; display: flex; align-items: flex-end; gap: 8px; padding: 10px; border-top: 1px solid var(--line); }
+.chat-input { flex: 1; min-height: 38px; max-height: 140px; padding: 9px 12px; resize: none; border: 1px solid var(--line2); border-radius: 12px; outline: 0; color: var(--text); background: var(--s2); font: 13.5px/1.4 var(--font); transition: border-color .14s linear, box-shadow .14s linear; }
+.chat-input:focus { border-color: var(--accent-mid); box-shadow: 0 0 0 3px var(--accent-soft); }
+.chat-input::placeholder { color: var(--text3); }
+.chat-send { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 50%; color: var(--accent-ink); background: var(--accent); transition: transform .14s var(--ease-out), opacity .14s linear; }
+.chat-send:active:not(:disabled) { transform: scale(.94); }
+.chat-send:disabled { opacity: .4; }
+.chat-send svg { width: 17px; height: 17px; }
+.ai-field { flex: none; display: flex; align-items: center; gap: 8px; width: min(340px, 52%); }
+.ai-field input { flex: 1; min-width: 0; height: 34px; padding: 0 10px; border: 1px solid var(--line2); border-radius: 9px; outline: 0; color: var(--text); background: var(--s3); font-family: var(--mono); font-size: 12.5px; transition: border-color .14s linear, box-shadow .14s linear; }
+.ai-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+/* assistant as a full Frame Bench tab: the chat panel is moved into the tab's pane */
+.tab-pane.ai-pane > .empty, .tab-pane.ai-pane > iframe { display: none !important; }
+.tab-pane.ai-pane .chat-panel { position: absolute; z-index: 1; inset: 0; width: auto; max-width: none; border: 0; border-radius: 0; background: var(--bg); box-shadow: none; backdrop-filter: none; animation: none; }
+.browser.app-mode .tab-pane.ai-pane .chat-panel { bottom: 64px; }
+.chat-panel.full .notes-head { padding: 12px max(14px, calc((100% - 780px) / 2)); }
+.chat-panel.full .chat-log { padding: 22px max(16px, calc((100% - 780px) / 2)); gap: 18px; }
+.chat-panel.full .chat-msg { max-width: 88%; font-size: 14.5px; }
+.chat-panel.full .chat-form { padding: 12px max(16px, calc((100% - 780px) / 2)) 18px; border-top: 0; }
+.chat-panel.full .chat-input { min-height: 44px; font-size: 14.5px; }
+.chat-panel.full .chat-send { width: 44px; height: 44px; }
+.ai-btn { flex: none; height: 34px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 9px; color: var(--text2); background: var(--s3); font-weight: 550; transition: background-color .14s linear, color .14s linear; }
+.ai-btn:hover { color: var(--text); background: var(--s4); }
+#aiTokenStatus.ok { color: var(--ok); }
+#aiTokenStatus.err { color: var(--danger); }
+@media (max-width: 860px) { .ai-field { width: min(260px, 50%); } }
 </style>
 </head>
 <body>
@@ -905,6 +1033,7 @@ button.sb-label:hover { color: var(--text); }
       <div class="tab-scroll"><div class="tabstrip" id="tabstrip" role="tablist" aria-orientation="vertical" aria-label="Open tabs"></div></div>
     </section>
     <div class="sb-foot">
+      <button class="icon-btn" id="chatButton" type="button" aria-label="Assistant" title="Assistant (Alt J)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l1.9 5.1L19 11l-5.1 1.9L12 18l-1.9-5.1L5 11l5.1-1.9Z"/><path d="M18.5 15.5v4M16.5 17.5h4"/></svg></button>
       <button class="icon-btn" id="notesButton" type="button" aria-label="Scratchpad" title="Scratchpad (Alt N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20z"/><path d="M9 12h6M9 16h4"/></svg></button>
       <button class="icon-btn" id="splitButton" type="button" aria-label="Split view" title="Split view (Alt S)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M12 5v14"/></svg></button>
       <span class="spacer"></span>
@@ -913,7 +1042,7 @@ button.sb-label:hover { color: var(--text); }
   </aside>
   <div class="scrim" id="scrim"></div>
   <main class="main">
-    <div class="htabs" id="htabs"><div class="tab-tools" id="tabTools" role="group" aria-label="Workspace and view tools"><button class="tab-pill" id="wsPill" type="button" aria-label="Switch workspace" title="Switch workspace"><span class="tt-dot" aria-hidden="true"></span><span class="tt-name">Main</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="tt-sep" aria-hidden="true"></span><button class="icon-btn" id="splitTool" type="button" aria-label="Split view" title="Split view (Alt S)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M12 5v14"/></svg></button><button class="icon-btn" id="notesTool" type="button" aria-label="Scratchpad" title="Scratchpad (Alt N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20z"/><path d="M9 12h6M9 16h4"/></svg></button></div></div>
+    <div class="htabs" id="htabs"><div class="tab-tools" id="tabTools" role="group" aria-label="Workspace and view tools"><button class="tab-pill" id="wsPill" type="button" aria-label="Switch workspace" title="Switch workspace"><span class="tt-dot" aria-hidden="true"></span><span class="tt-name">Main</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><span class="tt-sep" aria-hidden="true"></span><button class="icon-btn" id="splitTool" type="button" aria-label="Split view" title="Split view (Alt S)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M12 5v14"/></svg></button><button class="icon-btn" id="chatTool" type="button" aria-label="Assistant" title="Assistant (Alt J)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l1.9 5.1L19 11l-5.1 1.9L12 18l-1.9-5.1L5 11l5.1-1.9Z"/><path d="M18.5 15.5v4M16.5 17.5h4"/></svg></button><button class="icon-btn" id="notesTool" type="button" aria-label="Scratchpad" title="Scratchpad (Alt N)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20z"/><path d="M9 12h6M9 16h4"/></svg></button></div></div>
     <header class="topbar">
       <button class="icon-btn menu-btn" id="menuButton" type="button" aria-label="Open sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <div class="nav" role="group" aria-label="Browser navigation">
@@ -945,7 +1074,16 @@ button.sb-label:hover { color: var(--text); }
     <button class="icon-btn" type="button" data-mb="palette" aria-label="Command palette"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button>
     <button class="icon-btn" type="button" data-mb="new" aria-label="New tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
   </nav>
-  <div class="app-pill" id="appPill" hidden role="toolbar" aria-label="App mode controls"><div class="pill-actions"><div class="pill-actions-inner"><button type="button" data-pill="back" title="Back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg></button><button type="button" data-pill="forward" title="Forward" aria-label="Forward"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></button><button type="button" data-pill="reload" title="Reload" aria-label="Reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.4-5.5"/><path d="M19.5 4.5v4h-4"/></svg></button><button type="button" data-pill="palette" title="Search and commands (Ctrl K)" aria-label="Search and commands"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m15.5 15.5 4 4"/></svg></button><span class="pill-sep" aria-hidden="true"></span><button type="button" data-pill="exit" title="Exit app mode (Alt Shift A)" aria-label="Exit app mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div><button type="button" class="pill-handle" data-pill="more" title="App mode controls" aria-label="Show app mode controls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="12" r="1.1"/><circle cx="12" cy="12" r="1.1"/><circle cx="18" cy="12" r="1.1"/></svg></button></div>
+  <div class="app-pill" id="appPill" hidden role="toolbar" aria-label="App mode controls"><div class="pill-actions"><div class="pill-actions-inner"><button type="button" data-pill="back" title="Back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg></button><button type="button" data-pill="forward" title="Forward" aria-label="Forward"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></button><button type="button" data-pill="reload" title="Reload" aria-label="Reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.4-5.5"/><path d="M19.5 4.5v4h-4"/></svg></button><button type="button" data-pill="palette" title="Search and commands (Ctrl K)" aria-label="Search and commands"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m15.5 15.5 4 4"/></svg></button><button type="button" data-pill="ai" title="Assistant (Alt J)" aria-label="Assistant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l1.9 5.1L19 11l-5.1 1.9L12 18l-1.9-5.1L5 11l5.1-1.9Z"/><path d="M18.5 15.5v4M16.5 17.5h4"/></svg></button><button type="button" class="pill-tabs" data-pill="tabs" title="Show all tabs (Ctrl Shift \)" aria-label="Show all tabs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="7.5" width="13" height="13" rx="3"/><path d="M8 4.5h9a3.5 3.5 0 0 1 3.5 3.5v9"/></svg><span class="pill-badge" aria-hidden="true">1</span></button><span class="pill-sep" aria-hidden="true"></span><button type="button" data-pill="exit" title="Exit app mode (Alt Shift A)" aria-label="Exit app mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div><button type="button" class="pill-handle" data-pill="more" title="App mode controls" aria-label="Show app mode controls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="12" r="1.1"/><circle cx="12" cy="12" r="1.1"/><circle cx="18" cy="12" r="1.1"/></svg></button></div>
+</div>
+<div class="tab-overview" id="tabOverview" hidden role="dialog" aria-modal="true" aria-label="All tabs">
+  <div class="to-head"><label class="to-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input id="toSearch" type="text" placeholder="Search tabs" aria-label="Search tabs" autocomplete="off" spellcheck="false"></label></div>
+  <div class="to-scroll"><div class="to-grid" id="toGrid" role="list"></div><p class="to-empty" id="toEmpty" hidden></p></div>
+  <div class="to-bar">
+    <div class="to-bar-l"><button class="to-btn" id="toNew" type="button" aria-label="New tab" title="New tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    <div class="to-groups" id="toGroups" role="tablist" aria-label="Workspaces"></div>
+    <div class="to-bar-r"><button class="to-done" id="toDone" type="button">Done</button></div>
+  </div>
 </div>
 <div class="palette-overlay" id="paletteOverlay" hidden>
   <section class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
@@ -963,6 +1101,7 @@ button.sb-label:hover { color: var(--text); }
             <button class="settings-nav-item" id="settingsTabBrowsing" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneBrowsing" data-settings-tab="browsing" tabindex="-1"><span class="settings-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.64,15.92l4.66-1.41q0.44-0.14 0.76-0.45t0.45-0.76l1.41-4.66Q16,8.39 15.8,8.2T15.36,8.08L10.7,9.49Q10.26,9.63 9.94,9.94T9.49,10.7L8.08,15.36Q8,15.61 8.2,15.8t0.45.12ZM12,13.31q-0.55,0-0.93-0.38T10.69,12t.38-0.93T12,10.69t0.93.38T13.31,12t-0.38.93T12,13.31Zm0,8.19q-1.97,0-3.71-0.75T5.28,18.72T3.25,15.71T2.5,12T3.25,8.3T5.28,5.28T8.29,3.25T12,2.5T15.7,3.25t3.02,2.03t2.03,3.02T21.5,12T20.75,15.7t-2.03,3.02t-3.02,2.03T12,21.5ZM12,20q3.33,0 5.67-2.33T20,12T17.67,6.33T12,4T6.33,6.33T4,12t2.33,5.67T12,20Zm0-8Z"/></svg></span><span>Browsing</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
             <button class="settings-nav-item" id="settingsTabPrivacy" type="button" role="tab" aria-selected="false" aria-controls="settingsPanePrivacy" data-settings-tab="privacy" tabindex="-1"><span class="settings-nav-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><defs><mask id="privacyIconMask"><rect width="20" height="20" fill="#fff"/><path d="m7.3 9.8 1.8 1.8 3.7-3.8" fill="none" stroke="#000" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><path mask="url(#privacyIconMask)" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" d="M10 2.5 16.5 5v4.7c0 3.8-2.7 6.3-6.5 7.8-3.8-1.5-6.5-4-6.5-7.8V5L10 2.5Z"/></svg></span><span>Privacy &amp; session</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
             <button class="settings-nav-item" id="settingsTabAccessibility" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneAccessibility" data-settings-tab="accessibility" tabindex="-1"><span class="settings-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.69,5.36q-0.54-0.54-0.54-1.31t0.54-1.31T12,2.21t1.31,0.54t0.54,1.31T13.31,5.36T12,5.9T10.69,5.36ZM9.4,21V8.71Q8.09,8.6 6.81,8.43T4.33,7.98Q4,7.9 3.79,7.62T3.68,7.02q0.1-0.33 0.4-0.48T4.73,6.48Q6.49,6.86 8.32,7.04T12,7.21t3.68-0.18t3.58-0.56q0.34-0.08 0.65,0.07t0.4,0.48q0.1,0.32-0.11,0.6T19.67,7.98q-1.2,0.28-2.48,0.45T14.6,8.71V21q0,0.32-0.22,0.53t-0.53,0.22t-0.53-0.22T13.1,21V15.63H10.9V21q0,0.32-0.22,0.53t-0.53,0.22T9.62,21.53T9.4,21Z"/></svg></span><span>Accessibility</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
+            <button class="settings-nav-item" id="settingsTabAssistant" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneAssistant" data-settings-tab="assistant" tabindex="-1"><span class="settings-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z"/><path d="M18.5 14.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9Z"/></svg></span><span>Assistant</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
             <button class="settings-nav-item" id="settingsTabUpdates" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneUpdates" data-settings-tab="updates" tabindex="-1"><span class="settings-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.01,20.5q-1.77,0-3.32-0.67T6,18.01t-1.82-2.7T3.51,12T4.18,8.68T6,5.99t2.7-1.82T12.01,3.5q1.89,0 3.58,0.79t2.92,2.23V4.9q0-0.32 0.22-0.53t0.53-0.22t0.53,0.22T20.01,4.9V8.33q0,0.39-0.26,0.65T19.11,9.23H15.68q-0.32,0-0.53-0.22T14.93,8.48t0.22-0.53t0.53-0.22h1.87q-1.03-1.27-2.47-2T12.01,5Q9.08,5 7.05,7.04T5.01,12t2.04,4.96T12.01,19q2.42,0 4.31-1.49t2.46-3.8q0.1-0.31 0.34-0.47t0.55-0.12Q20,13.15 20.18,13.4t0.1.55q-0.65,2.87-2.95,4.71T12.01,20.5Zm0.75-8.8l2.75,2.75q0.21,0.21 0.21,0.52T15.51,15.5t-0.53.22T14.46,15.5l-2.93-2.93q-0.14-0.14-0.21-0.3t-0.07-0.34V7.75q0-0.32 0.22-0.53T12.01,7t0.53.22t0.22.53V11.7Z"/></svg></span><span>Software update</span><span class="settings-tab-badge" id="settingsUpdatesBadge" hidden>UPDATE</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
             <button class="settings-nav-item" id="settingsTabShortcuts" type="button" role="tab" aria-selected="false" aria-controls="settingsPaneShortcuts" data-settings-tab="shortcuts" tabindex="-1"><span class="settings-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.31,18.5q-0.76,0-1.28-0.52T2.5,16.69V7.31q0-0.76 0.52-1.28T4.31,5.5H19.69q0.76 0 1.28.52t0.52 1.28v9.38q0 .76-.52 1.28t-1.28.52H4.31Zm0-1.5H19.69q.12 0 .21-.1T20 16.69V7.31q0-.12-.1-.21T19.69 7H4.31q-.12 0-.21.1T4 7.31v9.38q0 .12.1.21T4.31 17ZM9 15.88h6q.37 0 .63-.25T15.88 15q0-.37-.26-.63T15 14.12H9q-.37 0-.63.25T8.12 15q0 .37.26.63T9 15.88ZM6.63 9.63Q6.88 9.37 6.88 9T6.63 8.37 6 8.12t-.63.25T5.12 9t.25.63T6 9.88t.63-.25Zm3 0Q9.88 9.37 9.88 9t-.25-.63T9 8.12t-.63.25-.25.63.25.63T9 9.88t.63-.25Zm3 0q.25-.26.25-.63t-.25-.63T12 8.12t-.63.25-.25.63.26.63T12 9.88t.63-.25Zm3 0q.25-.26.25-.63t-.25-.63T15 8.12t-.63.25-.25.63.26.63T15 9.88t.63-.25Zm3 0q.25-.26.25-.63t-.25-.63T18 8.12t-.63.25-.25.63.26.63T18 9.88t.63-.25Zm-12 3q.25-.26.25-.63t-.25-.63T6 11.12t-.63.25-.25.63.26.63T6 12.88t.63-.25Zm3 0q.25-.26.25-.63t-.25-.63T9 11.12t-.63.25-.25.63.26.63T9 12.88t.63-.25Zm3 0q.25-.26.25-.63t-.25-.63T12 11.12t-.63.25-.25.63.26.63T12 12.88t.63-.25Zm3 0q.25-.26.25-.63t-.25-.63T15 11.12t-.63.25-.25.63.26.63T15 12.88t.63-.25Zm3 0q.25-.26.25-.63t-.25-.63T18 11.12t-.63.25-.25.63.26.63T18 12.88t.63-.25Z"/></svg></span><span>Shortcuts</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
           </nav>
@@ -984,6 +1123,15 @@ button.sb-label:hover { color: var(--text); }
               <div class="settings-category-heading"><span class="settings-eyebrow">COMFORT & MOTION</span><h3>Accessibility</h3><p>Adjust motion effects to suit your preferences.</p></div>
               <div class="settings-card"><div class="settings-row"><div><strong>Reduce motion</strong><small>Minimize transitions and animated effects</small></div><button class="setting-switch" id="reduceMotionToggle" type="button" role="switch" aria-checked="false"><span></span></button></div></div>
             </section>
+            <section class="settings-category" id="settingsPaneAssistant" role="tabpanel" aria-labelledby="settingsTabAssistant" data-settings-pane="assistant" hidden>
+              <div class="settings-category-heading"><span class="settings-eyebrow">BUILT-IN CHAT</span><h3>Assistant</h3><p>Ask questions and get help without leaving Frame Bench.</p></div>
+              <div class="settings-card">
+                <div class="settings-row"><div><strong>Status</strong><small id="aiTokenStatus"></small></div></div>
+                <div class="settings-row"><div><strong>Model</strong><small>Choose which model answers your messages.</small></div><select class="test-scenario settings-select" id="aiModel" aria-label="Model"><option value="@cf/openai/gpt-oss-120b">GPT-OSS 120B</option><option value="@cf/google/gemma-4-26b-a4b-it">Gemma 4 26B</option><option value="@cf/qwen/qwen3.8-27b">Qwen 3.8 27B</option></select></div>
+                <div class="settings-row"><div><strong>Share the page address</strong><small>Tell the assistant which site you have open (address without query or fragment). It never sees page contents.</small></div><button class="setting-switch" id="aiContextToggle" type="button" role="switch" aria-checked="false"><span></span></button></div>
+                <div class="settings-row"><div><strong>Conversation</strong><small>Your chat is saved privately in this browser only. Clearing it removes it from this device.</small></div><button class="ai-btn" id="aiClear" type="button">Clear chat</button></div>
+              </div>
+            </section>
             <section class="settings-category" id="settingsPaneUpdates" role="tabpanel" aria-labelledby="settingsTabUpdates" data-settings-pane="updates" hidden>
               <div class="settings-category-heading"><span class="settings-eyebrow" id="updateAppVersion">FRAME VERSION</span><h3>Software update</h3><p>Check whether a newer version is available.</p></div>
               <div class="settings-card update-hero" id="updateHero" data-state="idle">
@@ -994,7 +1142,7 @@ button.sb-label:hover { color: var(--text); }
             </section>
             <section class="settings-category" id="settingsPaneShortcuts" role="tabpanel" aria-labelledby="settingsTabShortcuts" data-settings-pane="shortcuts" hidden>
               <div class="settings-category-heading"><span class="settings-eyebrow">QUICK ACTIONS</span><h3>Keyboard shortcuts</h3><p>Use these shortcuts to move around Frame Bench faster.</p></div>
-              <div class="settings-card settings-shortcuts"><div><span>New tab</span><kbd>⌘ / Ctrl / Alt&nbsp; T</kbd></div><div><span>Close tab</span><kbd>⌘ / Ctrl / Alt&nbsp; W</kbd></div><div><span>Address bar</span><kbd>⌘ / Ctrl&nbsp; L</kbd></div><div><span>Bookmark page</span><kbd>⌘ / Ctrl&nbsp; D</kbd></div><div><span>Show or hide bookmarks</span><kbd>⌘ / Ctrl&nbsp; ⇧ B</kbd></div><div><span>Command palette</span><kbd>⌘ / Ctrl / Alt&nbsp; K</kbd></div><div><span>Reopen closed tab</span><kbd>⌘ / Ctrl / Alt&nbsp; ⇧ T</kbd></div><div><span>Split view</span><kbd>Alt&nbsp; S</kbd></div><div><span>Toggle sidebar</span><kbd>Alt&nbsp; B</kbd></div><div><span>Settings</span><kbd>⌘ / Ctrl&nbsp; ,</kbd></div><div><span>Scratchpad</span><kbd>Alt&nbsp; N</kbd></div><div><span>Zoom in / out / reset</span><kbd>Alt&nbsp; + / − / 0</kbd></div><div><span>App mode</span><kbd>Alt&nbsp; ⇧ A</kbd></div></div>
+              <div class="settings-card settings-shortcuts"><div><span>New tab</span><kbd>⌘ / Ctrl / Alt&nbsp; T</kbd></div><div><span>Close tab</span><kbd>⌘ / Ctrl / Alt&nbsp; W</kbd></div><div><span>Address bar</span><kbd>⌘ / Ctrl&nbsp; L</kbd></div><div><span>Bookmark page</span><kbd>⌘ / Ctrl&nbsp; D</kbd></div><div><span>Show or hide bookmarks</span><kbd>⌘ / Ctrl&nbsp; ⇧ B</kbd></div><div><span>Command palette</span><kbd>⌘ / Ctrl / Alt&nbsp; K</kbd></div><div><span>Reopen closed tab</span><kbd>⌘ / Ctrl / Alt&nbsp; ⇧ T</kbd></div><div><span>Split view</span><kbd>Alt&nbsp; S</kbd></div><div><span>Toggle sidebar</span><kbd>Alt&nbsp; B</kbd></div><div><span>Settings</span><kbd>⌘ / Ctrl&nbsp; ,</kbd></div><div><span>Scratchpad</span><kbd>Alt&nbsp; N</kbd></div><div><span>Assistant</span><kbd>Alt&nbsp; J</kbd></div><div><span>Zoom in / out / reset</span><kbd>Alt&nbsp; + / − / 0</kbd></div><div><span>App mode</span><kbd>Alt&nbsp; ⇧ A</kbd></div></div>
             </section>
           </div>
         </div>
@@ -1167,7 +1315,7 @@ button.sb-label:hover { color: var(--text); }
   document.addEventListener('fullscreenchange', syncFullscreenToggle);
   syncFullscreenToggle();
 
-  function restoreSettingsPanel() {}
+  function restoreSettingsPanel(tab) { if (tab && tab.isAi) releaseAiTab(tab); }
   const settingsOverlay = document.querySelector('#settingsOverlay');
   const settingsSearch = document.querySelector('#settingsSearch');
   const settingsEmpty = document.querySelector('#settingsEmpty');
@@ -1921,6 +2069,7 @@ button.sb-label:hover { color: var(--text); }
       else if (event.code === 'KeyK') { event.preventDefault(); openPalette(); }
       else if (event.code === 'KeyS') { event.preventDefault(); toggleSplit(false); }
       else if (event.code === 'KeyN') { event.preventDefault(); toggleNotes(); }
+      else if (event.code === 'KeyJ') { event.preventDefault(); toggleChat(); }
       else if (event.code === 'KeyB' && !event.shiftKey) { event.preventDefault(); toggleSidebar(); }
       else if (event.code === 'KeyA' && event.shiftKey) { event.preventDefault(); toggleAppMode(); }
       else if (['Equal', 'NumpadAdd'].includes(event.code)) { event.preventDefault(); zoomBy(.1); }
@@ -2454,6 +2603,7 @@ button.sb-label:hover { color: var(--text); }
     syncFooterStatus(tab);
     syncZoomChip(tab);
     splitButton.classList.toggle('on', split.on);
+    syncAiButtons();
     scheduleSave();
   }
 
@@ -2481,6 +2631,7 @@ button.sb-label:hover { color: var(--text); }
 
   function navigateTab(tab, url, record = true) {
     if (!tab) return;
+    if (tab.isAi) releaseAiTab(tab); /* typing an address in the assistant tab turns it back into a normal tab */
     if (record && tab.history[tab.historyIndex] !== url) {
       tab.history = tab.history.slice(0, tab.historyIndex + 1);
       tab.history.push(url);
@@ -2790,7 +2941,7 @@ button.sb-label:hover { color: var(--text); }
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && /^frame-[a-z0-9-]+$/.test(key) && !['frame-session', 'frame-last-update-check', 'frame-last-update-attempt', 'frame-update-available'].includes(key)) data[key] = localStorage.getItem(key);
+        if (key && /^frame-[a-z0-9-]+$/.test(key) && !['frame-session', 'frame-last-update-check', 'frame-last-update-attempt', 'frame-update-available', 'frame-hf-token'].includes(key)) data[key] = localStorage.getItem(key);
       }
     } catch {}
     const blob = new Blob([JSON.stringify({ app:'frame', version:UPDATE_CONFIG.currentVersion, exportedAt:new Date().toISOString(), data }, null, 2)], { type:'application/json' });
@@ -2808,11 +2959,11 @@ button.sb-label:hover { color: var(--text); }
       if (file.size > 2_000_000) throw new Error('That file is too large to be a Frame Bench backup.');
       const parsed = JSON.parse(await file.text());
       if (!parsed || parsed.app !== 'frame' || typeof parsed.data !== 'object' || !parsed.data) throw new Error('That file is not a Frame Bench backup.');
-      const entries = Object.entries(parsed.data).filter(([key, value]) => /^frame-[a-z0-9-]+$/.test(key) && typeof value === 'string' && !['frame-session', 'frame-last-update-check', 'frame-last-update-attempt', 'frame-update-available'].includes(key));
+      const entries = Object.entries(parsed.data).filter(([key, value]) => /^frame-[a-z0-9-]+$/.test(key) && typeof value === 'string' && !['frame-session', 'frame-last-update-check', 'frame-last-update-attempt', 'frame-update-available', 'frame-hf-token'].includes(key));
       if (!entries.length) throw new Error('The backup does not contain any settings.');
       if (!confirm(`Replace your current bookmarks, workspaces and settings with this backup (${entries.length} items)? Frame Bench will reload.`)) return;
       const existing = [];
-      for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key && key.startsWith('frame-') && !['frame-session', 'frame-last-update-check', 'frame-last-update-attempt', 'frame-update-available'].includes(key)) existing.push(key); }
+      for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key && key.startsWith('frame-') && !['frame-session', 'frame-last-update-check', 'frame-last-update-attempt', 'frame-update-available', 'frame-hf-token'].includes(key)) existing.push(key); }
       existing.forEach(key => localStorage.removeItem(key));
       entries.forEach(([key, value]) => localStorage.setItem(key, value));
       location.reload();
@@ -3272,7 +3423,7 @@ button.sb-label:hover { color: var(--text); }
   });
   function toggleNotes(force) {
     const show = force ?? (notesPanel.hidden || notesPanel.classList.contains('leaving'));
-    if (show) showWithEnter(notesPanel); else hideWithExit(notesPanel, 140);
+    if (show) { showWithEnter(notesPanel); } else hideWithExit(notesPanel, 140);
     notesButton.classList.toggle('on', show);
     if (show) notesText.focus();
   }
@@ -3285,7 +3436,7 @@ button.sb-label:hover { color: var(--text); }
     appPill.classList.remove('open');
     closeFolderPop();
     if (motionOk()) { browserFrame.classList.add('mode-switching'); setTimeout(() => browserFrame.classList.remove('mode-switching'), 280); }
-    if (!on) { updateTabSizing(); syncTabIndicator(); }
+    if (!on) { closeTabOverview(); updateTabSizing(); syncTabIndicator(); }
   }
   /* the pill expands on pointer activity and folds away when idle (hover alone can stick once the pointer enters a loaded page) */
   let pillTimer = null;
@@ -3305,8 +3456,627 @@ button.sb-label:hover { color: var(--text); }
     else if (act === 'forward') stepNavigation(1);
     else if (act === 'reload') document.querySelector('#reload').click();
     else if (act === 'palette') openPalette();
+    else if (act === 'tabs') openTabOverview();
+    else if (act === 'ai') toggleChat();
     else if (act === 'exit') toggleAppMode(false);
   });
+
+  /* app mode: tab overview, a grid of tab cards like Safari on iOS */
+  const tabOverview = document.querySelector('#tabOverview');
+  const toGrid = document.querySelector('#toGrid');
+  const toGroups = document.querySelector('#toGroups');
+  const toSearch = document.querySelector('#toSearch');
+  const toEmpty = document.querySelector('#toEmpty');
+  const pillBadge = appPill.querySelector('.pill-badge');
+  let toDragId = null;
+  const toIsOpen = () => !tabOverview.hidden && !tabOverview.classList.contains('leaving');
+  new MutationObserver(() => { pillBadge.textContent = tabCountStatus.textContent; }).observe(tabCountStatus, { childList:true, characterData:true, subtree:true });
+  pillBadge.textContent = tabCountStatus.textContent || '1';
+
+  function tabHue(text) { let h = 0; for (const ch of text) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; }
+  function toCard(tab, index, animate) {
+    const host = tab.url ? hostOf(tab.url) : '';
+    const title = tab.url || tab.isSettings ? (tab.title || host) : 'Start page';
+    const card = document.createElement('div');
+    card.className = 'to-card' + (tab.id === activeId ? ' active' : '') + (tab.asleep ? ' asleep' : '');
+    card.dataset.id = String(tab.id);
+    card.draggable = true;
+    card.setAttribute('role', 'listitem');
+    card.style.setProperty('--i', String(index));
+    if (!animate) card.style.animation = 'none';
+    const open = document.createElement('button');
+    open.type = 'button'; open.className = 'to-open';
+    open.setAttribute('aria-label', title + (tab.id === activeId ? ' (current tab)' : ''));
+    if (tab.id === activeId) open.setAttribute('aria-current', 'true');
+    const iconSrc = tab.favicon.classList.contains('has-image') ? tab.faviconImage.getAttribute('src') : '';
+    const top = document.createElement('div'); top.className = 'to-top';
+    if (iconSrc) { const img = document.createElement('img'); img.className = 'to-fav'; img.alt = ''; img.referrerPolicy = 'no-referrer'; img.src = iconSrc; top.append(img); }
+    else { const dot = document.createElement('span'); dot.className = 'to-fav blank'; top.append(dot); }
+    const name = document.createElement('span'); name.className = 'to-title'; name.textContent = title; top.append(name);
+    const view = document.createElement('div'); view.className = 'to-view';
+    view.style.setProperty('--h', String(tabHue(host || 'start')));
+    const tile = document.createElement('div'); tile.className = 'to-tile';
+    if (!tab.url) tile.innerHTML = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect class="logo-frame" x="13" y="15" width="38" height="34" rx="7"/><path class="logo-bar" d="M14.5 25h35"/><path class="logo-bar" d="m24 36 5.5 5.5L41 30"/></svg>';
+    else if (iconSrc) { const img = document.createElement('img'); img.alt = ''; img.referrerPolicy = 'no-referrer'; img.src = iconSrc; tile.append(img); }
+    else tile.textContent = (host[0] || '?').toUpperCase();
+    view.append(tile);
+    if (tab.url) { const line = document.createElement('div'); line.className = 'to-url'; line.textContent = tab.url.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, ''); view.append(line); }
+    open.append(top, view);
+    const close = document.createElement('button');
+    close.type = 'button'; close.className = 'to-close'; close.setAttribute('aria-label', 'Close ' + title); close.title = 'Close tab';
+    close.innerHTML = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg>';
+    card.append(open, close);
+    return card;
+  }
+  function renderTabOverview(animate = true) {
+    const query = toSearch.value.trim().toLowerCase();
+    const all = visibleTabs();
+    const shown = all.filter(tab => !query || ((tab.title || '') + ' ' + (tab.url || '')).toLowerCase().includes(query));
+    toGrid.replaceChildren(...shown.map((tab, i) => toCard(tab, i, animate)));
+    toEmpty.hidden = shown.length > 0;
+    toEmpty.textContent = all.length ? 'No tabs match your search.' : 'No tabs.';
+    const chips = workspaces.map(ws => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'to-group'; b.dataset.ws = ws.id;
+      b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(ws.id === activeWs));
+      const label = document.createElement('span'); label.textContent = ws.name;
+      const count = document.createElement('small'); count.textContent = String(tabs.filter(t => t.ws === ws.id).length);
+      b.append(label, count);
+      return b;
+    });
+    const add = document.createElement('button');
+    add.type = 'button'; add.className = 'to-group to-add'; add.textContent = '+'; add.setAttribute('aria-label', 'New workspace'); add.title = 'New workspace';
+    toGroups.replaceChildren(...chips, add);
+  }
+  function openTabOverview() {
+    if (toIsOpen()) return;
+    toSearch.value = '';
+    renderTabOverview(true);
+    appPill.classList.add('to-suppressed');
+    showWithEnter(tabOverview);
+    const current = toGrid.querySelector('.to-card.active');
+    current?.scrollIntoView({ block:'center' });
+    (current?.querySelector('.to-open') || toGrid.querySelector('.to-open') || toSearch).focus({ preventScroll:true });
+  }
+  function closeTabOverview() {
+    if (tabOverview.hidden) return;
+    appPill.classList.remove('to-suppressed');
+    hideWithExit(tabOverview, 170);
+    if (tabOverview.contains(document.activeElement)) document.activeElement.blur();
+  }
+  function pickOverviewTab(id) { activate(id); closeTabOverview(); }
+  function closeOverviewTab(id, index) {
+    const card = toGrid.querySelector('.to-card[data-id="' + id + '"]');
+    closeTab(id);
+    const done = () => {
+      if (!toIsOpen()) return;
+      renderTabOverview(false);
+      const buttons = [...toGrid.querySelectorAll('.to-open')];
+      (buttons[Math.min(index, buttons.length - 1)] || toSearch).focus({ preventScroll:true });
+    };
+    if (card && motionOk()) { card.classList.add('removing'); setTimeout(done, 170); } else done();
+  }
+  function clearOverviewDrop() { toGrid.querySelectorAll('.drop-before, .drop-after, .dragging').forEach(el => el.classList.remove('drop-before', 'drop-after', 'dragging')); }
+
+  toGrid.addEventListener('click', event => {
+    const card = event.target.closest('.to-card');
+    if (!card) return;
+    const id = Number(card.dataset.id);
+    if (event.target.closest('.to-close')) closeOverviewTab(id, [...toGrid.children].indexOf(card));
+    else pickOverviewTab(id);
+  });
+  toGrid.addEventListener('keydown', event => {
+    const buttons = [...toGrid.querySelectorAll('.to-open')];
+    const i = buttons.indexOf(document.activeElement);
+    if (i < 0) return;
+    const top = buttons[0].parentElement.offsetTop;
+    const cols = buttons.filter(b => b.parentElement.offsetTop === top).length || 1;
+    let next;
+    if (event.key === 'ArrowRight') next = i + 1;
+    else if (event.key === 'ArrowLeft') next = i - 1;
+    else if (event.key === 'ArrowDown') next = i + cols;
+    else if (event.key === 'ArrowUp') next = i - cols;
+    else if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); closeOverviewTab(Number(buttons[i].parentElement.dataset.id), i); return; }
+    else return;
+    event.preventDefault();
+    if (event.key === 'ArrowUp' && next < 0) { toSearch.focus(); return; }
+    buttons[Math.min(buttons.length - 1, Math.max(0, next))].focus();
+  });
+  toGrid.addEventListener('dragstart', event => {
+    const card = event.target.closest?.('.to-card');
+    if (!card) return;
+    toDragId = Number(card.dataset.id);
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(toDragId));
+    requestAnimationFrame(() => card.classList.add('dragging'));
+  });
+  toGrid.addEventListener('dragover', event => {
+    const card = event.target.closest?.('.to-card');
+    if (toDragId == null || !card || Number(card.dataset.id) === toDragId) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const rect = card.getBoundingClientRect();
+    const after = event.clientX >= rect.left + rect.width / 2;
+    toGrid.querySelectorAll('.drop-before, .drop-after').forEach(el => { if (el !== card) el.classList.remove('drop-before', 'drop-after'); });
+    card.classList.toggle('drop-before', !after);
+    card.classList.toggle('drop-after', after);
+  });
+  toGrid.addEventListener('drop', event => {
+    const card = event.target.closest?.('.to-card');
+    if (toDragId == null || !card) return;
+    event.preventDefault();
+    const rect = card.getBoundingClientRect();
+    reorderTab(toDragId, Number(card.dataset.id), event.clientX >= rect.left + rect.width / 2);
+    toDragId = null;
+    renderTabOverview(false);
+  });
+  toGrid.addEventListener('dragend', () => { toDragId = null; clearOverviewDrop(); });
+
+  toGroups.addEventListener('click', event => {
+    const chip = event.target.closest('.to-group');
+    if (!chip) return;
+    if (chip.classList.contains('to-add')) { openPrompt('Name the new workspace', '', name => { createWorkspace(name); toSearch.value = ''; if (toIsOpen()) renderTabOverview(true); }); return; }
+    toSearch.value = '';
+    switchWorkspace(chip.dataset.ws);
+    renderTabOverview(true);
+  });
+  document.querySelector('#toNew').addEventListener('click', () => { closeTabOverview(); makeTab('', true); });
+  document.querySelector('#toDone').addEventListener('click', closeTabOverview);
+  toSearch.addEventListener('input', () => renderTabOverview(false));
+  toSearch.addEventListener('keydown', event => {
+    if (event.key === 'ArrowDown') { event.preventDefault(); toGrid.querySelector('.to-open')?.focus(); }
+    else if (event.key === 'Enter') { event.preventDefault(); const first = toGrid.querySelector('.to-card'); if (first) pickOverviewTab(Number(first.dataset.id)); }
+  });
+  tabOverview.addEventListener('click', event => { if (event.target === tabOverview || event.target.classList.contains('to-scroll') || event.target === toGrid) closeTabOverview(); });
+  document.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.code === 'Backslash') { event.preventDefault(); if (toIsOpen()) closeTabOverview(); else openTabOverview(); return; }
+    if (!toIsOpen() || !paletteOverlay.hidden) return;
+    if (event.key === 'Escape') {
+      event.preventDefault(); event.stopPropagation();
+      if (document.activeElement === toSearch && toSearch.value) { toSearch.value = ''; renderTabOverview(false); } else closeTabOverview();
+    } else if (event.key === 'Tab') {
+      const items = [...tabOverview.querySelectorAll('button, input')].filter(el => !el.disabled && el.offsetParent !== null);
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (!tabOverview.contains(document.activeElement)) { event.preventDefault(); first.focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  }, true);
+
+  /* assistant: built-in chat */
+  const AI_WORKER_URL = 'https://frame-ai.bloglol69.workers.dev/';
+  const AI_DEFAULT_MODEL = '@cf/openai/gpt-oss-120b';
+  const AI_MODEL_KEY = 'frame-ai-model', AI_CONTEXT_KEY = 'frame-ai-context', AI_HISTORY_KEY = 'frame-ai-history', AI_OLD_TOKEN_KEY = 'frame-hf-token';
+  const aiGet = key => { try { return localStorage.getItem(key); } catch { return null; } };
+  const aiSet = (key, value) => { try { if (value === null || value === '') localStorage.removeItem(key); else localStorage.setItem(key, value); } catch {} };
+  aiSet(AI_OLD_TOKEN_KEY, '');
+  /* server script for the assistant, kept here so the app stays one file; it never runs in this page. In the browser console, frameWorkerCode() returns it. */
+  const AI_WORKER_SOURCE = `// Cloudflare Worker that runs the chat on Workers AI. No API key or secret is needed.
+// Setup: Worker > Settings > Bindings > Add > Workers AI, variable name: AI
+// Optional fallback when Workers AI fails or its free allowance runs out: add a secret named GROQ_API_KEY
+// (free key at console.groq.com/keys) and the Worker will use Groq instead.
+const ALLOWED_MODELS = [
+  '@cf/openai/gpt-oss-120b',
+  '@cf/google/gemma-4-26b-a4b-it',
+  '@cf/qwen/qwen3.8-27b',
+];
+const GROQ_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+// Optional: restrict who may call this, e.g. ['https://yourname.github.io']. Empty = any site.
+const ALLOWED_ORIGINS = [];
+
+
+// Pull answer text out of the different stream shapes Workers AI models use (reasoning text is skipped).
+function textOf(o) {
+  if (!o || typeof o !== 'object') return '';
+  const t = String(o.type || '');
+  if (t.includes('reasoning')) return '';
+  const c = o.choices && o.choices[0];
+  if (c && c.delta && typeof c.delta.content === 'string') return c.delta.content;
+  if (c && typeof c.text === 'string') return c.text;
+  if (typeof o.response === 'string') return o.response;
+  if (t === 'response.output_text.delta' && typeof o.delta === 'string') return o.delta;
+  return '';
+}
+function finalTextOf(o) {
+  const out = o && o.response && Array.isArray(o.response.output) ? o.response.output : [];
+  return out.flatMap(x => x.content || []).filter(x => x.type === 'output_text').map(x => x.text).join('');
+}
+// Wait for the first real answer text, then stream clean OpenAI-style events. Returns null when the model gave no answer.
+async function cleanStream(stream) {
+  const reader = stream.getReader(), dec = new TextDecoder(), enc = new TextEncoder();
+  let buf = '', completed = '';
+  const lines = text => {
+    let out = '';
+    for (const line of text) {
+      const t = line.trim();
+      if (!t.startsWith('data:')) continue;
+      const d = t.slice(5).trim();
+      if (!d || d === '[DONE]') continue;
+      try { const o = JSON.parse(d); out += textOf(o); if (o.type === 'response.completed') completed = finalTextOf(o); } catch {}
+    }
+    return out;
+  };
+  const next = async () => {
+    const { value, done } = await reader.read();
+    if (done) { const rest = lines(buf.split('\\n')); buf = ''; return { text: rest, done: true }; }
+    buf += dec.decode(value, { stream: true });
+    const parts = buf.split('\\n'); buf = parts.pop();
+    return { text: lines(parts), done: false };
+  };
+  let first = '', ended = false;
+  while (!first && !ended) { const r = await next(); first = r.text; ended = r.done; }
+  if (!first && completed) first = completed;
+  if (!first) return null;
+  const sse = t => enc.encode('data: ' + JSON.stringify({ choices: [{ delta: { content: t } }] }) + '\\n\\n');
+  let finished = ended;
+  return new ReadableStream({
+    start(c) { c.enqueue(sse(first)); if (finished) { c.enqueue(enc.encode('data: [DONE]\\n\\n')); c.close(); } },
+    async pull(c) {
+      for (;;) {
+        if (finished) { c.enqueue(enc.encode('data: [DONE]\\n\\n')); c.close(); return; }
+        const r = await next();
+        finished = r.done;
+        if (r.text) { c.enqueue(sse(r.text)); return; }
+      }
+    },
+    cancel() { reader.cancel(); },
+  });
+}
+
+export default {
+  async fetch(request, env) {
+    const origin = request.headers.get('Origin') || '';
+    const originOk = !ALLOWED_ORIGINS.length || ALLOWED_ORIGINS.includes(origin);
+    const cors = {
+      'Access-Control-Allow-Origin': originOk ? (origin || '*') : 'null',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Vary': 'Origin',
+    };
+    const fail = (error, status) => new Response(JSON.stringify({ error }), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+    if (request.method !== 'POST') return fail('Method not allowed', 405);
+    if (!originOk) return fail('Origin not allowed', 403);
+    if (!env.AI) return fail('The Workers AI binding is missing. Add a Workers AI binding named AI to this Worker.', 500);
+
+    let body;
+    try { body = await request.json(); } catch { return fail('Invalid JSON', 400); }
+
+    const messages = Array.isArray(body.messages) ? body.messages.slice(-30).map(m => ({ role: String(m.role), content: String(m.content).slice(0, 8000) })) : [];
+    if (!messages.length) return fail('No messages', 400);
+
+    const wanted = String(body.model || '');
+    const first = ALLOWED_MODELS.includes(wanted) ? wanted : ALLOWED_MODELS[0];
+    const order = [first, ...ALLOWED_MODELS.filter(m => m !== first)];
+    const max = Math.min(Number(body.max_tokens) || 1024, 2048);
+    // gpt-oss models on Workers AI use the Responses API shape; the others take chat messages
+    const room = max * 3; // reasoning models spend part of the limit thinking before they answer
+    const inputsFor = model => model.startsWith('@cf/openai/')
+      ? [
+          { input: messages, stream: true, max_output_tokens: room, reasoning: { effort: 'low' } },
+          { input: messages, stream: true, max_output_tokens: room },
+          { messages, stream: true, max_tokens: room },
+        ]
+      : [{ messages, stream: true, max_tokens: max }];
+    let message = 'Workers AI request failed.';
+    let limited = false;
+    for (const model of order) {
+      for (const input of inputsFor(model)) {
+        try {
+          const raw = await env.AI.run(model, input);
+          let stream = null;
+          if (raw instanceof ReadableStream) stream = await cleanStream(raw);
+          else if (raw && typeof raw === 'object') { // some models answer in one piece instead of streaming
+            const whole = (typeof raw.response === 'string' && raw.response) || (raw.choices && raw.choices[0] && raw.choices[0].message && raw.choices[0].message.content) || finalTextOf({ response: raw });
+            if (whole) stream = new Response('data: ' + JSON.stringify({ choices: [{ delta: { content: String(whole) } }] }) + '\\n\\ndata: [DONE]\\n\\n').body;
+          }
+          if (stream) return new Response(stream, { headers: { ...cors, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store' } });
+          message = 'The model returned no answer.';
+        } catch (err) {
+          message = String((err && err.message) || err);
+          if (/neurons|quota|daily|rate|limit|3036|3040|429/i.test(message)) limited = true;
+        }
+      }
+    }
+
+    // Fallback: Groq (OpenAI-compatible). Its free plan has small per-minute token limits, so send a shorter history.
+    if (env.GROQ_API_KEY) {
+      const short = messages.slice(-12).map(m => ({ role: m.role, content: m.content.slice(0, 4000) }));
+      for (const model of GROQ_MODELS) {
+        try {
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + env.GROQ_API_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model, messages: short, stream: true, max_completion_tokens: Math.min(max, 1024) }),
+          });
+          if (res.ok) return new Response(res.body, { headers: { ...cors, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store' } });
+          let detail = '';
+          try { const j = await res.json(); detail = (j && j.error && j.error.message) || ''; } catch {}
+          message = 'Groq: ' + (detail || ('request failed (' + res.status + ')'));
+          limited = limited || res.status === 429;
+        } catch (err) {
+          message = 'Groq: ' + String((err && err.message) || err);
+        }
+      }
+    }
+    return fail(message, limited ? 429 : 502);
+  },
+};
+`;
+  window.frameWorkerCode = () => AI_WORKER_SOURCE;
+  const aiEndpoint = AI_WORKER_URL.trim();
+  let aiModel = aiGet(AI_MODEL_KEY) || AI_DEFAULT_MODEL;
+  if (!aiModel.startsWith('@cf/')) { aiModel = AI_DEFAULT_MODEL; aiSet(AI_MODEL_KEY, ''); }
+  let aiShareUrl = aiGet(AI_CONTEXT_KEY) === 'true';
+  const aiChat = { messages: [], busy: false, controller: null };
+  function aiLoadHistory() {
+    try {
+      const saved = JSON.parse(aiGet(AI_HISTORY_KEY) || '[]');
+      if (Array.isArray(saved)) aiChat.messages = saved.filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string').slice(-60);
+    } catch {}
+  }
+  function aiSaveHistory() { aiSet(AI_HISTORY_KEY, aiChat.messages.length ? JSON.stringify(aiChat.messages.slice(-60)) : ''); }
+  aiLoadHistory();
+  const AI_MODEL_NAMES = { '@cf/openai/gpt-oss-120b':'GPT-OSS 120B', '@cf/google/gemma-4-26b-a4b-it':'Gemma 4 26B', '@cf/qwen/qwen3.8-27b':'Qwen 3.8 27B' };
+  const aiShortModel = id => AI_MODEL_NAMES[id] || id.split(':')[0].split('/').pop();
+  const AI_SEND_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+  const AI_STOP_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/></svg>';
+
+  const chatButton = document.querySelector('#chatButton');
+  const chatTool = document.querySelector('#chatTool');
+  const chatPanel = document.createElement('section');
+  chatPanel.className = 'chat-panel';
+  chatPanel.hidden = true;
+  chatPanel.setAttribute('aria-label', 'Assistant');
+  chatPanel.innerHTML = '<div class="notes-head"><strong>Assistant</strong><button type="button" class="chat-model" data-chat="settings" title="Change model"></button><button type="button" data-chat="new">New chat</button><button type="button" class="notes-close" data-chat="close" aria-label="Close assistant tab" title="Close assistant tab">×</button></div><div class="chat-log" role="log" aria-live="polite"></div><form class="chat-form"><textarea class="chat-input" rows="1" placeholder="Ask anything" aria-label="Message the assistant"></textarea><button class="chat-send" type="submit" aria-label="Send"></button></form>';
+  stage.append(chatPanel);
+  const chatLog = chatPanel.querySelector('.chat-log');
+  const chatForm = chatPanel.querySelector('.chat-form');
+  const chatInput = chatPanel.querySelector('.chat-input');
+  const chatSendButton = chatPanel.querySelector('.chat-send');
+  const chatModelChip = chatPanel.querySelector('.chat-model');
+
+  function chatSyncChrome() {
+    chatModelChip.textContent = aiShortModel(aiModel);
+    chatSendButton.innerHTML = aiChat.busy ? AI_STOP_ICON : AI_SEND_ICON;
+    chatSendButton.setAttribute('aria-label', aiChat.busy ? 'Stop' : 'Send');
+    chatSendButton.disabled = !aiChat.busy && !chatInput.value.trim();
+  }
+  function chatScroll() { chatLog.scrollTop = chatLog.scrollHeight; }
+  /* small, safe renderer: fenced code, `inline code`, **bold** and links (links open in a Frame Bench tab) */
+  function chatRender(el, text) {
+    el.replaceChildren();
+    const parts = text.split('```');
+    parts.forEach((part, index) => {
+      if (index % 2 === 1) {
+        const pre = document.createElement('pre'), code = document.createElement('code');
+        code.textContent = part.replace(/^[\w+#.-]*\n/, '').replace(/\n$/, '');
+        pre.append(code); el.append(pre);
+        return;
+      }
+      let chunk = part;
+      if (index > 0) chunk = chunk.replace(/^\n/, '');
+      if (index < parts.length - 1) chunk = chunk.replace(/\n$/, '');
+      chunk.split(/(`[^`\n]+`|\*\*[^*\n]+\*\*|https?:\/\/[^\s<>"'`]+)/).forEach(token => {
+        if (!token) return;
+        if (token.length > 2 && token.startsWith('`') && token.endsWith('`')) { const c = document.createElement('code'); c.textContent = token.slice(1, -1); el.append(c); }
+        else if (token.length > 4 && token.startsWith('**') && token.endsWith('**')) { const b = document.createElement('strong'); b.textContent = token.slice(2, -2); el.append(b); }
+        else if (/^https?:\/\//i.test(token)) {
+          const url = token.replace(/[.,;:!?)\]]+$/, ''), rest = token.slice(url.length);
+          const a = document.createElement('a'); a.href = url; a.textContent = url; a.rel = 'noopener noreferrer';
+          a.addEventListener('click', event => { event.preventDefault(); openUrlInNewTab(url, true); });
+          el.append(a); if (rest) el.append(rest);
+        } else el.append(token);
+      });
+    });
+  }
+  function chatAddCopy(el, text) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chat-copy'; b.textContent = 'Copy';
+    b.addEventListener('click', () => copyText(text, 'Reply'));
+    el.append(b);
+  }
+  function chatBubble(role, text) {
+    const el = document.createElement('div');
+    el.className = 'chat-msg ' + role;
+    if (role === 'assistant') chatRender(el, text); else el.textContent = text;
+    chatLog.append(el);
+    return el;
+  }
+  function chatEmpty() {
+    const box = document.createElement('div');
+    box.className = 'chat-empty';
+    const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4l1.9 5.1L19 11l-5.1 1.9L12 18l-1.9-5.1L5 11l5.1-1.9Z"/><path d="M18.5 15.5v4M16.5 17.5h4"/></svg>';
+    if (!aiEndpoint) {
+      box.innerHTML = icon + '<strong>Assistant unavailable</strong><p>The assistant isn’t available right now.</p><button type="button" data-chat="settings">Open settings</button>';
+    } else {
+      box.innerHTML = icon + '<strong>Ask anything</strong><p></p>';
+      box.querySelector('p').textContent = 'Enter to send, Shift+Enter for a new line. Chats are saved in this browser only.';
+    }
+    chatLog.append(box);
+  }
+  function chatRenderAll() {
+    chatLog.replaceChildren();
+    if (!aiChat.messages.length) chatEmpty();
+    aiChat.messages.forEach(m => { const el = chatBubble(m.role, m.content); if (m.role === 'assistant') chatAddCopy(el, m.content); });
+    chatSyncChrome();
+    chatScroll();
+  }
+  function chatShowError(message, withSettings) {
+    const el = document.createElement('div');
+    el.className = 'chat-msg error';
+    el.setAttribute('role', 'alert');
+    el.append(message);
+    if (withSettings) { const b = document.createElement('button'); b.type = 'button'; b.dataset.chat = 'settings'; b.textContent = 'Open assistant settings'; el.append(b); }
+    chatLog.append(el);
+    chatScroll();
+  }
+  function aiPayload() {
+    let system = 'You are the assistant built into Frame Bench, a browser that lives in a single HTML page. Be concise and direct. Use plain text, and fenced code blocks for code.';
+    const tab = tabs.find(item => item.id === activeId);
+    if (aiShareUrl && tab?.url) { try { const u = new URL(tab.url); system += ' The person currently has ' + u.origin + u.pathname + ' open. You cannot see the page contents.'; } catch {} }
+    return [{ role:'system', content:system }, ...aiChat.messages.slice(-24)];
+  }
+  async function aiHttpError(res) {
+    let detail = '';
+    try { const j = await res.json(); detail = j?.error?.message || j?.error || j?.message || ''; if (typeof detail !== 'string') detail = ''; } catch {}
+    const error = new Error(detail || 'Request failed (' + res.status + ').');
+    error.status = res.status;
+    if (res.status === 401 || res.status === 403) error.message = 'The assistant couldn’t be used from here right now.';
+    else if (res.status === 402) error.message = 'The assistant has reached its usage limit for now. Try again later.';
+    else if (res.status === 429) error.message = 'The assistant has reached its usage limit for now. Try again later.';
+    else if (res.status === 404 || res.status === 400) error.message = (detail || 'The model could not be used.') + ' Check the model name in the assistant settings.';
+    return error;
+  }
+  async function chatSend(raw) {
+    const text = raw.trim();
+    if (!text || aiChat.busy) return;
+    if (!aiEndpoint) { chatLog.querySelector('.chat-empty') || chatEmpty(); openSettings('assistant'); return; }
+    chatLog.querySelector('.chat-empty')?.remove();
+    chatLog.querySelectorAll('.chat-msg.error').forEach(el => el.remove());
+    aiChat.messages.push({ role:'user', content:text });
+    const userBubble = chatBubble('user', text);
+    const bubble = chatBubble('assistant', '');
+    bubble.classList.add('streaming');
+    aiChat.busy = true;
+    const controller = new AbortController();
+    aiChat.controller = controller;
+    chatSyncChrome(); chatScroll();
+    let reply = '';
+    try {
+      const res = await fetch(aiEndpoint, {
+        method: 'POST', signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: aiModel, messages: aiPayload(), stream: true, max_tokens: 2048 })
+      });
+      if (!res.ok) throw await aiHttpError(res);
+      const reader = res.body.getReader(), decoder = new TextDecoder();
+      let buffer = '';
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream:true });
+        const lines = buffer.split('\n'); buffer = lines.pop();
+        for (const line of lines) {
+          const t = line.trim();
+          if (!t.startsWith('data:')) continue;
+          const data = t.slice(5).trim();
+          if (!data || data === '[DONE]') continue;
+          try { const chunk = JSON.parse(data); let delta = chunk.choices?.[0]?.delta?.content ?? chunk.response ?? (chunk.type === 'response.output_text.delta' ? chunk.delta : null); if (delta == null && chunk.type === 'response.completed' && !reply) delta = (chunk.response?.output || []).flatMap(o => o.content || []).filter(c => c.type === 'output_text').map(c => c.text).join(''); if (typeof delta === 'string' && delta) { reply += delta; chatRender(bubble, reply); chatScroll(); } } catch {}
+        }
+      }
+      if (!reply.trim()) throw new Error('The model returned an empty reply. Try again or pick another model.');
+      aiChat.messages.push({ role:'assistant', content:reply });
+      aiSaveHistory();
+      bubble.classList.remove('streaming');
+      chatAddCopy(bubble, reply);
+    } catch (error) {
+      bubble.classList.remove('streaming');
+      if (error?.name === 'AbortError') {
+        if (reply.trim()) { aiChat.messages.push({ role:'assistant', content:reply }); aiSaveHistory(); chatAddCopy(bubble, reply); }
+        else { aiChat.messages.pop(); bubble.remove(); userBubble.remove(); chatInput.value = text; }
+      } else {
+        aiChat.messages.pop(); bubble.remove(); userBubble.remove(); chatInput.value = text;
+        const network = error instanceof TypeError;
+        chatShowError(network ? 'Could not reach the assistant. Check your connection and try again.' : error.message, error?.status === 401 || error?.status === 403);
+      }
+    } finally {
+      aiChat.busy = false; aiChat.controller = null;
+      chatSyncChrome();
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
+      chatScroll();
+    }
+  }
+  /* the assistant lives in its own full-size Frame Bench tab; the chat panel is moved into that tab's pane */
+  function syncAiButtons() {
+    try {
+      const on = tabs.some(item => item.isAi && item.id === activeId);
+      chatButton.classList.toggle('on', on);
+      chatTool.classList.toggle('on', on);
+    } catch {} /* called by activate() before the assistant is set up on first load */
+  }
+  function openAiTab() {
+    toggleNotes(false);
+    let tab = tabs.find(item => item.isAi);
+    if (!tab) {
+      tab = makeTab('', true);
+      tab.isAi = true;
+      tab.title = 'Assistant';
+      tab.button.querySelector('.tab-title').textContent = 'Assistant';
+      tab.button.title = 'Assistant';
+      tab.pane.classList.add('ai-pane');
+      tab.pane.append(chatPanel);
+      chatPanel.classList.remove('leaving');
+      chatPanel.classList.add('full');
+      chatPanel.hidden = false;
+      chatRenderAll();
+    } else activate(tab.id);
+    syncFooterStatus(tab);
+    syncAiButtons();
+    requestAnimationFrame(() => chatInput.focus());
+  }
+  function releaseAiTab(tab) {
+    tab.isAi = false;
+    tab.pane.classList.remove('ai-pane');
+    chatPanel.hidden = true;
+    chatPanel.classList.remove('full');
+    stage.append(chatPanel);
+    syncAiButtons();
+  }
+  function toggleChat(force) {
+    const tab = tabs.find(item => item.isAi);
+    if (force === false) { if (tab) closeTab(tab.id); return; }
+    openAiTab();
+  }
+  chatPanel.addEventListener('click', event => {
+    const act = event.target.closest('[data-chat]')?.dataset.chat;
+    if (act === 'close') toggleChat(false);
+    else if (act === 'new') { if (aiChat.busy) aiChat.controller?.abort(); aiChat.messages = []; aiSaveHistory(); chatRenderAll(); chatInput.focus(); }
+    else if (act === 'settings') openSettings('assistant');
+  });
+  chatForm.addEventListener('submit', event => {
+    event.preventDefault();
+    if (aiChat.busy) { aiChat.controller?.abort(); return; }
+    const text = chatInput.value;
+    if (!text.trim()) return;
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    chatSend(text);
+  });
+  chatInput.addEventListener('input', () => {
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
+    chatSyncChrome();
+  });
+  chatInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); chatForm.requestSubmit(); }
+    else if (event.key === 'Escape') { event.stopPropagation(); if (aiChat.busy) aiChat.controller?.abort(); }
+  });
+  chatButton.addEventListener('click', () => toggleChat());
+  chatTool.addEventListener('click', () => toggleChat());
+  chatSyncChrome();
+
+  /* assistant settings */
+  const aiTokenStatus = document.querySelector('#aiTokenStatus');
+  const aiModelInput = document.querySelector('#aiModel');
+  const aiContextToggle = document.querySelector('#aiContextToggle');
+  function aiSettingsSync() {
+    aiTokenStatus.textContent = aiEndpoint ? 'Ready' : 'Unavailable';
+    aiModelInput.value = aiModel;
+    if (aiModelInput.value !== aiModel) { aiModel = AI_DEFAULT_MODEL; aiModelInput.value = aiModel; aiSet(AI_MODEL_KEY, ''); }
+    aiContextToggle.setAttribute('aria-checked', String(aiShareUrl));
+  }
+  aiModelInput.addEventListener('change', () => {
+    aiModel = aiModelInput.value.trim() || AI_DEFAULT_MODEL;
+    aiModelInput.value = aiModel;
+    aiSet(AI_MODEL_KEY, aiModel === AI_DEFAULT_MODEL ? '' : aiModel);
+    chatSyncChrome();
+  });
+  aiContextToggle.addEventListener('click', () => { aiShareUrl = !aiShareUrl; aiSet(AI_CONTEXT_KEY, String(aiShareUrl)); aiContextToggle.setAttribute('aria-checked', String(aiShareUrl)); });
+  document.querySelector('#aiClear').addEventListener('click', () => { if (aiChat.busy) aiChat.controller?.abort(); aiChat.messages = []; aiSaveHistory(); if (!chatPanel.hidden) chatRenderAll(); toast('Chat cleared'); });
+    aiSettingsSync();
 
   /* command palette */
   let paletteItems = [], paletteIndex = 0, paletteMode = null, paletteReturnFocus = null;
@@ -3340,38 +4110,40 @@ button.sb-label:hover { color: var(--text); }
     const saved = Boolean(tab?.url && bookmarks.some(item => item.url === tab.url));
     const canZoom = Boolean(tab && !tab.isSettings);
     const cmds = [
-      { icon:'＋', label:'New tab', keys:'Alt T', run:() => makeTab('', !backgroundTabs) },
-      { icon:'×', label:'Close tab', keys:'Alt W', show:visibleTabs().length > 1, run:() => closeTab(activeId) },
-      { icon:'↺', label:'Reopen closed tab', keys:'Alt ⇧ T', show:closedStack.length > 0, run:reopenClosedTab },
-      { icon:'↻', label:'Reload page', show:Boolean(tab?.url), run:() => startLoad(tab, tab.url) },
-      { icon:'‹', label:'Go back', show:!backButton.disabled, run:() => stepNavigation(-1) },
-      { icon:'›', label:'Go forward', show:!forwardButton.disabled, run:() => stepNavigation(1) },
-      { icon:'☆', label:saved ? 'Remove bookmark' : 'Bookmark this page', keys:'⌘ D', show:Boolean(tab?.url), run:() => toggleBookmark(tab) },
-      { icon:'◆', label:'Pin this page to the home screen', show:Boolean(tab?.url), run:() => addShortcut(tab.url, tab.title) },
-      { icon:'◫', label:split.on && !split.vertical ? 'Close split view' : 'Split view: side by side', keys:'Alt S', run:() => toggleSplit(false) },
-      { icon:'⬒', label:split.on && split.vertical ? 'Close split view' : 'Split view: stacked', run:() => toggleSplit(true) },
-      { icon:'✎', label:'Toggle scratchpad', keys:'Alt N', run:() => toggleNotes() },
-      { icon:'▭', label:browserFrame.classList.contains('app-mode') ? 'Exit app mode' : 'Enter app mode', keys:'Alt ⇧ A', run:() => toggleAppMode() },
-      { icon:'＋', label:'Zoom in', keys:'Alt +', show:canZoom, run:() => zoomBy(.1) },
-      { icon:'－', label:'Zoom out', keys:'Alt −', show:canZoom, run:() => zoomBy(-.1) },
-      { icon:'◎', label:'Reset zoom', keys:'Alt 0', show:canZoom && tab.zoom !== 1, run:() => zoomBy(0, true) },
-      { icon:'☾', label:'Sleep inactive tabs now', run:() => sleepInactive(0) },
-      { icon:'◐', label:'Switch theme', run:() => themeToggle.click() },
-      { icon:'▥', label:'Toggle sidebar', keys:'Alt B', run:toggleSidebar },
-      { icon:'☰', label:'Toggle vertical tabs', run:() => verticalTabsToggle.click() },
-      { icon:'▤', label:'Show or hide bookmarks', keys:'⌘ ⇧ B', run:() => applyBookmarksVisibility(!showBookmarks, true) },
-      { icon:'⛶', label:'Toggle fullscreen', run:toggleFullscreen },
-      { icon:'⚙', label:'Open settings', keys:'⌘ ,', run:() => openSettings() },
-      { icon:'⇩', label:'Export backup', run:exportBackup },
-      { icon:'⇧', label:'Import backup…', run:() => settingsPanel.querySelector('#importFile')?.click() },
-      { icon:'★', label:'Add a bookmark…', run:() => setTimeout(openAddBookmark, 60) },
-      { icon:'⟳', label:'Check for updates', run:() => checkForUpdates(true) }
+      { icon:'plus', label:'New tab', keys:'Alt T', run:() => makeTab('', !backgroundTabs) },
+      { icon:'close', label:'Close tab', keys:'Alt W', show:visibleTabs().length > 1, run:() => closeTab(activeId) },
+      { icon:'undo', label:'Reopen closed tab', keys:'Alt ⇧ T', show:closedStack.length > 0, run:reopenClosedTab },
+      { icon:'reload', label:'Reload page', show:Boolean(tab?.url), run:() => startLoad(tab, tab.url) },
+      { icon:'back', label:'Go back', show:!backButton.disabled, run:() => stepNavigation(-1) },
+      { icon:'forward', label:'Go forward', show:!forwardButton.disabled, run:() => stepNavigation(1) },
+      { icon:saved ? 'bookmark-on' : 'bookmark', label:saved ? 'Remove bookmark' : 'Bookmark this page', keys:'⌘ D', show:Boolean(tab?.url), run:() => toggleBookmark(tab) },
+      { icon:'pin', label:'Pin this page to the home screen', show:Boolean(tab?.url), run:() => addShortcut(tab.url, tab.title) },
+      { icon:'split', label:split.on && !split.vertical ? 'Close split view' : 'Split view: side by side', keys:'Alt S', run:() => toggleSplit(false) },
+      { icon:'split-stack', label:split.on && split.vertical ? 'Close split view' : 'Split view: stacked', run:() => toggleSplit(true) },
+      { icon:'sparkle', label:'Ask the assistant', keys:'Alt J', run:() => toggleChat(true) },
+      { icon:'note', label:'Toggle scratchpad', keys:'Alt N', run:() => toggleNotes() },
+      { icon:'tabs', label:'Show all tabs', keys:'Ctrl ⇧ \\', run:() => openTabOverview() },
+      { icon:'app', label:browserFrame.classList.contains('app-mode') ? 'Exit app mode' : 'Enter app mode', keys:'Alt ⇧ A', run:() => toggleAppMode() },
+      { icon:'zoom-in', label:'Zoom in', keys:'Alt +', show:canZoom, run:() => zoomBy(.1) },
+      { icon:'zoom-out', label:'Zoom out', keys:'Alt −', show:canZoom, run:() => zoomBy(-.1) },
+      { icon:'zoom-reset', label:'Reset zoom', keys:'Alt 0', show:canZoom && tab.zoom !== 1, run:() => zoomBy(0, true) },
+      { icon:'moon', label:'Sleep inactive tabs now', run:() => sleepInactive(0) },
+      { icon:'theme', label:'Switch theme', run:() => themeToggle.click() },
+      { icon:'sidebar', label:'Toggle sidebar', keys:'Alt B', run:toggleSidebar },
+      { icon:'vtabs', label:'Toggle vertical tabs', run:() => verticalTabsToggle.click() },
+      { icon:'bar', label:'Show or hide bookmarks', keys:'⌘ ⇧ B', run:() => applyBookmarksVisibility(!showBookmarks, true) },
+      { icon:'fullscreen', label:'Toggle fullscreen', run:toggleFullscreen },
+      { icon:'settings', label:'Open settings', keys:'⌘ ,', run:() => openSettings() },
+      { icon:'download', label:'Export backup', run:exportBackup },
+      { icon:'upload', label:'Import backup…', run:() => settingsPanel.querySelector('#importFile')?.click() },
+      { icon:'bookmark-plus', label:'Add a bookmark…', run:() => setTimeout(openAddBookmark, 60) },
+      { icon:'update', label:'Check for updates', run:() => checkForUpdates(true) }
     ];
     const workspaceCmds = [
-      ...workspaces.map(item => ({ group:'Workspaces', icon:item.id === activeWs ? '●' : '○', label:'Workspace: ' + item.name, hint:item.id === activeWs ? 'current' : '', run:() => switchWorkspace(item.id) })),
-      { group:'Workspaces', icon:'＋', label:'New workspace…', run:() => openPrompt('Name the new workspace', '', createWorkspace) },
-      { group:'Workspaces', icon:'✎', label:'Rename this workspace…', run:() => openPrompt('Rename workspace', wsName(activeWs), value => { const clean = value.trim().slice(0, 24); if (!clean) return; workspaces.find(item => item.id === activeWs).name = clean; applyWorkspaceVisibility(); }) },
-      { group:'Workspaces', icon:'−', label:'Delete this workspace', hint:'tabs move to another workspace', show:workspaces.length > 1, run:deleteWorkspace }
+      ...workspaces.map(item => ({ group:'Workspaces', icon:item.id === activeWs ? 'ws-on' : 'ws-off', label:'Workspace: ' + item.name, hint:item.id === activeWs ? 'current' : '', run:() => switchWorkspace(item.id) })),
+      { group:'Workspaces', icon:'plus', label:'New workspace…', run:() => openPrompt('Name the new workspace', '', createWorkspace) },
+      { group:'Workspaces', icon:'note', label:'Rename this workspace…', run:() => openPrompt('Rename workspace', wsName(activeWs), value => { const clean = value.trim().slice(0, 24); if (!clean) return; workspaces.find(item => item.id === activeWs).name = clean; applyWorkspaceVisibility(); }) },
+      { group:'Workspaces', icon:'trash', label:'Delete this workspace', hint:'tabs move to another workspace', show:workspaces.length > 1, run:deleteWorkspace }
     ];
     return [...cmds.filter(item => item.show !== false).map(item => ({ group:'Commands', hint:item.keys || '', ...item })), ...workspaceCmds.filter(item => item.show !== false)];
   }
@@ -3387,22 +4159,67 @@ button.sb-label:hover { color: var(--text); }
       if (url) {
         const isSearch = url === searchUrl(query);
         const engine = searchEngine === 'custom' ? 'your search engine' : SEARCH_ENGINES[searchEngine].name;
-        goItem = { group:'Go', icon:isSearch ? '⌕' : '↗', label:isSearch ? `Search ${engine} for “${query}”` : 'Go to ' + hostOf(url), hint:isSearch ? '' : url.replace(/^https?:\/\//, ''), run:() => { input.value = query; form.requestSubmit(); } };
+        goItem = { group:'Go', icon:isSearch ? 'search' : 'goto', label:isSearch ? `Search ${engine} for “${query}”` : 'Go to ' + hostOf(url), hint:isSearch ? '' : url.replace(/^https?:\/\//, ''), run:() => { input.value = query; form.requestSubmit(); } };
         goIsSearch = isSearch;
       }
     }
     const go = url => () => { input.value = url; form.requestSubmit(); };
-    out.push(...pick(tabs.map(tab => ({ group:'Tabs', icon:'▢', label:tab.title + (tab.asleep ? ' (asleep)' : ''), hint:(tab.ws !== activeWs ? wsName(tab.ws) + ' · ' : '') + (tab.url ? tab.url.replace(/^https?:\/\//, '') : ''), run:() => activate(tab.id) })), 8));
+    out.push(...pick(tabs.map(tab => ({ group:'Tabs', icon:'tab', label:tab.title + (tab.asleep ? ' (asleep)' : ''), hint:(tab.ws !== activeWs ? wsName(tab.ws) + ' · ' : '') + (tab.url ? tab.url.replace(/^https?:\/\//, '') : ''), run:() => activate(tab.id) })), 8));
     const all = getCommands();
     out.push(...pick(all.filter(item => item.group === 'Commands'), terms.length ? 8 : 7));
     out.push(...pick(all.filter(item => item.group === 'Workspaces'), terms.length ? 8 : 3));
-    out.push(...pick(bookmarks.map(item => ({ group:'Bookmarks', icon:'★', label:item.title, hint:(item.folder ? item.folder + ' · ' : '') + hostOf(item.url), extra:item.url, run:go(item.url) })), 5));
-    out.push(...pick(shortcuts.map(item => ({ group:'Pinned', icon:'◆', label:item.name, hint:hostOf(item.url), extra:item.url, run:go(item.url) })), 5));
+    out.push(...pick(bookmarks.map(item => ({ group:'Bookmarks', icon:'star', label:item.title, hint:(item.folder ? item.folder + ' · ' : '') + hostOf(item.url), extra:item.url, run:go(item.url) })), 5));
+    out.push(...pick(shortcuts.map(item => ({ group:'Pinned', icon:'pin', label:item.name, hint:hostOf(item.url), extra:item.url, run:go(item.url) })), 5));
     const recentStart = out.length;
-    out.push(...pick(recentPages.map(item => ({ group:'Recent', icon:'↺', label:item.title, hint:hostOf(item.url), extra:item.url, run:go(item.url) })), 4));
+    out.push(...pick(recentPages.map(item => ({ group:'Recent', icon:'history', label:item.title, hint:hostOf(item.url), extra:item.url, run:go(item.url) })), 4));
     if (goItem) { if (goIsSearch) out.push(goItem); else out.unshift(goItem); }
     return out;
   }
+  /* palette icons: one outline set (24px grid, round caps) shared by every command */
+  const PALETTE_ICONS = {
+    'plus': '<path d="M12 5v14M5 12h14"/>',
+    'close': '<path d="M6 6l12 12M18 6 6 18"/>',
+    'undo': '<path d="M4.5 9.5H14a5 5 0 0 1 0 10H9"/><path d="m8 5.5-3.5 4 3.5 4"/>',
+    'reload': '<path d="M19.5 12a7.5 7.5 0 1 1-2.4-5.5"/><path d="M19.5 4.5v4h-4"/>',
+    'back': '<path d="m14.5 6-6 6 6 6"/>',
+    'forward': '<path d="m9.5 6 6 6-6 6"/>',
+    'bookmark': '<path d="M7 4.5h10a1 1 0 0 1 1 1V20l-6-4-6 4V5.5a1 1 0 0 1 1-1Z"/>',
+    'bookmark-on': '<path d="M7 4.5h10a1 1 0 0 1 1 1V20l-6-4-6 4V5.5a1 1 0 0 1 1-1Z" fill="currentColor"/>',
+    'bookmark-plus': '<path d="M7 4.5h10a1 1 0 0 1 1 1V20l-6-4-6 4V5.5a1 1 0 0 1 1-1Z"/><path d="M12 8v4.5M9.75 10.25h4.5"/>',
+    'star': '<path d="m12 4.5 2.3 4.8 5.2.7-3.8 3.6.9 5.2-4.6-2.5-4.6 2.5.9-5.2L4.5 10l5.2-.7L12 4.5Z"/>',
+    'pin': '<path d="M9 4h6l-1 5 3 3v1.5H7V12l3-3-1-5Z"/><path d="M12 13.5V20"/>',
+    'split': '<rect x="4" y="5" width="16" height="14" rx="2.5"/><path d="M12 5v14"/>',
+    'split-stack': '<rect x="4" y="5" width="16" height="14" rx="2.5"/><path d="M4 12h16"/>',
+    'note': '<path d="M5 19l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L9 18l-4 1Z"/><path d="m14.5 6.5 3 3"/>',
+    'tabs': '<rect x="3.5" y="7.5" width="13" height="13" rx="3"/><path d="M8 4.5h9a3.5 3.5 0 0 1 3.5 3.5v9"/>',
+    'tab': '<rect x="4" y="5.5" width="16" height="13" rx="2.5"/><path d="M4 9.5h16"/>',
+    'app': '<rect x="4" y="4.5" width="16" height="15" rx="2.5"/><path d="M14 16h3"/>',
+    'zoom-in': '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M11 8.5v5M8.5 11h5"/>',
+    'zoom-out': '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M8.5 11h5"/>',
+    'zoom-reset': '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/><circle cx="11" cy="11" r="1.4" fill="currentColor"/>',
+    'moon': '<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z"/>',
+    'theme': '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor"/>',
+    'sidebar': '<rect x="4" y="5" width="16" height="14" rx="2.5"/><path d="M9.5 5v14"/>',
+    'vtabs': '<path d="M5 7h14M5 12h14M5 17h14"/>',
+    'bar': '<rect x="4" y="5" width="16" height="14" rx="2.5"/><path d="M4 9.5h16"/><path d="M7.5 7.25h.01M10 7.25h.01"/>',
+    'fullscreen': '<path d="M9 4H5.5A1.5 1.5 0 0 0 4 5.5V9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15M15 20h3.5a1.5 1.5 0 0 0 1.5-1.5V15"/>',
+    'settings': '<path d="M5 8h8M17 8h2M5 16h2M11 16h8"/><circle cx="15" cy="8" r="2"/><circle cx="9" cy="16" r="2"/>',
+    'download': '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/>',
+    'upload': '<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19h14"/>',
+    'update': '<path d="M19 8.5A7.5 7.5 0 0 0 6 7M5 4v3.5h3.5M5 15.5A7.5 7.5 0 0 0 18 17M19 20v-3.5h-3.5"/>',
+    'ws-on': '<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3" fill="currentColor"/>',
+    'ws-off': '<circle cx="12" cy="12" r="7.5"/>',
+    'trash': '<path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 11v5M13.5 11v5"/>',
+    'search': '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/>',
+    'goto': '<path d="M7 17 17 7M9 7h8v8"/>',
+    'history': '<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
+    'sparkle': '<path d="M12 4l1.9 5.1L19 11l-5.1 1.9L12 18l-1.9-5.1L5 11l5.1-1.9Z"/><path d="M18.5 15.5v4M16.5 17.5h4"/>'
+  };
+  function paletteIconSvg(name) {
+    const body = PALETTE_ICONS[name];
+    return body ? '<svg viewBox="0 0 24 24" aria-hidden="true">' + body + '</svg>' : '';
+  }
+
   function renderPalette() {
     paletteList.replaceChildren();
     const note = text => { const el = document.createElement('div'); el.className = 'palette-empty'; el.textContent = text; paletteList.append(el); };
@@ -3425,7 +4242,7 @@ button.sb-label:hover { color: var(--text); }
       row.setAttribute('role', 'option');
       row.dataset.index = String(index);
       row.tabIndex = -1;
-      const icon = document.createElement('span'); icon.className = 'palette-icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = item.icon || '•';
+      const icon = document.createElement('span'); icon.className = 'palette-icon'; icon.setAttribute('aria-hidden', 'true'); const svg = paletteIconSvg(item.icon); if (svg) icon.innerHTML = svg; else icon.textContent = item.icon || '•';
       const label = document.createElement('span'); label.className = 'palette-label'; label.textContent = item.label;
       row.append(icon, label);
       if (item.hint) { const hint = document.createElement('span'); hint.className = 'palette-hint'; hint.textContent = item.hint; row.append(hint); }
