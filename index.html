@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0a0c">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src https: data:; frame-src https: http:; connect-src https://*.workers.dev https://api.github.com https://github.com https://raw.githubusercontent.com https://release-assets.githubusercontent.com https://objects.githubusercontent.com; base-uri 'none'; form-action 'none'">
-<meta name="app-version" content="1.3.1">
+<meta name="app-version" content="1.3.2">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23171719'/%3E%3Crect x='13' y='15' width='38' height='34' rx='7' fill='%23211719' stroke='%23ef3f61' stroke-width='3'/%3E%3Cpath d='M14.5 25h35' stroke='%23ef3f61' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='1.7' fill='%23ef3f61'/%3E%3Ccircle cx='25.5' cy='20' r='1.7' fill='%23ef3f61' opacity='.72'/%3E%3Cpath d='m24 36 5.5 5.5L41 30' fill='none' stroke='%23ef3f61' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <title>Frame Bench</title>
 <style>
@@ -962,6 +962,51 @@ button.sb-label:hover { color: var(--text); }
 /* ==========================================================================
    Assistant: chat panel (shares the scratchpad's frame) + settings fields
    ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes chat-in-user { from { opacity: 0; transform: translateY(10px) scale(.96); transform-origin: 100% 100%; } to { opacity: 1; transform: none; } }
+  @keyframes chat-in-bot { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes chat-swap { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes hist-box-in { from { transform: translateX(-24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes hist-box-out { to { transform: translateX(-24px); opacity: 0; } }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fade-out { to { opacity: 0; } }
+  @keyframes hist-row-in { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+  @keyframes hist-row-out { to { opacity: 0; transform: translateX(-12px); height: 0; } }
+  @keyframes stream-dot { 0%, 100% { transform: scale(.7); opacity: .5; } 50% { transform: scale(1.15); opacity: 1; } }
+  .chat-msg.enter.user { animation: chat-in-user .32s var(--ease-spring) both; }
+  .chat-msg.enter.assistant { animation: chat-in-bot .3s var(--ease-out) both; }
+  .chat-log.swap { animation: chat-swap .26s var(--ease-out) both; }
+  .chat-empty { animation: chat-in-bot .4s var(--ease-out) both; }
+  .chat-hist:not(.closing) .chat-hist-scrim { animation: fade-in .2s linear both; }
+  .chat-hist:not(.closing) .chat-hist-box { animation: hist-box-in .26s var(--ease-out) both; }
+  .chat-hist.closing .chat-hist-scrim { animation: fade-out .16s linear both; }
+  .chat-hist.closing .chat-hist-box { animation: hist-box-out .16s var(--ease-in) both; }
+  .chat-hist-row { animation: hist-row-in .28s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 28ms + 60ms); transition: background-color .14s linear; }
+  .chat-hist-row.removing { animation: hist-row-out .2s var(--ease-in) both; overflow: hidden; }
+  .chat-hist-open, .chat-hist-del { transition: background-color .14s linear, color .14s linear, opacity .14s linear, transform .14s var(--ease-out); }
+  .chat-hist-del:active, .chat-send:active { transform: scale(.9); }
+  .chat-send { transition: transform .14s var(--ease-spring), background-color .14s linear, opacity .14s linear; }
+  .chat-msg.streaming:empty::after, .chat-msg.streaming > :last-child::after { animation: stream-dot 1s ease-in-out infinite; }
+}
+.chat-hist { position: absolute; inset: 0; z-index: 5; display: flex; }
+.chat-hist[hidden] { display: none; }
+.chat-hist-scrim { position: absolute; inset: 0; background: rgba(0,0,0,.35); }
+.chat-hist-box { position: relative; width: min(300px, 86%); height: 100%; display: flex; flex-direction: column; border-right: 1px solid var(--line2); background: var(--s1); box-shadow: var(--shadow-pop); }
+.chat-hist-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 12px 10px 14px; border-bottom: 1px solid var(--line); }
+.chat-hist-head strong { font-weight: 600; }
+.chat-hist-head button { height: 28px; padding: 0 10px; border: 1px solid var(--line2); border-radius: 8px; color: var(--text2); background: var(--s2); font-size: 12px; }
+.chat-hist-head button:hover { color: var(--text); background: var(--s3); }
+.chat-hist-list { flex: 1; overflow-y: auto; padding: 8px; display: grid; align-content: start; gap: 2px; }
+.chat-hist-row { display: flex; align-items: center; border-radius: 9px; }
+.chat-hist-row:hover, .chat-hist-row.active { background: var(--s2); }
+.chat-hist-open { flex: 1; min-width: 0; display: grid; gap: 1px; padding: 8px 10px; text-align: left; color: var(--text); font-size: 13px; }
+.chat-hist-open span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-hist-open small { color: var(--text3); font-size: 11px; }
+.chat-hist-del { width: 26px; height: 26px; margin-right: 6px; border-radius: 7px; color: var(--text3); font-size: 16px; line-height: 1; opacity: 0; }
+.chat-hist-row:hover .chat-hist-del, .chat-hist-del:focus-visible { opacity: 1; }
+.chat-hist-del:hover { color: var(--text); background: var(--s3); }
+.chat-hist-empty { padding: 14px 10px; color: var(--text3); font-size: 13px; }
+@media (hover: none) { .chat-hist-del { opacity: 1; } }
 .chat-panel { width: min(400px, calc(100% - 20px)); }
 .browser.app-mode .chat-panel { bottom: 64px; }
 .notes-head .chat-model { flex: none; max-width: 130px; height: 24px; padding: 0 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: 999px; color: var(--text3); font: 11px var(--mono); }
@@ -999,6 +1044,12 @@ button.sb-label:hover { color: var(--text); }
 .chat-msg blockquote > :first-child { margin-top: 0; } .chat-msg blockquote > :last-child { margin-bottom: 0; }
 .chat-msg blockquote.callout { border-left-color: var(--accent); background: var(--accent-soft); color: var(--text); }
 .chat-msg blockquote.callout.warning, .chat-msg blockquote.callout.caution { border-left-color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.chat-msg blockquote { margin: 10px 0; padding: 1px 0 1px 14px; border: 0; border-left: 3px solid color-mix(in srgb, var(--text3) 55%, transparent); border-radius: 0; background: none; color: var(--text2); }
+.chat-msg blockquote blockquote { margin: 6px 0; border-left-color: color-mix(in srgb, var(--text3) 32%, transparent); }
+.chat-msg blockquote p { margin: 0 0 6px; }
+.chat-msg blockquote code { background: var(--s3); }
+.chat-msg blockquote.callout { padding: 9px 12px 9px 14px; border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; background: var(--accent-soft); color: var(--text); }
+.chat-msg blockquote.callout.warning, .chat-msg blockquote.callout.caution { border-left-color: var(--danger); }
 .chat-msg .callout-title { display: block; margin-bottom: 2px; font-size: .86em; letter-spacing: .02em; text-transform: uppercase; color: var(--accent-text); }
 .chat-msg blockquote.callout.warning .callout-title, .chat-msg blockquote.callout.caution .callout-title { color: var(--danger); }
 .chat-table { max-width: 100%; margin: 8px 0; overflow-x: auto; }
@@ -1180,7 +1231,7 @@ button.sb-label:hover { color: var(--text); }
                 <div class="settings-row"><div><strong>Status</strong><small id="aiTokenStatus"></small></div></div>
                 <div class="settings-row"><div><strong>Model</strong><small>Choose which model answers your messages.</small></div><select class="test-scenario settings-select" id="aiModel" aria-label="Model"><option value="@cf/openai/gpt-oss-120b">Loading models…</option></select></div>
                 <div class="settings-row"><div><strong>Share the page address</strong><small>Tell the assistant which site you have open (address without query or fragment). It never sees page contents.</small></div><button class="setting-switch" id="aiContextToggle" type="button" role="switch" aria-checked="false"><span></span></button></div>
-                <div class="settings-row"><div><strong>Conversation</strong><small>Your chat is saved privately in this browser only. Clearing it removes it from this device.</small></div><button class="ai-btn" id="aiClear" type="button">Clear chat</button></div>
+                <div class="settings-row"><div><strong>Conversation</strong><small>Your chats are saved privately in this browser only. Clearing them removes them from this device.</small></div><button class="ai-btn" id="aiClear" type="button">Clear all chats</button></div>
               </div>
             </section>
             <section class="settings-category" id="settingsPaneUpdates" role="tabpanel" aria-labelledby="settingsTabUpdates" data-settings-pane="updates" hidden>
@@ -3877,13 +3928,71 @@ export default {
   if (typeof aiModel !== 'string' || !aiModel) { aiModel = AI_DEFAULT_MODEL; aiSet(AI_MODEL_KEY, ''); }
   let aiShareUrl = aiGet(AI_CONTEXT_KEY) === 'true';
   const aiChat = { messages: [], busy: false, controller: null };
+  const AI_CHATS_KEY = 'frame-ai-chats';
+  let aiConvos = [];
+  const aiValidMsg = m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string';
+  const aiTitleOf = msgs => { const t = (msgs.find(m => m.role === 'user')?.content || 'New chat').replace(/\s+/g, ' ').trim(); return t.length > 48 ? t.slice(0, 48) + '…' : t; };
+  function aiPersist() {
+    aiConvos.sort((a, b) => b.updated - a.updated);
+    aiConvos = aiConvos.slice(0, 100);
+    aiSet(AI_CHATS_KEY, aiConvos.length ? JSON.stringify(aiConvos) : '');
+  }
   function aiLoadHistory() {
     try {
-      const saved = JSON.parse(aiGet(AI_HISTORY_KEY) || '[]');
-      if (Array.isArray(saved)) aiChat.messages = saved.filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string').slice(-60);
+      const saved = JSON.parse(aiGet(AI_CHATS_KEY) || 'null');
+      if (Array.isArray(saved)) aiConvos = saved.filter(c => c && typeof c.id === 'string' && Array.isArray(c.messages)).map(c => ({ id: c.id, title: String(c.title || 'New chat'), updated: +c.updated || 0, titled: !!c.titled, messages: c.messages.filter(aiValidMsg).slice(-60) })).filter(c => c.messages.length);
+      else {
+        const old = JSON.parse(aiGet(AI_HISTORY_KEY) || '[]');
+        if (Array.isArray(old)) { const msgs = old.filter(aiValidMsg).slice(-60); if (msgs.length) { aiConvos = [{ id: 'c' + Date.now().toString(36), title: aiTitleOf(msgs), updated: Date.now(), messages: msgs }]; aiPersist(); } }
+        aiSet(AI_HISTORY_KEY, '');
+      }
     } catch {}
+    aiConvos.sort((a, b) => b.updated - a.updated);
+    aiChat.messages = aiConvos[0] ? aiConvos[0].messages : [];
   }
-  function aiSaveHistory() { aiSet(AI_HISTORY_KEY, aiChat.messages.length ? JSON.stringify(aiChat.messages.slice(-60)) : ''); }
+  function aiSaveHistory(msgs = aiChat.messages) {
+    let c = aiConvos.find(x => x.messages === msgs);
+    if (!msgs.length) { if (c) aiConvos = aiConvos.filter(x => x !== c); }
+    else {
+      if (!c) { c = { id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: '', updated: 0, messages: msgs }; aiConvos.push(c); }
+      c.updated = Date.now();
+      if (!c.title) c.title = aiTitleOf(msgs);
+    }
+    aiPersist();
+  }
+  const aiTitling = new Set();
+  async function aiGenTitle(convo) {
+    if (!aiEndpoint || convo.titled || aiTitling.has(convo)) return;
+    aiTitling.add(convo);
+    try {
+      const u = convo.messages.find(m => m.role === 'user')?.content || '', a = convo.messages.find(m => m.role === 'assistant')?.content || '';
+      const prompt = 'Write a short title (2 to 5 words) for this conversation. Reply with only the title: no quotes, no markdown, no period at the end.\n\nUser: ' + u.slice(0, 600) + '\n\nAssistant: ' + a.slice(0, 600);
+      const res = await fetch(aiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: aiModel, messages: [{ role: 'user', content: prompt }], stream: true, max_tokens: 120 }) });
+      if (!res.ok) return;
+      const reader = res.body.getReader(), decoder = new TextDecoder();
+      let buffer = '', out = '';
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n'); buffer = lines.pop();
+        for (const line of lines) {
+          const t = line.trim();
+          if (!t.startsWith('data:')) continue;
+          const data = t.slice(5).trim();
+          if (!data || data === '[DONE]') continue;
+          try { const chunk = JSON.parse(data); const d = chunk.choices?.[0]?.delta?.content ?? chunk.response ?? (chunk.type === 'response.output_text.delta' ? chunk.delta : null); if (typeof d === 'string') out += d; } catch {}
+        }
+      }
+      let title = out.replace(/<think>[\s\S]*?<\/think>/g, '').trim().split('\n')[0].replace(/^(title\s*:\s*)/i, '').replace(/[*_`#"“”']+/g, '').replace(/[.!\s]+$/, '').trim();
+      if (!title || title.length > 80) return;
+      if (title.length > 48) title = title.slice(0, 47).trimEnd() + '…';
+      if (!aiConvos.includes(convo)) return;
+      convo.title = title; convo.titled = true;
+      aiPersist();
+      if (!chatHist.hidden) chatRenderHist();
+    } catch {} finally { aiTitling.delete(convo); }
+  }
   aiLoadHistory();
   const AI_MODEL_NAMES = { '@cf/openai/gpt-oss-120b':'GPT-OSS 120B', '@cf/google/gemma-4-26b-a4b-it':'Gemma 4 26B', '@cf/qwen/qwen3.8-27b':'Qwen 3.8 27B' };
   const aiShortModel = id => AI_MODEL_NAMES[id] || id.split(':')[0].split('/').pop();
@@ -3896,9 +4005,11 @@ export default {
   chatPanel.className = 'chat-panel';
   chatPanel.hidden = true;
   chatPanel.setAttribute('aria-label', 'Assistant');
-  chatPanel.innerHTML = '<div class="notes-head"><strong>Assistant</strong><button type="button" class="chat-model" data-chat="settings" title="Change model"></button><button type="button" data-chat="new">New chat</button><button type="button" class="notes-close" data-chat="close" aria-label="Close assistant tab" title="Close assistant tab">×</button></div><div class="chat-log" role="log" aria-live="polite"></div><form class="chat-form"><textarea class="chat-input" rows="1" placeholder="Ask anything" aria-label="Message the assistant"></textarea><button class="chat-send" type="submit" aria-label="Send"></button></form>';
+  chatPanel.innerHTML = '<div class="notes-head"><strong>Assistant</strong><button type="button" class="chat-model" data-chat="settings" title="Change model"></button><button type="button" data-chat="history" title="Saved chats">Chats</button><button type="button" data-chat="new">New chat</button><button type="button" class="notes-close" data-chat="close" aria-label="Close assistant tab" title="Close assistant tab">×</button></div><div class="chat-log" role="log" aria-live="polite"></div><div class="chat-hist" hidden><div class="chat-hist-scrim" data-chat="history"></div><aside class="chat-hist-box"><div class="chat-hist-head"><strong>Chats</strong><button type="button" data-chat="new">New chat</button></div><div class="chat-hist-list"></div></aside></div><form class="chat-form"><textarea class="chat-input" rows="1" placeholder="Ask anything" aria-label="Message the assistant"></textarea><button class="chat-send" type="submit" aria-label="Send"></button></form>';
   stage.append(chatPanel);
   const chatLog = chatPanel.querySelector('.chat-log');
+  const chatHist = chatPanel.querySelector('.chat-hist');
+  const chatHistList = chatPanel.querySelector('.chat-hist-list');
   const chatForm = chatPanel.querySelector('.chat-form');
   const chatInput = chatPanel.querySelector('.chat-input');
   const chatSendButton = chatPanel.querySelector('.chat-send');
@@ -4850,7 +4961,11 @@ export default {
       }
       if (CHAT_RE.quote.test(line)) {
         const inner = [];
-        while (i < lines.length && CHAT_RE.quote.test(lines[i])) inner.push(lines[i++].replace(/^\s{0,3}>\s?/, ''));
+        while (i < lines.length) {
+          if (CHAT_RE.quote.test(lines[i])) inner.push(lines[i++].replace(/^\s{0,3}>\s?/, ''));
+          else if (lines[i].trim() && inner.length && inner[inner.length - 1].trim() && !chatBlockStart(lines, i)) inner.push(lines[i++].trim());
+          else break;
+        }
         const q = document.createElement('blockquote');
         const al = /^\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*$/i.exec(inner[0]);
         if (al) {
@@ -4926,6 +5041,7 @@ export default {
   }
   function chatRenderAll() {
     chatLog.replaceChildren();
+    chatLog.classList.remove('swap'); void chatLog.offsetWidth; chatLog.classList.add('swap');
     if (!aiChat.messages.length) chatEmpty();
     aiChat.messages.forEach(m => { const el = chatBubble(m.role, m.content); if (m.role === 'assistant') chatAddCopy(el, m.content); });
     chatSyncChrome();
@@ -5001,9 +5117,11 @@ IDENTITY CONSISTENCY
     if (!aiEndpoint) { chatLog.querySelector('.chat-empty') || chatEmpty(); openSettings('assistant'); return; }
     chatLog.querySelector('.chat-empty')?.remove();
     chatLog.querySelectorAll('.chat-msg.error').forEach(el => el.remove());
-    aiChat.messages.push({ role:'user', content:text });
+    const msgs = aiChat.messages;
+    msgs.push({ role:'user', content:text });
     const userBubble = chatBubble('user', text);
     const bubble = chatBubble('assistant', '');
+    userBubble.classList.add('enter'); bubble.classList.add('enter');
     bubble.classList.add('streaming');
     aiChat.busy = true;
     const controller = new AbortController();
@@ -5034,18 +5152,19 @@ IDENTITY CONSISTENCY
       }
       chatFlush();
       if (!reply.trim()) throw new Error('The model returned an empty reply. Try again or pick another model.');
-      aiChat.messages.push({ role:'assistant', content:reply });
-      aiSaveHistory();
+      msgs.push({ role:'assistant', content:reply });
+      aiSaveHistory(msgs);
+      { const c = aiConvos.find(x => x.messages === msgs); if (c && !c.titled) aiGenTitle(c); }
       bubble.classList.remove('streaming');
       chatAddCopy(bubble, reply);
     } catch (error) {
       chatFlush();
       bubble.classList.remove('streaming');
       if (error?.name === 'AbortError') {
-        if (reply.trim()) { aiChat.messages.push({ role:'assistant', content:reply }); aiSaveHistory(); chatAddCopy(bubble, reply); }
-        else { aiChat.messages.pop(); bubble.remove(); userBubble.remove(); chatInput.value = text; }
+        if (reply.trim()) { msgs.push({ role:'assistant', content:reply }); aiSaveHistory(msgs); chatAddCopy(bubble, reply); }
+        else { msgs.pop(); bubble.remove(); userBubble.remove(); chatInput.value = text; }
       } else {
-        aiChat.messages.pop(); bubble.remove(); userBubble.remove(); chatInput.value = text;
+        msgs.pop(); bubble.remove(); userBubble.remove(); chatInput.value = text;
         const network = error instanceof TypeError;
         chatShowError(network ? 'Could not reach the assistant. Check your connection and try again.' : error.message, error?.status === 401 || error?.status === 403);
       }
@@ -5098,10 +5217,36 @@ IDENTITY CONSISTENCY
     if (force === false) { if (tab) closeTab(tab.id); return; }
     openAiTab();
   }
+  let chatHistTimer = 0;
+  function chatHistShow(show) {
+    clearTimeout(chatHistTimer);
+    if (show) { chatHist.classList.remove('closing'); chatHist.hidden = false; chatRenderHist(); return; }
+    if (chatHist.hidden) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { chatHist.hidden = true; return; }
+    chatHist.classList.add('closing');
+    chatHistTimer = setTimeout(() => { chatHist.hidden = true; chatHist.classList.remove('closing'); }, 170);
+  }
+  function chatRenderHist() {
+    chatHistList.replaceChildren();
+    if (!aiConvos.length) { const p = document.createElement('p'); p.className = 'chat-hist-empty'; p.textContent = 'No saved chats yet.'; chatHistList.append(p); return; }
+    [...aiConvos].sort((a, b) => b.updated - a.updated).forEach((c, idx) => {
+      const row = document.createElement('div'); row.className = 'chat-hist-row'; row.dataset.id = c.id; row.style.setProperty('--i', Math.min(idx, 10));
+      if (c.messages === aiChat.messages) row.classList.add('active');
+      const open = document.createElement('button'); open.type = 'button'; open.className = 'chat-hist-open'; open.dataset.chat = 'open';
+      const t = document.createElement('span'); t.textContent = c.title;
+      const d = document.createElement('small'); d.textContent = new Date(c.updated).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      open.append(t, d);
+      const del = document.createElement('button'); del.type = 'button'; del.className = 'chat-hist-del'; del.dataset.chat = 'del'; del.setAttribute('aria-label', 'Delete chat'); del.title = 'Delete chat'; del.textContent = '×';
+      row.append(open, del); chatHistList.append(row);
+    });
+  }
   chatPanel.addEventListener('click', event => {
     const act = event.target.closest('[data-chat]')?.dataset.chat;
     if (act === 'close') toggleChat(false);
-    else if (act === 'new') { if (aiChat.busy) aiChat.controller?.abort(); aiChat.messages = []; aiSaveHistory(); chatRenderAll(); chatInput.focus(); }
+    else if (act === 'new') { if (aiChat.busy) aiChat.controller?.abort(); aiChat.messages = []; chatHistShow(false); chatRenderAll(); chatInput.focus(); }
+    else if (act === 'history') chatHistShow(chatHist.hidden || chatHist.classList.contains('closing'));
+    else if (act === 'open') { const c = aiConvos.find(x => x.id === event.target.closest('[data-id]')?.dataset.id); if (c) { if (aiChat.busy) aiChat.controller?.abort(); aiChat.messages = c.messages; chatHistShow(false); chatRenderAll(); chatInput.focus(); } }
+    else if (act === 'del') { const id = event.target.closest('[data-id]')?.dataset.id, c = aiConvos.find(x => x.id === id); if (c) { const cur = c.messages === aiChat.messages; if (cur && aiChat.busy) aiChat.controller?.abort(); aiConvos = aiConvos.filter(x => x !== c); aiPersist(); if (cur) { aiChat.messages = []; chatRenderAll(); } const row = event.target.closest('.chat-hist-row'); if (row && !matchMedia('(prefers-reduced-motion: reduce)').matches) { row.classList.add('removing'); setTimeout(chatRenderHist, 190); } else chatRenderHist(); } }
     else if (act === 'settings') openSettings('assistant');
   });
   chatForm.addEventListener('submit', event => {
@@ -5165,7 +5310,7 @@ IDENTITY CONSISTENCY
     chatSyncChrome();
   });
   aiContextToggle.addEventListener('click', () => { aiShareUrl = !aiShareUrl; aiSet(AI_CONTEXT_KEY, String(aiShareUrl)); aiContextToggle.setAttribute('aria-checked', String(aiShareUrl)); });
-  document.querySelector('#aiClear').addEventListener('click', () => { if (aiChat.busy) aiChat.controller?.abort(); aiChat.messages = []; aiSaveHistory(); if (!chatPanel.hidden) chatRenderAll(); toast('Chat cleared'); });
+  document.querySelector('#aiClear').addEventListener('click', () => { if (aiChat.busy) aiChat.controller?.abort(); aiChat.messages = []; aiConvos = []; aiPersist(); if (!chatPanel.hidden) { chatHistShow(false); chatRenderAll(); } toast('All chats cleared'); });
     aiSettingsSync();
     aiLoadModels();
 
